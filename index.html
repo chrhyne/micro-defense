@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791738020">
+<meta name="md-build" content="1791738425">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -1458,7 +1458,13 @@ function render(time){
     else { const p=Math.min(1,kt[i]/0.7), e=p*p; const x=kfx[i]+(MAILBOX.x-kfx[i])*e, y=kfy[i]+(MAILBOX.y-30-kfy[i])*e-Math.sin(p*Math.PI)*90; drawSprite(COIN,x,y,false,0.8+0.2*ksc[i]); }
   }
   ctx.textAlign='center'; ctx.font='16px sans-serif';
-  for(const p of G.pops){ ctx.globalAlpha=Math.max(0,1-p.t/0.6); ctx.fillText(p.txt,p.x,p.y-p.t*30); } ctx.globalAlpha=1;
+  for(const p of G.pops){ if(p.coin) continue; ctx.globalAlpha=Math.max(0,1-p.t/0.6); ctx.fillText(p.txt,p.x,p.y-p.t*30); }
+  // Wisch-Bonus: "3+1" steigt auf und verblasst
+  ctx.lineJoin='round';
+  for(const p of G.pops){ if(!p.coin) continue; const a=Math.min(1,Math.max(0,(p.life-p.t)/(p.life*0.5))), pop=1+0.4*Math.max(0,1-p.t/0.15);
+    ctx.globalAlpha=a; ctx.font=`${Math.round(30*p.sc*pop)}px "Lilita One", sans-serif`;
+    const y=p.y-p.t*50; ctx.lineWidth=6*p.sc; ctx.strokeStyle='#3a2410'; ctx.strokeText(p.txt,p.x,y); ctx.fillStyle='#ffd23f'; ctx.fillText(p.txt,p.x,y); }
+  ctx.globalAlpha=1; ctx.font='16px sans-serif';
   drawReadiness(T);
   if(G.running && !G.over){ const ratio=Math.max(0,G.hp/maxHp()); let a=Math.pow(1-ratio,1.3)*0.65; if(G.gateDps>0) a+=0.14+0.08*Math.sin(T*8); a+=G.hurtFlash||0;
     if(a>0.02){ ctx.setTransform(1,0,0,1,0,0); const w=cv.width,h=cv.height; const rg=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.32,w/2,h/2,Math.hypot(w,h)/2); rg.addColorStop(0,'rgba(210,20,20,0)'); rg.addColorStop(1,`rgba(210,20,20,${Math.min(0.8,a)})`); ctx.fillStyle=rg; ctx.fillRect(0,0,w,h); } }
@@ -1601,7 +1607,14 @@ cv.addEventListener('pointerup',e=>{ if(!down) return; const d=down; down=null; 
 cv.addEventListener('pointercancel',()=>{down=null;});
 function swipe(p){
   let got=0;
-  for(let i=0;i<kN;i++){ if(ks[i]!==0) continue; const r=40*Math.max(0.6,ksc[i]); const dx=kx[i]-p.x, dy=ky[i]-p.y; if(dx*dx+dy*dy<r*r){ startCoinFly(i,CFG.wischBonus); got++; } }
+  for(let i=0;i<kN;i++){ if(ks[i]!==0) continue; const r=40*Math.max(0.6,ksc[i]); const dx=kx[i]-p.x, dy=ky[i]-p.y; if(dx*dx+dy*dy<r*r){
+    const base=Math.round(kv[i]), bonus=Math.round(kv[i]*CFG.wischBonus)-base;
+    if(bonus>0){ const px=kx[i], py=ky[i]-18*Math.max(0.6,ksc[i]);
+      // Münzen, die kurz nacheinander dicht beieinander eingesammelt werden, zu einer Zahl zusammenfassen
+      const near=G.pops.find(q=>q.coin && q.t<0.3 && Math.abs(q.x-px)<110 && Math.abs(q.y-py)<70);
+      if(near){ near.base+=base; near.bonus+=bonus; near.txt=near.base+'+'+near.bonus; near.t=Math.min(near.t,0.05); }
+      else G.pops.push({x:px,y:py,t:0,life:1.1,coin:true,base,bonus,txt:base+'+'+bonus,sc:Math.max(0.75,ksc[i])}); }
+    startCoinFly(i,CFG.wischBonus); got++; } }
   if(got) sfx('swipe');
 }
 const near=(p,o,r)=>Math.hypot(p.x-o.x,p.y-o.y)<r;
