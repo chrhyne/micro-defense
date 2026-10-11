@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791743501">
+<meta name="md-build" content="1791743548">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -1752,9 +1752,12 @@ function drawHero(T){
   // Umhang: wird größer, später lila-gold
   poly(ctx,[x-bw*0.25,top+1,x-bw*0.5-8-10*f,y-1,x+bw*0.15,y-4],tier>=3?'#7a2a9a':'#c8443c',INK,1.2);
   if(tier>=3) poly(ctx,[x-bw*0.5-8-10*f,y-1,x-bw*0.5-3-10*f,y-4,x-bw*0.3,y-3],'#ffc93c',INK,0.8);
-  // Beine (ab Stufe 3 mit Stiefeln)
-  lim(x-bw*0.22,y-9,x-bw*0.22-sw,y,legW,'#2a3550'); lim(x+bw*0.22,y-9,x+bw*0.22+sw,y,legW,'#2a3550');
-  if(tier>=1){ for(const s of [-1,1]){ const fx=x+s*bw*0.22+(s<0?-sw:sw); rr(ctx,fx-legW*0.9,y-3,legW*1.8+2,4,1.5,tier>=3?'#ffc93c':'#6b3f1f',1); } }
+  // Beine: deutlich auseinander, damit man immer zwei sieht – mit Schuhen bzw. Stiefeln
+  const lx=Math.max(3.6,bw*0.26);
+  for(const s of [-1,1]){ const fx=x+s*(lx+1.2)+s*sw;
+    lim(x+s*lx,y-9,fx,y-1.5,legW,'#2a3550');
+    const bootH=tier>=1?4.5:3, bootW=legW+4;
+    rr(ctx,fx-bootW/2+s*1.2,y-bootH+0.5,bootW,bootH,1.6,tier>=3?'#ffc93c':(tier>=1?'#6b3f1f':'#4a2a12'),1); }
   // hinterer Arm
   lim(x-bw/2+1,top+3,x-bw/2-4-3*f,top+10,armW,'#4f8f3c'); circ(ctx,x-bw/2-4-3*f,top+10,armW*0.75,'#6fbf4a',INK,1);
   // Körper: Hemd → Leder → Silber-Rüstung → Gold-Rüstung
