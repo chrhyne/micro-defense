@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791740752">
+<meta name="md-build" content="1791740845">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -159,6 +159,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .brow{display:grid;grid-template-columns:215px 1fr 64px;align-items:center;gap:8px;font-weight:800;font-size:14px}
 .brow .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 .brow .bn small{font-weight:700;color:var(--ink-soft);font-size:.85em}
+.lutz{margin-top:4px;text-align:center;font-weight:800;font-size:14px;background:var(--parch-hi);border:2px dashed var(--parch-edge);border-radius:10px;padding:4px 8px}
 .brow .bb{height:14px;border-radius:7px;background:var(--parch-edge);overflow:hidden;border:2px solid var(--ink)}
 .brow .bb i{display:block;height:100%;background:var(--gold);border-radius:5px}
 .brow:first-of-type .bb i{background:#ff9a2a}
@@ -1050,6 +1051,7 @@ function updateRobbers(dt){
     const diff=goal-r.d;
     if(Math.abs(diff)>1){ const sp=R.speed*(r.state==='home'?1.25:1)*PSP[Math.max(0,r.d|0)]*dt; r.d+=Math.sign(diff)*Math.min(Math.abs(diff),sp); r.walk+=dt*15; r.dir=Math.sign(diff); }
     if(r.state==='home' && r.d>=L-8){
+      G.robLoot=(G.robLoot||0)+r.sack;
       const n=Math.min(8,Math.max(1,Math.ceil(r.sack/10))); const part=r.sack/n;
       for(let k=0;k<n;k++){ dropCoin(GATE.x+10+Math.random()*20,GATE.y-10+Math.random()*20,part,1); if(kN>0) startCoinFly(kN-1,1); }
       r.sack=0; r.state='out'; sfx('buy');
@@ -1967,7 +1969,7 @@ function track(name,data){ try{ if(window.umami && typeof umami.track==='functio
 function renderBilanz(){
   const el=$('endBilanz'); el.innerHTML='';
   const rows=Object.entries(G.dmgBy||{}).filter(([k,v])=>v>=1 && ITEMS.find(x=>x.id===k)).sort((a,b)=>b[1]-a[1]);
-  if(!rows.length) return;
+  if(!rows.length){ lutzZeile(el); return; }
   const h=document.createElement('h3'); h.textContent='Wer hat den meisten Schaden gemacht?'; el.appendChild(h);
   const max=rows[0][1];
   rows.slice(0,8).forEach(([k,v],n)=>{ const it=ITEMS.find(x=>x.id===k);
@@ -1977,6 +1979,14 @@ function renderBilanz(){
     const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(2,100*v/max)+'%'; bb.appendChild(bi);
     const val=document.createElement('span'); val.className='bv'; val.textContent=Math.round(v).toLocaleString('de-DE');
     r.append(nm,bb,val); el.appendChild(r); });
+  lutzZeile(el);
+}
+// Langfinger-Lutz macht keinen Schaden – dafür zählen seine geklauten Münzen
+function lutzZeile(el){
+  if(G.rob<0) return; const it=ITEMS.find(x=>x.id==='raeuber');
+  const d=document.createElement('div'); d.className='lutz';
+  d.textContent=`${it.ic} Langfinger-Lutz (${it.lvl()}) hat ${Math.round(G.robLoot||0).toLocaleString('de-DE')} Münzen geklaut!`;
+  el.appendChild(d);
 }
 /* ---------- Bestenliste (auf diesem Gerät) ---------- */
 const SCORE_MULT={leicht:0.5, normal:1, schwer:1.6};
