@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791742222">
+<meta name="md-build" content="1791742580">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -977,10 +977,10 @@ function kill(i){
   const ty=TYPES[eType[i]];
   const x=eX[i], y=eY[i], s=eS[i], d=eDist[i], lat=eLat[i];
   removeEnemy(i); G.kills++;
-  if(cN<CCAP && s>=FAR*0.8){ cx_[cN]=x; cy_[cN]=y; cs_[cN]=s; ct_[cN]=0; cty[cN]=eType[i]; cfl[cN]=eFlip[i]; cN++; }
+  if(cN<CCAP && s>=FAR*0.8 && !ty.boss){ cx_[cN]=x; cy_[cN]=y; cs_[cN]=s; ct_[cN]=0; cty[cN]=eType[i]; cfl[cN]=eFlip[i]; cN++; }
   if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*BURG[G.burgLvl].mult*G.diff.muenzen)),s);
   if(ty.split){ spawn(T_.mini,0,Math.max(0,d-8),Math.max(-1,lat-0.4)); spawn(T_.mini,0,d+6,Math.min(1,lat+0.4)); }
-  if(ty.boss){ toast('Gromp ist besiegt! 🎉'); G.shake=20; for(let k=0;k<12;k++) dropCoin(x+(Math.random()-.5)*80*s,y+(Math.random()-.5)*40*s,15,s); }
+  if(ty.boss){ toast('Gromp ist besiegt! 🎉'); G.shake=20; G.bossDeath={x,y,s,m:s*(1+0.3*s),flip:eFlip[i],t:0,boomed:0}; G.fw=[]; sfx('boss'); for(let k=0;k<12;k++) dropCoin(x+(Math.random()-.5)*80*s,y+(Math.random()-.5)*40*s,15,s); }
   if(!G.tips.kill && G.running){ G.tips.kill=1; setTimeout(()=>toast('Tipp: Wisch mit dem Finger über die Münzen – dann gibt es einen kleinen Bonus!'),900); }
 }
 function dropCoin(x,y,v,s){
@@ -1287,12 +1287,49 @@ function update(dt){
   for(const k of ['kat','gew','vul','oil']) if(G[k].cd>0) G[k].cd=Math.max(0,G[k].cd-dt);
   if(G.archer>=0) G.pow.bogen+=dt; if(G.kat.lvl>=0) G.pow.kat+=dt; if(G.gew.lvl>=0) G.pow.gew+=dt; if(G.vul.lvl>=0) G.pow.vul+=dt;
   G.catAnim=Math.max(0,G.catAnim-dt);
-  if(!G.over && G.qi>=G.queue.length && G.alive<=0) endGame(true);
+  updateBossDeath(dt);
+  if(!G.over && G.qi>=G.queue.length && G.alive<=0 && !(G.bossDeath && G.bossDeath.t<6.5)) endGame(true);   // erst das Feuerwerk zu Ende schauen
   if(!G.tips.kat && G.kat.lvl<0 && G.t>G.t0+150){ G.tips.kat=1; toast('Tipp: Mit Schleuder-Susi erwischst du die Horden weiter hinten!'); }
   if(!G.tips.spuk && G.wiz<0){ for(let i=0;i<eHi;i+=7){ if(eAlive[i] && TYPES[eType[i]].ghost && eDist[i]>LS[2]){ G.tips.spuk=1; toast('Spukolino kommt! Gegen Gespenster hilft Zauberer Zappelbart am besten – Brokkoli schafft nur ein bisschen.'); break; } } }
   flushHitNumbers(dt);
 }
 
+/* ---------- Gromp ist besiegt: umkippen, Seele steigt auf, Feuerwerk ---------- */
+// Zeitplan: 0–1 s kippt um · ab 1 s steigt die Seele aus dem Bauch · bei 3,4 s explodiert sie am Himmel · danach weitere Raketen
+const FW_COLS=['#ff4d4d','#ffd23f','#7ee05a','#5ac8ff','#c86bff','#ff9ec4','#ffffff'];
+function fwBurst(x,y,n,col,spd){ for(let k=0;k<n;k++){ const a=Math.random()*TAU, v=spd*(0.4+Math.random()*0.6); G.fw.push({x,y,px:x,py:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:1.4+Math.random()*0.8,col:col||FW_COLS[(Math.random()*FW_COLS.length)|0]}); } }
+function soulPos(d){ const h=SPR.gromp[0].ay*d.m, sx=d.x+(d.flip?-1:1)*h*0.45, sy=d.y-h*0.2, p=Math.max(0,Math.min(1,(d.t-1)/2.4)), e=p*p*(3-2*p);
+  return {x:sx+Math.sin(d.t*4)*18*p, y:sy+(190-sy)*e, p}; }
+function updateBossDeath(dt){
+  const d=G.bossDeath; if(!d) return; d.t+=dt;
+  if(d.t>=3.4 && d.boomed===0){ d.boomed=1; const q=soulPos(d); fwBurst(q.x,q.y,130,null,480); fwBurst(q.x,q.y,40,'#ffffff',260); G.flash=0.6; G.shake=Math.max(G.shake,10); sfx('mega'); }
+  for(const [tt,dx] of [[4.0,-260],[4.4,240],[4.9,-90],[5.3,170],[5.7,-330]]){ if(d.t>=tt && d.boomed<2+([4.0,4.4,4.9,5.3,5.7].indexOf(tt))){ d.boomed++; const q=soulPos(d); const col=FW_COLS[(Math.random()*FW_COLS.length)|0]; fwBurst(q.x+dx,150+Math.random()*120,80,col,380); sfx('boom'); } }
+  for(let k=G.fw.length-1;k>=0;k--){ const f=G.fw[k]; f.t+=dt; f.px=f.x; f.py=f.y; f.x+=f.vx*dt; f.y+=f.vy*dt; f.vy+=160*dt; f.vx*=0.985; f.vy*=0.985; if(f.t>f.life) G.fw.splice(k,1); }
+  if(d.t>9 && !G.fw.length) G.bossDeath=null;
+}
+function drawBossDeath(T){
+  const d=G.bossDeath; if(!d) return;
+  // umkippender Riese
+  const fall=Math.min(1,d.t/1), ang=(d.flip?-1:1)*fall*fall*Math.PI/2, fade=d.t<4.5?1:Math.max(0,1-(d.t-4.5)/1.5);
+  if(fade>0){ ctx.save(); ctx.globalAlpha=fade; ctx.translate(d.x,d.y); ctx.rotate(ang); drawSprite(SPR.gromp[0],0,0,d.flip,d.m);
+    // X-Augen-Sternchen über dem Kopf
+    if(d.t>1){ ctx.rotate(-ang); ctx.font='22px sans-serif'; ctx.textAlign='center'; for(let k=0;k<3;k++){ const a=T*3+k*2.1; ctx.fillText('⭐',(d.flip?-1:1)*SPR.gromp[0].ay*d.m*0.75+Math.cos(a)*22,-14+Math.sin(a)*8); } }
+    ctx.restore(); ctx.globalAlpha=1; }
+  // die Seele schwebt in den Himmel
+  if(d.t>1 && d.t<3.4){ const q=soulPos(d), r=26+6*Math.sin(T*8);
+    const g=ctx.createRadialGradient(q.x,q.y,2,q.x,q.y,r*2.2); g.addColorStop(0,'rgba(255,255,255,0.95)'); g.addColorStop(0.4,'rgba(220,190,255,0.6)'); g.addColorStop(1,'rgba(200,150,255,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(q.x,q.y,r*2.2,0,TAU); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(q.x-r*0.8,q.y); ctx.arc(q.x,q.y,r*0.8,Math.PI,0); ctx.lineTo(q.x+r*0.8,q.y+r); for(let k=0;k<4;k++) ctx.lineTo(q.x+r*0.8-(k+0.5)*r*0.4,q.y+r*(k%2?1:0.6)); ctx.closePath();
+    ctx.fillStyle='rgba(245,240,255,0.95)'; ctx.fill(); ctx.strokeStyle=INK; ctx.lineWidth=2; ctx.stroke();
+    circ(ctx,q.x-r*0.28,q.y-r*0.1,r*0.12,INK); circ(ctx,q.x+r*0.28,q.y-r*0.1,r*0.12,INK);
+    ctx.beginPath(); ctx.arc(q.x,q.y+r*0.12,r*0.22,0.1,Math.PI-0.1); ctx.stroke();
+    ctx.strokeStyle='#ffd23f'; ctx.lineWidth=3; ctx.beginPath(); ctx.ellipse(q.x,q.y-r*1.05,r*0.55,r*0.16,0,0,TAU); ctx.stroke(); }
+  // Feuerwerk – dabei wird es kurz etwas dunkler, damit die Farben leuchten
+  if(d.t>3.1){ const n=Math.min(1,(d.t-3.1)/0.4)*Math.max(0,Math.min(1,(7-d.t)/1)); ctx.fillStyle=`rgba(20,10,45,${0.38*n})`; ctx.fillRect(-2000,-2000,6000,5000); }
+  ctx.lineCap='round';
+  for(const f of G.fw){ const a=Math.max(0,1-f.t/f.life); ctx.globalAlpha=a; ctx.strokeStyle=f.col; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(f.px-(f.x-f.px)*3,f.py-(f.y-f.py)*3); ctx.lineTo(f.x,f.y); ctx.stroke();
+    circ(ctx,f.x,f.y,3.2,Math.random()<0.4?'#ffffff':f.col); }
+  ctx.globalAlpha=1;
+}
 /* ============================ GROMP DER RIESE ============================ */
 // Phasen: 0 = marschiert, 1 (75 %) = wirft Felsbrocken + Kitzel-Bauch, 2 (50 %) = ruft Verstärkung, 3 (25 %) = wütend & schneller
 function startBoss(i){
@@ -1608,7 +1645,7 @@ function render(time){
     if(ty.ghost) ctx.globalAlpha=0.72+0.15*Math.sin(T*3+ePh[i]);
     drawSprite(SPR[ty.id][fr],eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])); ctx.globalAlpha=1;
     if(ty.hp>=14 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]-16*eS[i], eHp[i]/eMax[i], 20*Math.max(0.5,eS[i]), Math.max(2,4*eS[i])); }
-  drawBossFx(T);
+  drawBossFx(T); drawBossDeath(T);
   // Markierung
   const mk=markValid(); if(mk>=0){ const x=eX[mk], y=eY[mk]-38*eS[mk]*(1+0.75*eS[mk])-Math.abs(Math.sin(T*6))*5; poly(ctx,[x-7,y-12,x+7,y-12,x,y],'#e0453f',INK,2); }
   // Geschosse
