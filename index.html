@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791743548">
+<meta name="md-build" content="1791743952">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -323,9 +323,9 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <h2>So geht's</h2>
     <p class="lead">Die Monster laufen den Schlangenweg hinunter zur Burg. Ganz hinten siehst du schon, wer als Nächstes kommt. Halte durch, bis Gromp der Riese besiegt ist!</p>
     <div class="helpgrid">
-      <div><b>🥦 Brokkoli</b>Tippe auf den linken Turm: Brokkoli schießt. Tippe vors Tor: er kämpft mit dem Schwert. Tippe in den Hof: er ruht sich aus.</div>
+      <div><b>🥦 Brokkoli</b>Er campt am Lagerfeuer vor dem Tor, schießt von dort und kämpft von selbst, wenn Monster ans Tor kommen. Tippe auf den linken Turm, wenn er lieber von dort schießen soll. Ist seine Power-Leiste voll: POWER antippen für den Brokkoli-Wirbel!</div>
       <div><b>🛠️ Ausbauen</b>Unten in der Leiste kaufst und verbesserst du deine Helfer mit Münzen aus dem Briefkasten.</div>
-      <div><b>⛈️🌋 Selbst auslösen</b>Tippe auf Wolke, Vulkan oder Ölkessel. Ein gelber Weg zeigt, wie weit sie reichen. Das Katapult wirft von selbst – du kannst es aber auch antippen und selbst zielen.</div>
+      <div><b>⚡ Power-Attacken</b>Katapult, Wolke und Vulkan arbeiten von selbst. Ist ihre goldene Leiste voll, steht POWER darüber – antippen für den Super-Angriff! Den Ölkessel löst du selbst aus.</div>
       <div><b>🎯 Zielen</b>Tippe ein Monster an: Alle Schützen nehmen es zuerst ins Visier, zum Beispiel Pflaster-Paula.</div>
       <div><b>💥 Power-Attacke</b>Eine goldene Blase über einer Waffe heißt: Super-Angriff bereit! Antippen.</div>
       <div><b>👆 Münzen</b>Wisch mit dem Finger über liegende Münzen, dann gibt es einen kleinen Bonus.</div>
@@ -473,8 +473,8 @@ const WAHL = { // aktiv = selbst auslösen, passiv = arbeitet allein
   raeuber:{art:'passiv', gut:'klaut Münzen'},
   oel:{art:'aktiv', gut:'gegen Monster am Tor'},
   katapult:{art:'passiv', gut:'wirft von selbst auf die größte Gruppe – antippen zum Selberzielen'},
-  gewitter:{art:'aktiv', gut:'blitzt überall, sogar ganz hinten – gegen Ritter und Rammbock'},
-  vulkan:{art:'aktiv', gut:'Lava gegen Horden und Stampfi'},
+  gewitter:{art:'passiv', gut:'blitzt von selbst überall, sogar ganz hinten – gegen Ritter und Rammbock'},
+  vulkan:{art:'passiv', gut:'speit von selbst Lava auf große Horden – Stampfi hasst Feuer'},
 };
 const IMMER = ['brok','burg','heilen'];
 let LOADOUT = ['bogen','messer','katapult','oel','vulkan'];
@@ -482,7 +482,7 @@ try{ const l=JSON.parse(localStorage.getItem('md_loadout')||'null'); if(Array.is
 
 // ---------- WAFFEN ----------
 // reihen = Reichweite: 1 = nur der vorderste Weg, 2 = die vorderen zwei Wege, 2.5 = bis zur Mitte des dritten Weges (weiter geht nichts!)
-const BROK = [ {dmg:3,rate:1.6,n:1,sword:5,reihen:1.3}, {dmg:4.5,rate:1.9,n:1,sword:8,reihen:1.45}, {dmg:6,rate:2.2,n:2,sword:12,reihen:1.6}, {dmg:8,rate:2.6,n:2,sword:17,reihen:1.7}, {dmg:11,rate:3,n:3,sword:24,reihen:1.8}, {dmg:15,rate:3.4,n:3,sword:32,reihen:1.9}, {dmg:20,rate:3.8,n:4,sword:42,reihen:2.0}, {dmg:27,rate:4.2,n:4,sword:55,reihen:2.0} ];
+const BROK = [ {dmg:4.5,rate:1.6,n:1,sword:8,reihen:1.3}, {dmg:7,rate:1.9,n:1,sword:12,reihen:1.45}, {dmg:9,rate:2.2,n:2,sword:18,reihen:1.6}, {dmg:12,rate:2.6,n:2,sword:26,reihen:1.7}, {dmg:16,rate:3,n:3,sword:36,reihen:1.8}, {dmg:22,rate:3.4,n:3,sword:48,reihen:1.9}, {dmg:30,rate:3.8,n:4,sword:63,reihen:2.0}, {dmg:40,rate:4.2,n:4,sword:82,reihen:2.0} ];
 const BROK_PREIS = [80, 200, 680, 1350, 2400, 4200, 6750];
 const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.5}, {rate:2,dmg:3,n:1,reihen:1.65}, {rate:2.4,dmg:4.5,n:2,reihen:1.8}, {rate:2.8,dmg:6,n:2,reihen:1.95}, {rate:3,dmg:8,n:3,reihen:2.1}, {rate:3.3,dmg:10.5,n:3,reihen:2.25}, {rate:3.6,dmg:13,n:4,reihen:2.4}, {rate:4,dmg:16,n:4,reihen:2.6} ];
 const BOGEN_PREIS = [25, 70, 260, 630, 1420, 2400, 3900, 6000];
@@ -496,11 +496,11 @@ const ZAUBER_PREIS = [250, 600, 1800, 3000, 4800, 7500];
 const OEL = [ {cd:10,dmg:20,burn:8}, {cd:8,dmg:35,burn:14}, {cd:6,dmg:60,burn:24} , {cd:5,dmg:90,burn:34}, {cd:4,dmg:130,burn:48}];  // burn = Schaden pro Sekunde, solange es brennt
 const OEL_BRENNZEIT = 5;
 const OEL_PREIS = [80, 250, 900, 1650, 3000];
-const KATAPULT = [ {cd:16,r:80,dmg:14,reihen:2.5}, {cd:11,r:105,dmg:22,reihen:2.8}, {cd:7,r:135,dmg:36,reihen:3.0}, {cd:6,r:150,dmg:50,reihen:3.2}, {cd:5,r:165,dmg:70,reihen:3.4}, {cd:4,r:180,dmg:95,reihen:3.5} ];
+const KATAPULT = [ {cd:16,r:80,dmg:11,reihen:2.5}, {cd:11,r:105,dmg:18,reihen:2.8}, {cd:7,r:135,dmg:29,reihen:3.0}, {cd:6,r:150,dmg:40,reihen:3.2}, {cd:5,r:165,dmg:56,reihen:3.4}, {cd:4,r:180,dmg:76,reihen:3.5} ];
 const KATAPULT_PREIS = [180, 380, 1400, 2600, 4600, 7000];
-const GEWITTER = [ {cd:22,bolts:6,dmg:16,reihen:6}, {cd:15,bolts:10,dmg:26,reihen:6} , {cd:12,bolts:14,dmg:36,reihen:6}, {cd:10,bolts:18,dmg:50,reihen:6}, {cd:8,bolts:24,dmg:70,reihen:6}];
+const GEWITTER = [ {cd:22,bolts:6,dmg:12,reihen:6}, {cd:15,bolts:10,dmg:20,reihen:6} , {cd:12,bolts:14,dmg:27,reihen:6}, {cd:10,bolts:18,dmg:38,reihen:6}, {cd:8,bolts:24,dmg:52,reihen:6}];
 const GEWITTER_PREIS = [450, 1000, 2700, 4500, 6750];
-const VULKAN = [ {cd:45,dur:9,dps:22,extra:0}, {cd:32,dur:13,dps:35,extra:200} , {cd:26,dur:15,dps:50,extra:300}, {cd:22,dur:17,dps:70,extra:400}];
+const VULKAN = [ {cd:45,dur:9,dps:18,extra:0}, {cd:32,dur:13,dps:28,extra:200} , {cd:26,dur:15,dps:40,extra:300}, {cd:22,dur:17,dps:56,extra:400}];
 const VULKAN_PREIS = [900, 1600, 3900, 6000];
 const BURG = [ {hp:300,mult:1}, {hp:450,mult:1.15}, {hp:650,mult:1.3}, {hp:900,mult:1.5} , {hp:1200,mult:1.7}, {hp:1600,mult:1.9}];
 const BURG_PREIS = [150, 400, 1350, 2250, 3750];
@@ -522,6 +522,8 @@ const CLOUD = {x:105, y:428};
 const VOLC = {x:1290, y:722, s:1};
 const YARD = {x0:40, x1:222, y0:770, y1:932};
 const OUTSIDE = {x0:262, x1:640, y0:826, y1:950};
+// Brokkolis Lager direkt vor dem Tor: von hier schießt er und springt sofort in den Kampf
+const CAMP = {x:GATE.x+105, y:GATE.y-60};
 // ---------- KARTEN ----------
 // lanes = waagerechte Wege (wie die Wiese) · pts = Wegpunkte, durch die der Weg in weichen Kurven läuft
 // volc = wo Vulkan Volker steht (s = Größe) · cloud = wo Donner-Doris schwebt
@@ -839,10 +841,10 @@ function newGame(){
     burgLvl:0, hp:Math.round(BURG[0].hp*STUFEN[STUFE_WAHL].burg), gateDps:0,
     brok:0, archer:-1, archerCd:0, wiz:-1, wizCd:0, rob:-1, robbers:[], fighters:[], traps:[],
     oil:{lvl:-1,cd:0}, kat:{lvl:-1,cd:0}, gew:{lvl:-1,cd:0}, vul:{lvl:-1,cd:0},
-    pow:{bogen:0,kat:0,gew:0,vul:0},
+    pow:{bogen:0,kat:0,gew:0,vul:0,brok:0},
     lavaT:0, lavaPow:false, tnt:0, mark:null,
     mode:null, alive:0, queue:[], qi:0,
-    hero:{x:120,y:880,tx:120,ty:880,wx:null,wy:null,walk:0,cd:0,swing:0,tgt:-1,uid:0,scan:0},
+    hero:{x:120,y:880,tx:120,ty:880,wx:null,wy:null,walk:0,cd:0,swing:0,tgt:-1,uid:0,scan:0,home:'lager',manualT:0,autoScan:0},
     arrows:[], boulders:[], bolts:[], booms:[], pops:[], oilFx:[], shock:[], cannon:[],
     shake:0, flash:0, mbBounce:0, bgDirty:true, tips:{}, lastWaveShown:-1, catAnim:0,
   };
@@ -1027,12 +1029,21 @@ function updateFighters(dt){
 // ----- Brokkoli -----
 function heroWhere(){ const h=G.hero;
   if(Math.hypot(h.x-BTOWER.x,h.y-BTOWER.y)<6) return 'turm';
+  if(Math.hypot(h.x-CAMP.x,h.y-CAMP.y)<8) return 'lager';
   if(h.x>GATE.x+4) return 'draussen';
   return 'burg';
 }
 function updateHero(dt){
+  if(G.spin){ updateSpin(dt); return; }
   const h=G.hero; const B=BROK[G.brok];
   h.cd-=dt; h.swing=Math.max(0,h.swing-dt); h.scan-=dt;
+  // Automatik wie bei den Pieksern: kommen Monster ans Tor, rennt er hin und kämpft – sonst zurück ins Lager (oder auf den Turm)
+  h.manualT=Math.max(0,(h.manualT||0)-dt); h.autoScan=(h.autoScan||0)-dt;
+  if(h.manualT<=0 && h.wx===null && h.autoScan<=0){ h.autoScan=0.35;
+    const t=nearestEnemy(CAMP.x,CAMP.y+40,1e5,false,L-430,'schwert');
+    if(t>=0){ const gx=Math.max(OUTSIDE.x0+6,Math.min(OUTSIDE.x1-6,eX[t])), gy=Math.max(OUTSIDE.y0-30,Math.min(OUTSIDE.y1-6,eY[t]));
+      if(Math.hypot(h.tx-gx,h.ty-gy)>30) moveHeroTo(gx,gy,true); }
+    else { const home=h.home==='turm'?BTOWER:CAMP; if(Math.hypot(h.tx-home.x,h.ty-home.y)>4) moveHeroTo(home.x,home.y,true); } }
   let tx=h.wx!==null?h.wx:h.tx, ty=h.wy!==null?h.wy:h.ty;
   const where=heroWhere();
   if(where==='draussen' && h.wx===null && Math.hypot(h.x-h.tx,h.y-h.ty)<130){
@@ -1044,19 +1055,48 @@ function updateHero(dt){
   const dx=tx-h.x, dy=ty-h.y, d=Math.hypot(dx,dy);
   if(d>1.5){ const s=Math.min(d,(where==='draussen'?170:210)*dt); h.x+=dx/d*s; h.y+=dy/d*s; h.walk+=dt*12; }
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
-  if(where==='turm' && h.cd<=0){
-    const minD=reihen(B.reihen); const best=pickFront(minD,'brok');
-    if(best>=0){ h.cd=1/B.rate; shoot(BTOWER.x,BTOWER.y-30,best,B.dmg,'#3f9b45',false,'brok','brok');
-      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(BTOWER.x,BTOWER.y-30,j,B.dmg,'#3f9b45',false,'brok','brok'); }
+  if((where==='turm'||where==='lager') && h.cd<=0){
+    const minD=reihen(B.reihen); const best=pickFront(minD,'brok'); const sx=where==='turm'?BTOWER.x:h.x, sy=(where==='turm'?BTOWER.y:h.y)-30;
+    if(best>=0){ h.cd=1/B.rate; shoot(sx,sy,best,B.dmg,'#3f9b45',false,'brok','brok');
+      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(sx,sy,j,B.dmg,'#3f9b45',false,'brok','brok'); }
       sfx('twang'); }
   }
 }
-function moveHeroTo(x,y){
+function moveHeroTo(x,y,auto){
   const h=G.hero, inNow=h.x<=GATE.x+4, inThen=x<=GATE.x+4;
+  if(!auto) h.manualT=10;   // nach einem Befehl macht Brokkoli kurz, was du sagst – danach wieder von selbst
   h.tx=x; h.ty=y; h.tgt=-1;
   if(inNow!==inThen){ h.wx=GATE.x+(inNow?-8:8); h.wy=GATE.y; } else { h.wx=null; h.wy=null; }
 }
 
+// ----- Brokkoli-Wirbel (Power-Attacke): zwei Schwerter, dreht sich wie ein Kreisel den Weg entlang -----
+const SPIN_DAUER=4.5;
+function startSpin(){
+  const h=G.hero; h.wx=null; h.wy=null;
+  G.spin={t:0,hit:0,d0:L-50,d1:Math.max(LS[5]||L-400,L-420)};
+  banner('🌀 BROKKOLI-WIRBEL!','#9dff7a'); sfx('swish');
+}
+function updateSpin(dt){
+  const sp=G.spin, h=G.hero; sp.t+=dt;
+  // erst raus vor das Tor, dann den Weg hinauf und wieder zurück
+  const p=sp.t/SPIN_DAUER, e=p<0.5?p*2:2-p*2, d=Math.round(sp.d0+(sp.d1-sp.d0)*e*e*(3-2*e));
+  h.x=PX[d]; h.y=PY[d]; h.walk+=dt*30;
+  sp.hit-=dt; if(sp.hit<=0){ sp.hit=0.15; const B=BROK[G.brok], R=78*PS[d]+20, R2=R*R;
+    for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const dx=eX[i]-h.x, dy=(eY[i]-h.y)*1.3; if(dx*dx+dy*dy<R2) hurt(i,B.sword*0.9,'schwert'); }
+    if(Math.random()<0.4) sfx('swish'); }
+  if(sp.t>=SPIN_DAUER){ G.spin=null; h.tx=GATE.x+60; h.ty=GATE.y+10; h.tgt=-1; }
+}
+function drawSpinFx(T){
+  const sp=G.spin; if(!sp) return; const h=G.hero, s=1.7*(1+0.6*G.brok/(BROK.length-1));
+  const ang=T*22, R=30*s;
+  // Wirbel-Ringe
+  ctx.globalAlpha=0.35; ctx.strokeStyle='#ffffff'; ctx.lineWidth=4; for(let k=0;k<3;k++){ ctx.beginPath(); ctx.ellipse(h.x,h.y-18*s*0.6,R*(0.8+k*0.2),R*0.32*(0.8+k*0.2),0,ang*0.3+k,ang*0.3+k+2.2); ctx.stroke(); }
+  ctx.globalAlpha=1;
+  // zwei kreisende Schwerter
+  for(const off of [0,Math.PI]){ const a=ang+off, cx=h.x, cy=h.y-14*s*0.6, ex=cx+Math.cos(a)*R, ey=cy+Math.sin(a)*R*0.35;
+    ctx.strokeStyle=INK; ctx.lineWidth=7; ln(ctx,cx+Math.cos(a)*6,cy+Math.sin(a)*2,ex,ey);
+    ctx.strokeStyle=G.brok>=6?'#ffd23f':'#eef3f8'; ctx.lineWidth=4; ln(ctx,cx+Math.cos(a)*6,cy+Math.sin(a)*2,ex,ey); }
+}
 // ----- Langfinger-Lutz (Räuber) -----
 const ROB_MIN = () => LS[2];   // so weit nach hinten schleicht er sich (bis zum Anfang des dritten Weges von hinten)
 function addRobber(){ G.robbers.push({d:L-10,lat:(Math.random()*2-1)*0.6,sack:0,state:'out',tgt:-1,uid:0,cd:0,scan:0,walk:Math.random()*3,dir:-1}); }
@@ -1156,7 +1196,7 @@ function chainNext(a){
   for(let i=0;i<eHi;i++){ if(!eAlive[i] || a.hit.includes(eUid[i]) || !targetable(i,'zauber')) continue;
     const dx=eX[i]-a.tx, dy=eY[i]-a.ty, q=dx*dx+dy*dy; if(q>R2) continue; const m=wmult(i,'zauber'), sc=q/(m*m); if(sc<best){best=sc; bi=i;} }
   if(bi<0) return;
-  const n=shoot(a.tx,a.ty,bi,a.dmg*0.55,'#b06cff',false,'zauber','zauber'); n.chain=a.chain-1; n.hit=[...a.hit,eUid[bi]]; n.dur=Math.max(0.08,n.dur*0.7);
+  const n=shoot(a.tx,a.ty,bi,a.dmg*0.7,'#b06cff',false,'zauber','zauber'); n.chain=a.chain-1; n.hit=[...a.hit,eUid[bi]]; n.dur=Math.max(0.08,n.dur*0.7);
 }
 function updateProjectiles(dt){
   for(let k=G.arrows.length-1;k>=0;k--){ const a=G.arrows[k]; a.t+=dt;
@@ -1235,6 +1275,39 @@ function autoCatapult(dt){
   if(best<0 || bs<K.dmg*1.5) return;   // lohnt sich noch nicht
   fireCatapult(eX[best],eY[best]); G.kat.cd=K.cd;
 }
+// ----- Donner-Doris blitzt von selbst dorthin, wo es am meisten bringt (Ritter, Rammbock … zählen doppelt) -----
+let gewScan=0;
+function autoStorm(dt){
+  if(G.gew.lvl<0 || G.gew.cd>0 || G.mode==='gew') return;
+  gewScan-=dt; if(gewScan>0) return; gewScan=0.35;
+  const S=GEWITTER[G.gew.lvl], step=Math.max(1,(G.alive/80)|0); let best=-1, bs=0;
+  for(let i=0;i<eHi;i+=step){ if(!eAlive[i] || eUnder[i] || !targetable(i,'blitz')) continue;
+    const r=95*SCy(eY[i]), r2=r*r, st=Math.max(1,(G.alive/400)|0); let sc=0;
+    for(let j=0;j<eHi;j+=st){ if(!eAlive[j]) continue; const dx=eX[j]-eX[i], dy=eY[j]-eY[i]; if(dx*dx+dy*dy<r2) sc+=Math.min(eHp[j],S.dmg)*wmult(j,'blitz'); }
+    if(sc>bs){ bs=sc; best=i; } }
+  if(best<0 || bs<S.dmg*2) return;
+  strike(eX[best],eY[best]); G.gew.cd=S.cd;
+}
+// ----- Vulkan Volker speit von selbst, wenn genug Monster im Lava-Bereich sind -----
+let vulScan=0;
+function autoVolcano(dt){
+  if(G.vul.lvl<0 || G.vul.cd>0 || G.lavaT>0) return;
+  vulScan-=dt; if(vulScan>0) return; vulScan=0.5;
+  const [a,b]=lavaRange(); let c=0;
+  for(let i=0;i<eHi;i++){ if(eAlive[i] && !TYPES[eType[i]].fly && eDist[i]>a && eDist[i]<b) c++; }
+  if(c>=Math.max(8,Math.round(14*G.diff.horden))){ erupt(false); G.vul.cd=VULKAN[G.vul.lvl].cd; }
+}
+// ----- großes Schriftband für Power-Attacken -----
+function banner(txt,col){ G.banner={txt,col,t0:performance.now()}; G.flash=Math.max(G.flash,0.35); G.shake=Math.max(G.shake,10); }
+function drawBanner(){
+  const b=G.banner; if(!b) return; b.t=(performance.now()-b.t0)/1000; if(b.t>1.8){ G.banner=null; return; }
+  ctx.setTransform(1,0,0,1,0,0); const w=cv.width, h=cv.height, sc=b.t<0.25?2.2-1.2*(b.t/0.25):1, a=b.t<1.3?1:Math.max(0,1-(b.t-1.3)/0.5);
+  const fs=Math.round(Math.min(w,h*1.6)*0.065*sc);
+  ctx.globalAlpha=a*0.45; ctx.fillStyle='#2b1a0a'; ctx.fillRect(0,h*0.38-fs*0.75,w,fs*1.5);
+  ctx.globalAlpha=a; ctx.font=`${fs}px "Lilita One", sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.lineJoin='round';
+  ctx.lineWidth=fs*0.14; ctx.strokeStyle='#2b1a0a'; ctx.strokeText(b.txt,w/2,h*0.38); ctx.fillStyle=b.col; ctx.fillText(b.txt,w/2,h*0.38);
+  ctx.globalAlpha=1; ctx.textBaseline='alphabetic';
+}
 // ----- Brutzel-Kessel -----
 function pourOil(){
   const O=OEL[G.oil.lvl]; G.oil.cd=O.cd;
@@ -1254,12 +1327,13 @@ function usePower(k){
     cand.length=0; for(let i=0;i<eHi;i++){ if(!eAlive[i]||!targetable(i,'pfeil')) continue; if(eDist[i]>=reihen(Math.min(6,BOGEN[G.archer].reihen+0.4))) cand.push(i); }
     cand.sort((a,b)=>eDist[b]-eDist[a]); const list=cand.slice(0,20);
     for(let n=0;n<20 && list.length;n++){ const i=list[n%list.length], uid=eUid[i]; later(n*0.04,()=>{ if(eAlive[i] && eUid[i]===uid) shoot(ATOWER.x,ATOWER.y-22,i,15,'#ff7a1a',true); }); }
-    toast('20 Feuerpfeile!'); sfx('twang');
+    banner('🏹 20 FEUERPFEILE!','#ff9a2a'); sfx('twang');
   } else if(k==='gew'){
     cand.length=0; for(let i=0;i<eHi;i++) if(eAlive[i]) cand.push(i);
-    for(let n=0;n<30 && cand.length;n++){ const i=cand[(Math.random()*cand.length)|0]; const x=eX[i], y=eY[i]; later(n*0.07,()=>strikeAt(x,y,GEWITTER[G.gew.lvl].dmg*2)); }
-    G.flash=0.5; toast('SUPER-GEWITTER!'); sfx('zap');
-  } else if(k==='vul'){ erupt(true); toast('Lava-Welle über zwei Wege!'); }
+    for(let n=0;n<16 && cand.length;n++){ const i=cand[(Math.random()*cand.length)|0]; const x=eX[i], y=eY[i]; later(n*0.09,()=>strikeAt(x,y,GEWITTER[G.gew.lvl].dmg*1.5)); }
+    G.flash=0.5; banner('⚡ SUPER-GEWITTER!','#fff27a'); sfx('zap');
+  } else if(k==='vul'){ erupt(true); banner('🌋 LAVA-WELLE!','#ff6a2a'); }
+  else if(k==='brok'){ startSpin(); }
 }
 let timers=[];
 function later(sec,fn){ timers.push({t:sec,fn}); }
@@ -1287,10 +1361,10 @@ function update(dt){
   updateFighters(dt); updateHero(dt); updateArcher(dt); updateWizard(dt); updateRobbers(dt);
   updateProjectiles(dt); updateLava(dt); updateTimers(dt); updateBuilds(dt);
   if(G.burnT>0){ G.burnT-=dt; const O=OEL[G.oil.lvl]; HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.burn*dt,'feuer'); } HSRC=null; }
-  autoCatapult(dt);
+  autoCatapult(dt); autoStorm(dt); autoVolcano(dt);
   updateCoins(dt); updateCorpses(dt);
   for(const k of ['kat','gew','vul','oil']) if(G[k].cd>0) G[k].cd=Math.max(0,G[k].cd-dt);
-  if(G.archer>=0) G.pow.bogen+=dt; if(G.kat.lvl>=0) G.pow.kat+=dt; if(G.gew.lvl>=0) G.pow.gew+=dt; if(G.vul.lvl>=0) G.pow.vul+=dt;
+  G.pow.brok+=dt; if(G.archer>=0) G.pow.bogen+=dt; if(G.kat.lvl>=0) G.pow.kat+=dt; if(G.gew.lvl>=0) G.pow.gew+=dt; if(G.vul.lvl>=0) G.pow.vul+=dt;
   G.catAnim=Math.max(0,G.catAnim-dt);
   updateBossDeath(dt);
   if(!G.over && G.qi>=G.queue.length && G.alive<=0 && !(G.bossDeath && G.bossDeath.t<8.5)) endGame(true);   // erst das Feuerwerk zu Ende schauen
@@ -1637,14 +1711,16 @@ function render(time){
   }
   for(let i=0;i<cN;i++){ const ty=TYPES[cty[i]]; ctx.globalAlpha=Math.max(0,1-ct_[i]/0.45); drawSprite(SPR_DEAD[ty.id],cx_[i],cy_[i]+ct_[i]*8*cs_[i],cfl[i],cs_[i]*(1+0.75*cs_[i])); }
   ctx.globalAlpha=1;
-  drawCatapult(T); drawOil(T); drawMailbox(T);
+  drawCatapult(T); drawOil(T); drawMailbox(T); drawCamp(T);
   const pkT=G.fighters.length>=10?2:(G.fighters.length>=5?1:0);   // Piekser werden mit ihrer Zahl zu Veteranen
   for(const f of G.fighters) big(f.x,f.y,1.45*(1+0.18*pkT),()=>drawFighter(f,pkT));
   for(const r of G.robbers) drawRobber(r,T);
   // Helfer wachsen mit ihrer Stufe
   big(ATOWER.x,ATOWER.y,1.45*(1+0.45*Math.max(0,G.archer)/(BOGEN.length-1)),()=>drawArcher(T));
   big(WIZPOS.x,WIZPOS.y,1.45*(1+0.4*Math.max(0,G.wiz)/(ZAUBER.length-1)),()=>drawWizard(T));
-  big(G.hero.x,G.hero.y,1.7*(1+0.6*G.brok/(BROK.length-1)),()=>drawHero(T));
+  if(G.spin){ const sx=Math.cos(T*22); ctx.save(); ctx.translate(G.hero.x,G.hero.y); ctx.scale(Math.sign(sx||1)*Math.max(0.25,Math.abs(sx)),1); ctx.translate(-G.hero.x,-G.hero.y);
+    big(G.hero.x,G.hero.y,1.7*(1+0.6*G.brok/(BROK.length-1)),()=>drawHero(T)); ctx.restore(); drawSpinFx(T); }
+  else big(G.hero.x,G.hero.y,1.7*(1+0.6*G.brok/(BROK.length-1)),()=>drawHero(T));
   drawCloud(T);
   // Flieger
   for(const i of fl){ const ty=TYPES[eType[i]]; if(eS[i]<FAR){ dot(ty,eX[i],eY[i],eS[i]); continue; } const fr=(((T*ty.anim+ePh[i])*NF)|0)%NF;
@@ -1693,6 +1769,7 @@ function render(time){
   if(G.running && !G.over){ const ratio=Math.max(0,G.hp/maxHp()); let a=Math.pow(1-ratio,1.3)*0.65; if(G.gateDps>0) a+=0.14+0.08*Math.sin(T*8); a+=G.hurtFlash||0;
     if(a>0.02){ ctx.setTransform(1,0,0,1,0,0); const w=cv.width,h=cv.height; const rg=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.32,w/2,h/2,Math.hypot(w,h)/2); rg.addColorStop(0,'rgba(210,20,20,0)'); rg.addColorStop(1,`rgba(210,20,20,${Math.min(0.8,a)})`); ctx.fillStyle=rg; ctx.fillRect(0,0,w,h); } }
   if(G.flash>0){ ctx.setTransform(1,0,0,1,0,0); ctx.fillStyle=`rgba(255,240,200,${G.flash*0.6})`; ctx.fillRect(0,0,cv.width,cv.height); }
+  drawBanner();
 }
 function big(x,y,f,fn){ ctx.save(); ctx.translate(x,y); ctx.scale(f,f); ctx.translate(-x,-y); fn(); ctx.restore(); }
 // weit entfernte Monster: nur ein bunter Punkt (spart sehr viel Rechenzeit)
@@ -1774,9 +1851,9 @@ function drawHero(T){
     ctx.strokeStyle=INK; ctx.lineWidth=swd+2; ln(ctx,hx,hy,hx+Math.cos(a)*sl,hy+Math.sin(a)*sl);
     ctx.strokeStyle=tier>=3?'#ffd23f':(tier>=2?'#f2f6fa':'#d8dee6'); ctx.lineWidth=swd; ln(ctx,hx,hy,hx+Math.cos(a)*sl,hy+Math.sin(a)*sl);
     ctx.strokeStyle='#8b5a2f'; ctx.lineWidth=3+f; ln(ctx,hx-2-f,hy+1,hx+2+f,hy-1); }
-  else if(where==='turm'){ lim(x+bw/2-1,top+3,hx+2,top+4,armW,'#4f8f3c'); ctx.strokeStyle=tier>=3?'#d9a521':'#5a3818'; ctx.lineWidth=2+1.5*f; ctx.beginPath(); ctx.arc(hx+1,top+4,7+5*f,-1.3,1.3); ctx.stroke(); }
+  else if(where==='turm'||where==='lager'){ lim(x+bw/2-1,top+3,hx+2,top+4,armW,'#4f8f3c'); ctx.strokeStyle=tier>=3?'#d9a521':'#5a3818'; ctx.lineWidth=2+1.5*f; ctx.beginPath(); ctx.arc(hx+1,top+4,7+5*f,-1.3,1.3); ctx.stroke(); }
   else lim(x+bw/2-1,top+3,hx+1,top+8+Math.sin(T*3)*1.5,armW,'#4f8f3c');
-  circ(ctx,where==='draussen'?hx:hx+1,where==='turm'?top+4:hy,armW*0.75,'#6fbf4a',INK,1);
+  circ(ctx,where==='draussen'?hx:hx+1,(where==='turm'||where==='lager')?top+4:hy,armW*0.75,'#6fbf4a',INK,1);
   // Kopf mit Brokkoli-Röschen
   const hw=14+4*f, hh=14+2*f, hyy=top-hh+2;
   rr(ctx,x-hw/2,hyy,hw,hh,2,'#a6d86f',1.2);
@@ -1875,6 +1952,14 @@ function drawOil(T){
   if(G.oil.cd<=0){ for(let n=0;n<3;n++){ const p=(T*0.8+n/3)%1; ctx.globalAlpha=1-p; circ(ctx,x-6+n*6,y-24-p*18,3+p*3,'#eeeeee'); } ctx.globalAlpha=1;
     rr(ctx,x-22,y+8,44,16,6,'#ffc93c',2); ctx.fillStyle=INK; ctx.font='11px "Lilita One", sans-serif'; ctx.textAlign='center'; ctx.fillText('ÖL!',x,y+20); }
 }
+function drawCamp(T){
+  const x=CAMP.x+20, y=CAMP.y+2;
+  // Baumstamm zum Sitzen und Lagerfeuer
+  rr(ctx,CAMP.x-16,CAMP.y-2,22,7,3,'#8a5a32',1.5);
+  ctx.strokeStyle=INK; ctx.lineWidth=4; ln(ctx,x-8,y+3,x+8,y-2); ln(ctx,x-8,y-2,x+8,y+3); ctx.strokeStyle='#7a4a1f'; ctx.lineWidth=2.4; ln(ctx,x-8,y+3,x+8,y-2); ln(ctx,x-8,y-2,x+8,y+3);
+  const fl=1+0.15*Math.sin(T*13)+0.1*Math.sin(T*7);
+  poly(ctx,[x-6,y,x-2,y-12*fl,x+1,y-6,x+4,y-15*fl,x+7,y],'#ff8a2a',INK,1.2); poly(ctx,[x-2,y,x+1,y-7*fl,x+4,y],'#ffe27a');
+}
 function drawMailbox(T){
   const x=MAILBOX.x, y=MAILBOX.y; const b=G.mbBounce; G.mbBounce=Math.max(0,b-0.06);
   rr(ctx,x-3,y-16,6,22,2,'#8a5a32',2);
@@ -1895,8 +1980,8 @@ function ringAt(x,y,r,p,T){
   if(p>=1){ ctx.strokeStyle=`rgba(255,201,60,${0.7+0.3*Math.sin(T*5)})`; ctx.lineWidth=4+Math.sin(T*5)*1.2; ctx.beginPath(); ctx.arc(x,y,r,0,6.283); ctx.stroke(); }
   else { ctx.strokeStyle='#fff6c8'; ctx.lineWidth=3.5; ctx.beginPath(); ctx.arc(x,y,r,-Math.PI/2,-Math.PI/2+p*6.283); ctx.stroke(); }
 }
-const BUBBLES = { bogen:{x:ATOWER.x+2,y:ATOWER.y-58}, kat:{x:CATAPULT.x,y:CATAPULT.y-66}, gew:{get x(){return CLOUD.x}, get y(){return CLOUD.y-62}}, vul:{get x(){return VOLC.x}, get y(){return VOLC.y-56*VOLC.s}} };
-function owned(){ return {bogen:G.archer>=0,kat:G.kat.lvl>=0,gew:G.gew.lvl>=0,vul:G.vul.lvl>=0}; }
+const BUBBLES = { brok:{get x(){return G.hero.x}, get y(){return G.hero.y-12-60*1.7*(1+0.6*G.brok/(BROK.length-1))}}, bogen:{x:ATOWER.x+2,y:ATOWER.y-58}, kat:{x:CATAPULT.x,y:CATAPULT.y-66}, gew:{get x(){return CLOUD.x}, get y(){return CLOUD.y-62}}, vul:{get x(){return VOLC.x}, get y(){return VOLC.y-56*VOLC.s}} };
+function owned(){ return {brok:!G.spin, bogen:G.archer>=0,kat:G.kat.lvl>=0,gew:G.gew.lvl>=0,vul:G.vul.lvl>=0}; }
 function drawReadiness(T){
   if(G.kat.lvl>=0) ringAt(CATAPULT.x,CATAPULT.y-10,34,1-G.kat.cd/KATAPULT[G.kat.lvl].cd,T);
   if(G.gew.lvl>=0) ringAt(CLOUD.x,CLOUD.y,64,1-G.gew.cd/GEWITTER[G.gew.lvl].cd,T);
@@ -1939,7 +2024,7 @@ function tap(p){
   if(!G.mode && bossTap(p)) return;
   if(G.mode==='kat'||G.mode==='katPow'||G.mode==='gew'){ const n=nearestPathDist(p.x,p.y); if(n.d<modeReach()){ toast(G.mode==='gew'?'So weit hinten kann Donner-Doris nicht blitzen – nur auf dem gelben Weg.':'Zu weit! Schleuder-Susi schafft es nur bis zum gelben Weg.'); return; } }
   if(G.mode==='kat'){ fireCatapult(p.x,p.y); G.kat.cd=KATAPULT[G.kat.lvl].cd; setMode(null); return; }
-  if(G.mode==='katPow'){ G.pow.kat=0; for(let n=0;n<5;n++){ const a=Math.random()*6.283, r=(n?60+Math.random()*80:0)*SCy(p.y); fireCatapult(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*0.6,{fire:true,delay:n*0.12}); } toast('5 Feuerbälle!'); setMode(null); return; }
+  if(G.mode==='katPow'){ G.pow.kat=0; for(let n=0;n<5;n++){ const a=Math.random()*6.283, r=(n?60+Math.random()*80:0)*SCy(p.y); fireCatapult(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*0.6,{fire:true,delay:n*0.12}); } banner('🔥 FEUERBALL-HAGEL!','#ff8a2a'); setMode(null); return; }
   if(G.mode==='gew'){ strike(p.x,p.y); G.gew.cd=GEWITTER[G.gew.lvl].cd; setMode(null); return; }
   if(G.mode==='falle'){
     const n=nearestPathDist(p.x,p.y);
@@ -1960,7 +2045,8 @@ function tap(p){
   if(G.kat.lvl<0 && near(p,CATAPULT,40) && LOADOUT.includes('katapult')){ notHere('katapult','Schleuder-Susi'); return; }
   if(G.gew.lvl<0 && near(p,CLOUD,70)){ notHere('gewitter','Donner-Doris'); return; }
   if(G.vul.lvl<0 && near(p,{x:VOLC.x,y:VOLC.y+80},110)){ notHere('vulkan','Vulkan Volker'); return; }
-  if(near(p,{x:BTOWER.x,y:BTOWER.y+20},50)){ moveHeroTo(BTOWER.x,BTOWER.y); toast('Brokkoli klettert auf den Turm und schießt weit!'); return; }
+  if(near(p,{x:BTOWER.x,y:BTOWER.y+20},50)){ G.hero.home='turm'; moveHeroTo(BTOWER.x,BTOWER.y); toast('Brokkoli wohnt jetzt auf dem Turm. Tippe aufs Lagerfeuer, dann wohnt er wieder vor dem Tor.'); return; }
+  if(near(p,{x:CAMP.x+18,y:CAMP.y},40)){ G.hero.home='lager'; moveHeroTo(CAMP.x,CAMP.y); toast('Brokkoli campt vor dem Tor!'); return; }
   if(p.x>cX(YARD.x0,p.y)-20 && p.x<cX(YARD.x1,p.y)+16 && p.y>YARD.y0-30 && p.y<YARD.y1+20){ const y=Math.max(YARD.y0,Math.min(YARD.y1,p.y)); moveHeroTo(Math.max(cX(YARD.x0,y),Math.min(cX(YARD.x1,y),p.x)),y); return; }
   if(p.x>=OUTSIDE.x1 && p.x<OUTSIDE.x1+260 && p.y>OUTSIDE.y0 && p.y<OUTSIDE.y1 && !G.tips.revier){ G.tips.revier=1; toast('Weiter darf Brokkoli nicht – die Burg braucht ihren König in der Nähe!'); }
   if(p.x>OUTSIDE.x0 && p.x<OUTSIDE.x1 && p.y>OUTSIDE.y0 && p.y<OUTSIDE.y1){ moveHeroTo(p.x,p.y); if(!G.tips.sword){G.tips.sword=1; toast('Brokkoli kämpft mit dem Schwert vor dem Tor!');} return; }
@@ -1992,7 +2078,7 @@ const ITEMS = [
   {id:'bogen', ic:'🏹', name:'Pfeil-Paule', info:'Schießt vom rechten Turm. Super gegen Flatterfritz, schwach gegen Rüstung.',
     lvl:()=>G.archer<0?'neu':lv(G.archer+1,BOGEN.length), done:()=>G.archer>=BOGEN.length-1, price:()=>BOGEN_PREIS[G.archer+1], buy:()=>{G.archer++; G.archerCd=0;}},
   {id:'messer', ic:'🔪', name:'Piekser', info:'Rennen vors Tor und pieksen Monster. Fliegende erwischen sie nicht.',
-    lvl:()=>`${G.fighters.length}/14`, done:()=>G.fighters.length>=14, price:()=>Math.round(20+G.fighters.length*15+Math.max(0,G.fighters.length-7)**2*40), buy:()=>addFighter()},
+    lvl:()=>`${G.fighters.length}/14`, done:()=>G.fighters.length>=14, price:()=>Math.round(25+G.fighters.length*20), buy:()=>addFighter()},
   {id:'raeuber', ic:'💰', name:'Langfinger-Lutz', info:'Ein Räuber auf eurer Seite: Er schleicht sich sogar hinter die Reichweite-Grenze und klaut den Monstern ihre Münzen!',
     lvl:()=>G.rob<0?'neu':lv(G.rob+1,ROB.length), done:()=>G.rob>=ROB.length-1, price:()=>ROB_PREIS[G.rob+1], buy:()=>{G.rob++; while(G.robbers.length<ROB[G.rob].n) addRobber(); if(G.rob===0) toast('Langfinger-Lutz schleicht los und klaut den Monstern die Münzen! 💰');}},
   {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Sein Zauber springt auf weitere Monster über. Der Beste gegen Spukolino!',
@@ -2001,10 +2087,10 @@ const ITEMS = [
     lvl:()=>G.oil.lvl<0?'neu':lv(G.oil.lvl+1,OEL.length), done:()=>G.oil.lvl>=OEL.length-1, price:()=>OEL_PREIS[G.oil.lvl+1], buy:()=>{G.oil.lvl++; if(G.oil.lvl===0) toast('Tippe auf den Kessel über dem Tor!');}},
   {id:'katapult', ic:'🪨', name:'Schleuder-Susi', info:'Wirft von selbst auf die größte Gruppe. Du kannst auch Susi antippen und selbst ein Ziel wählen.',
     lvl:()=>G.kat.lvl<0?'neu':lv(G.kat.lvl+1,KATAPULT.length), done:()=>G.kat.lvl>=KATAPULT.length-1, price:()=>KATAPULT_PREIS[G.kat.lvl+1], buy:()=>{G.kat.lvl++; if(G.kat.lvl===0) toast('Schleuder-Susi wirft jetzt von selbst! Wenn du willst: Susi antippen und selbst zielen.');}},
-  {id:'gewitter', ic:'⛈️', name:'Donner-Doris', info:'Wolke antippen, dann ein Ziel. Super gegen Ritter und Rammböcke.',
-    lvl:()=>G.gew.lvl<0?'neu':lv(G.gew.lvl+1,GEWITTER.length), done:()=>G.gew.lvl>=GEWITTER.length-1, price:()=>GEWITTER_PREIS[G.gew.lvl+1], buy:()=>{G.gew.lvl++; if(G.gew.lvl===0) toast('Tippe auf Donner-Doris links oben und dann auf ein Ziel!');}},
-  {id:'vulkan', ic:'🌋', name:'Vulkan Volker', info:'Vulkan antippen: Lava fließt auf die mittleren Wege. Stampfi hasst Feuer!',
-    lvl:()=>G.vul.lvl<0?'neu':lv(G.vul.lvl+1,VULKAN.length), done:()=>G.vul.lvl>=VULKAN.length-1, price:()=>VULKAN_PREIS[G.vul.lvl+1], buy:()=>{G.vul.lvl++; if(G.vul.lvl===0) toast('Tippe auf Vulkan Volker, wenn die Horden vorbeikommen!');}},
+  {id:'gewitter', ic:'⛈️', name:'Donner-Doris', info:'Blitzt von selbst auf die gefährlichsten Gruppen. Du kannst auch die Wolke antippen und selbst zielen. Super gegen Ritter und Rammböcke.',
+    lvl:()=>G.gew.lvl<0?'neu':lv(G.gew.lvl+1,GEWITTER.length), done:()=>G.gew.lvl>=GEWITTER.length-1, price:()=>GEWITTER_PREIS[G.gew.lvl+1], buy:()=>{G.gew.lvl++; if(G.gew.lvl===0) toast('Donner-Doris blitzt jetzt von selbst! Du kannst die Wolke aber auch antippen und selbst zielen.');}},
+  {id:'vulkan', ic:'🌋', name:'Vulkan Volker', info:'Speit von selbst Lava, wenn viele Monster vorbeikommen. Antippen geht auch. Stampfi hasst Feuer!',
+    lvl:()=>G.vul.lvl<0?'neu':lv(G.vul.lvl+1,VULKAN.length), done:()=>G.vul.lvl>=VULKAN.length-1, price:()=>VULKAN_PREIS[G.vul.lvl+1], buy:()=>{G.vul.lvl++; if(G.vul.lvl===0) toast('Vulkan Volker spuckt jetzt von selbst Lava auf große Horden!');}},
   {id:'tnt', ic:'🧨', name:'Mega-Bumm', info:'Kommt ins Katapult. Katapult antippen: MEGA-BUMM im Vulkan! Je näher am Vulkan, desto mehr Schaden.',
     lvl:()=>G.kat.lvl<0?'braucht Susi':(G.tnt?'geladen!':'TNT'), done:()=>G.tnt>0, need:()=>G.kat.lvl<0, price:()=>CFG.tntPreis, buy:()=>{G.tnt=1; toast('Mega-Bumm liegt im Katapult! Tippe auf Schleuder-Susi!');}},
   {id:'burg', ic:'🏰', name:'Burg', info:'Mehr Leben, wird repariert, jedes Monster bringt mehr Münzen.',
@@ -2315,7 +2401,7 @@ function start(lo){
   timers=[]; newGame(); G.running=true; resize(); G.bgDirty=true; refreshToolbar();
   $('start').hidden=true; $('setup').hidden=true; $('end').hidden=true; $('title').hidden=true; $('help').hidden=true; $('settings').hidden=true;
   track('spiel-start',{karte:MAP_ID, stufe:STUFE_WAHL, helfer:LOADOUT.slice().sort().join(',')});
-  toast('Tippe auf den linken Turm – dann schießt Brokkoli! In der Holz-Leiste baust du aus.');
+  toast('Brokkoli campt vor dem Tor und kämpft von selbst! In der Holz-Leiste baust du aus.');
 }
 $('modeCancel').addEventListener('click',()=>{ if(G) setMode(null); });
 $('btnFull').addEventListener('click',()=>{ const el=document.documentElement; const f=el.requestFullscreen||el.webkitRequestFullscreen;
