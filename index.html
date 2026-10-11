@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791735305">
+<meta name="md-build" content="1791736877">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -934,19 +934,27 @@ function dropCoin(x,y,v,s){
   kx[kN]=x; ky[kN]=y; kv[kN]=v; kt[kN]=0; ks[kN]=0; ksc[kN]=Math.max(0.45,s); kN++;
 }
 function addCoins(v){ G.coins+=v; G.earned+=v; G.mbBounce=1; }
+// Wie gut passt Waffe el auf Gegner i? (Schwäche-Faktor, Schild zählt bei Pfeilen mit)
+function wmult(i,el){ const m=TYPES[eType[i]].weak[el]; let v=(m===undefined)?1:m; if(el==='pfeil' && eShield[i]) v*=0.2; return v; }
+// Stufe: 2 = Lieblingsgegner, 1 = normal, 0 = macht kaum Schaden
+function tierOf(i,el){ const v=wmult(i,el); return v>=1.5?2:(v>=0.9?1:0); }
 function nearestEnemy(x,y,maxR,ground,minDist,el){
-  let best=maxR*maxR, bi=-1;
+  let best=1e18, bi=-1; const R2=maxR*maxR;
   for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; if(ground && TYPES[eType[i]].fly) continue; if(minDist && eDist[i]<minDist) continue;
     if(el && !targetable(i,el)) continue;
-    const dx=eX[i]-x, dy=eY[i]-y, q=dx*dx+dy*dy; if(q<best){best=q; bi=i;} }
+    const dx=eX[i]-x, dy=eY[i]-y, q=dx*dx+dy*dy; if(q>R2) continue;
+    const m=el?Math.max(0.15,wmult(i,el)):1, sc=q/(m*m);     // Lieblingsgegner wirken "näher"
+    if(sc<best){best=sc; bi=i;} }
   return bi;
 }
 function markValid(){ const m=G.mark; if(!m) return -1; if(eAlive[m.i] && eUid[m.i]===m.uid) return m.i; G.mark=null; return -1; }
+// Ziel in Reichweite: zuerst die, gegen die die Waffe stark ist, dann der Vorderste
 function pickFront(minD,el){
   const mk=markValid();
   if(mk>=0 && eDist[mk]>=minD && targetable(mk,el)) return mk;
-  let best=-1, bd=-1;
-  for(let i=0;i<eHi;i++){ if(!eAlive[i] || eDist[i]<minD || eDist[i]<=bd || !targetable(i,el)) continue; bd=eDist[i]; best=i; }
+  let best=-1, bd=-1, bt=-1;
+  for(let i=0;i<eHi;i++){ if(!eAlive[i] || eDist[i]<minD || !targetable(i,el)) continue;
+    const t=tierOf(i,el); if(t<bt || (t===bt && eDist[i]<=bd)) continue; bt=t; bd=eDist[i]; best=i; }
   return best;
 }
 function updateFighters(dt){
@@ -1055,8 +1063,8 @@ function updateArcher(dt){
   if(best<0){ G.archerCd=0.15; return; }
   G.archerCd=1/A.rate;
   shoot(ATOWER.x,ATOWER.y-22,best,A.dmg);
-  if(A.n>1){ cand.length=0;
-    for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<minD||!targetable(i,'pfeil')) continue; cand.push(i); }
+  if(A.n>1){ cand.length=0; let top=0;
+    for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<minD||!targetable(i,'pfeil')) continue; const t=tierOf(i,'pfeil'); if(t>top){ top=t; cand.length=0; } if(t===top) cand.push(i); }
     for(let k=1;k<A.n && cand.length;k++) shoot(ATOWER.x,ATOWER.y-22,cand[(Math.random()*cand.length)|0],A.dmg); }
   sfx('twang');
 }
