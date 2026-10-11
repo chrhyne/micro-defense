@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
 <title>Micro Defense</title>
@@ -120,6 +121,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .hs td.i{color:var(--ink-soft);font-size:12px;font-weight:700}
 .hs tr.me{background:var(--gold)}
 .hswrap{max-height:42vh;overflow:auto;width:100%}
+.privacy{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.35;margin:4px 0 10px;text-align:left}
 .hsempty{text-align:center;color:var(--ink-soft);font-weight:700;padding:10px}
 #rotate{z-index:9;background:var(--field-deep);color:var(--parch);font-family:var(--display);font-size:26px;text-align:center;flex-direction:column;gap:10px}
 #rotate div{font-size:60px}
@@ -265,6 +267,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <div class="setrow"><span>🔊 Geräusche</span><div class="seg" id="setSfx"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
     <div class="setrow"><span>⛶ Vollbild</span><button class="small" id="setFull">umschalten</button></div>
     <div class="setrow col"><span>📲 Als App installieren</span><div id="installBox" class="installbox"></div></div>
+    <p class="privacy">🔒 Datenschutz: Wir zählen anonym, wie oft und wie lange gespielt wird (Karte, Stufe, Welle) – ohne Cookies, ohne Namen. Die Bestenliste bleibt nur auf diesem Gerät.</p>
     <button class="big" id="setClose">Fertig</button>
   </div>
 </div>
@@ -1774,8 +1777,13 @@ function endGame(won){
     $('endEntry').hidden=false; $('hsSave').disabled=false;
     $('hsName').value=(()=>{ try{ return localStorage.getItem('md_name')||''; }catch(e){ return ''; } })();
     renderScores($('endList'), null, 5);
+    track('spiel-ende',{ergebnis:won?'gewonnen':'verloren', karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
 }
+/* ---------- Anonyme Statistik (Umami, nur auf der Webseite) ---------- */
+function track(name,data){ try{ if(window.umami && typeof umami.track==='function') umami.track(name,data); }catch(e){} }
+(function(){ let mode='browser'; try{ if(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone) mode='app'; }catch(e){}
+  addEventListener('load',()=>setTimeout(()=>track('geoeffnet',{als:mode}),1500)); })();
 /* ---------- Bestenliste (auf diesem Gerät) ---------- */
 const SCORE_MULT={leicht:0.5, normal:1, schwer:1.6};
 let HS_PENDING=null;
@@ -1818,6 +1826,7 @@ function start(lo){
   musicInit();
   timers=[]; newGame(); G.running=true; resize(); G.bgDirty=true; refreshToolbar();
   $('start').hidden=true; $('end').hidden=true; $('title').hidden=true; $('help').hidden=true; $('settings').hidden=true;
+  track('spiel-start',{karte:MAP_ID, stufe:STUFE_WAHL, helfer:LOADOUT.slice().sort().join(',')});
   toast('Tippe auf den linken Turm – dann schießt Brokkoli! Unten in der Leiste baust du aus.');
 }
 $('modeCancel').addEventListener('click',()=>{ if(G) setMode(null); });
@@ -1843,7 +1852,7 @@ $('btnSettings').addEventListener('click',openSettings);
 $('pSettings').addEventListener('click',openSettings);
 $('setClose').addEventListener('click',()=>{ $('settings').hidden=true; });
 $('installHint').addEventListener('click',openSettings);
-$('pQuit').addEventListener('click',()=>{ $('pause').hidden=true; G.paused=false; setMode(null); newRound(); $('title').hidden=false; });
+$('pQuit').addEventListener('click',()=>{ if(G && G.running && !G.over) track('spiel-abgebrochen',{karte:MAP_ID, stufe:STUFE_WAHL, minuten:Math.round(Math.max(0,G.t-G.t0)/60), welle:Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1)}); $('pause').hidden=true; G.paused=false; setMode(null); newRound(); $('title').hidden=false; });
 function segSet(id,val,fn){ const box=$(id); for(const b of box.querySelectorAll('button')){ b.classList.toggle('on',b.dataset.v===String(val)); b.onclick=()=>{ fn(b.dataset.v); renderSettings(); }; } }
 function renderSettings(){
   segSet('setMusic',MUSIC.level,v=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); musicInit(); setMusicLevel(+v); });
@@ -1857,7 +1866,7 @@ let deferredPrompt=null, hintOff=false;
 const isStandalone=()=>matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; updateInstall(); });
-addEventListener('appinstalled',()=>{ deferredPrompt=null; updateInstall(); });
+addEventListener('appinstalled',()=>{ track('app-installiert'); deferredPrompt=null; updateInstall(); });
 function updateInstall(){
   const box=$('installBox'); let h;
   if(isStandalone()) h='<p>✓ Micro Defense läuft schon als App.</p>';
