@@ -11,6 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
+<meta name="md-build" content="1791735305">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -1839,6 +1840,27 @@ function endGame(won){
     track('spiel-ende',{ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
 }
+/* ---------- Auto-Update (wichtig für die Homescreen-App) ---------- */
+(function(){
+  const meta=document.querySelector('meta[name="md-build"]'); if(!meta || !window.fetch) return;
+  const mine=meta.content; let checking=false, last=0;
+  async function check(){
+    if(checking || Date.now()-last<20000) return; checking=true; last=Date.now();
+    try{
+      const r=await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'}); const txt=await r.text();
+      const m=txt.match(/name="md-build" content="(\d+)"/);
+      if(m && m[1]!==mine){
+        const reload=()=>location.replace(location.pathname+'?v='+m[1]);
+        const busy=()=>(G && G.running) || !$('end').hidden;   // nie mitten im Spiel oder beim Bestenlisten-Eintrag
+        if(!busy()) reload(); else { const iv=setInterval(()=>{ if(!busy()){ clearInterval(iv); reload(); } },2000); }
+      }
+    }catch(e){}
+    checking=false;
+  }
+  addEventListener('load',()=>setTimeout(check,800));
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) check(); });
+  addEventListener('pageshow',()=>check());
+})();
 /* ---------- Anonyme Statistik (Umami, nur auf der Webseite) ---------- */
 function track(name,data){ try{ if(window.umami && typeof umami.track==='function') umami.track(name,data); }catch(e){} }
 (function(){ let mode='browser'; try{ if(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone) mode='app'; }catch(e){}
