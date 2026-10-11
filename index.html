@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791740189">
+<meta name="md-build" content="1791740752">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -156,13 +156,14 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .stats .plate b{color:var(--gold)}
 .bilanz{width:min(560px,100%);display:flex;flex-direction:column;gap:4px;margin:6px auto 2px}
 .bilanz h3{margin:0 0 2px;text-align:center;font-family:var(--display);font-weight:400;font-size:18px;color:var(--wood-dark)}
-.brow{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:8px;font-weight:800;font-size:14px}
-.brow .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow{display:grid;grid-template-columns:215px 1fr 64px;align-items:center;gap:8px;font-weight:800;font-size:14px}
+.brow .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.brow .bn small{font-weight:700;color:var(--ink-soft);font-size:.85em}
 .brow .bb{height:14px;border-radius:7px;background:var(--parch-edge);overflow:hidden;border:2px solid var(--ink)}
 .brow .bb i{display:block;height:100%;background:var(--gold);border-radius:5px}
 .brow:first-of-type .bb i{background:#ff9a2a}
 .brow .bv{text-align:right;font-family:var(--display);font-weight:400;font-variant-numeric:tabular-nums}
-@media (max-height:520px){ .brow{grid-template-columns:120px 1fr 54px;font-size:12px} .bilanz h3{font-size:15px} .brow .bb{height:10px} }
+@media (max-height:520px){ .brow{grid-template-columns:170px 1fr 54px;font-size:12px} .bilanz h3{font-size:15px} .brow .bb{height:10px} }
 .scorebig{font-family:var(--display);font-size:clamp(26px,4vw,40px);color:var(--ink);text-align:center;margin:4px 0}
 .entry{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
 .entry input{font:800 18px var(--body,Nunito),sans-serif;padding:9px 12px;border:3px solid var(--ink);border-radius:12px;width:min(220px,60vw);background:#fffaf0;color:var(--ink);user-select:text;-webkit-user-select:text;touch-action:manipulation}
@@ -1916,7 +1917,7 @@ const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 function endGame(won){
   if(G.over) return; G.over=true; setMode(null);
   setTimeout(()=>{
-    $('end').hidden=false;
+    $('end').hidden=false; $('toast').classList.add('hide');
     $('endTitle').textContent= won ? 'Gewonnen!' : 'Oh nein!';
     $('endText').textContent= won ? 'Alle Wellen sind besiegt, sogar Gromp der Riese. Deine Burg steht!' : 'Die Monster haben die Burg überrannt. Versuch es nochmal – vielleicht mit Schleuder-Susi gegen die Horden weiter hinten?';
     const sec=Math.max(0,G.t-G.t0), m=Math.floor(sec/60), s=Math.floor(sec%60);
@@ -1972,6 +1973,7 @@ function renderBilanz(){
   rows.slice(0,8).forEach(([k,v],n)=>{ const it=ITEMS.find(x=>x.id===k);
     const r=document.createElement('div'); r.className='brow';
     const nm=document.createElement('span'); nm.className='bn'; nm.textContent=(n===0?'👑 ':'')+it.ic+' '+it.name;
+    if(k!=='tnt'){ const lvTxt=k==='messer'?`${G.fighters.length} Stück`:it.lvl().replace(/\/\d+$/,''); const sm=document.createElement('small'); sm.textContent=' · '+lvTxt; nm.appendChild(sm); }
     const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(2,100*v/max)+'%'; bb.appendChild(bi);
     const val=document.createElement('span'); val.className='bv'; val.textContent=Math.round(v).toLocaleString('de-DE');
     r.append(nm,bb,val); el.appendChild(r); });
@@ -2172,13 +2174,13 @@ let last=performance.now(), frameAvg=1/60;
 function loop(now){
   let dt=Math.min(0.05,(now-last)/1000); last=now;
   frameAvg=frameAvg*0.97+dt*0.03; if(frameAvg>0.024) FAR=Math.min(0.55,FAR+0.002); else if(frameAvg<0.018) FAR=Math.max(0.32,FAR-0.001);
-  if(G && G.running && !G.paused){
+  if(G && G.running && !G.paused && !(G.over && !$('end').hidden)){   // nach Spielende steht alles still
     const f=G.over?0.4:G.speed; const sdt=dt*f;
     if(f>1){ update(sdt/2); update(sdt/2); } else update(sdt);
     G.shake=Math.max(0,G.shake-dt*30); G.flash=Math.max(0,G.flash-dt*2.5); G.hurtFlash=Math.max(0,(G.hurtFlash||0)-dt*1.2);
     updateHud(dt);
   }
-  const inMenu=!(G&&G.running); if(document.body.classList.contains('inmenu')!==inMenu){ document.body.classList.toggle('inmenu',inMenu); resize(); }
+  const inMenu=!(G&&G.running) || !$('end').hidden; if(document.body.classList.contains('inmenu')!==inMenu){ document.body.classList.toggle('inmenu',inMenu); resize(); }
   render(now); musicTick();
   requestAnimationFrame(loop);
 }
