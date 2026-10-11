@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791736877">
+<meta name="md-build" content="1791738020">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -460,7 +460,7 @@ try{ const l=JSON.parse(localStorage.getItem('md_loadout')||'null'); if(Array.is
 // reihen = Reichweite: 1 = nur der vorderste Weg, 2 = die vorderen zwei Wege, 2.5 = bis zur Mitte des dritten Weges (weiter geht nichts!)
 const BROK = [ {dmg:3,rate:1.6,n:1,sword:5,reihen:1.3}, {dmg:4.5,rate:1.9,n:1,sword:8,reihen:1.45}, {dmg:6,rate:2.2,n:2,sword:12,reihen:1.6}, {dmg:8,rate:2.6,n:2,sword:17,reihen:1.7}, {dmg:11,rate:3,n:3,sword:24,reihen:1.8}, {dmg:15,rate:3.4,n:3,sword:32,reihen:1.9}, {dmg:20,rate:3.8,n:4,sword:42,reihen:2.0}, {dmg:27,rate:4.2,n:4,sword:55,reihen:2.0} ];
 const BROK_PREIS = [80, 200, 680, 1350, 2400, 4200, 6750];
-const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.2}, {rate:2,dmg:2.5,n:1,reihen:1.35}, {rate:2.4,dmg:3.5,n:2,reihen:1.5}, {rate:2.8,dmg:4.5,n:2,reihen:1.65}, {rate:3,dmg:5.5,n:3,reihen:1.8}, {rate:3.3,dmg:6.5,n:3,reihen:1.9}, {rate:3.6,dmg:7.5,n:4,reihen:2.0}, {rate:4,dmg:9,n:4,reihen:2.0} ];
+const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.5}, {rate:2,dmg:2.5,n:1,reihen:1.65}, {rate:2.4,dmg:3.5,n:2,reihen:1.8}, {rate:2.8,dmg:4.5,n:2,reihen:1.95}, {rate:3,dmg:5.5,n:3,reihen:2.1}, {rate:3.3,dmg:6.5,n:3,reihen:2.25}, {rate:3.6,dmg:7.5,n:4,reihen:2.4}, {rate:4,dmg:9,n:4,reihen:2.6} ];
 const BOGEN_PREIS = [25, 70, 260, 630, 1420, 2400, 3900, 6000];
 const ZAUBER = [ {rate:0.9,dmg:6,reihen:1.6}, {rate:1.5,dmg:10,reihen:1.9}, {rate:2.2,dmg:16,reihen:2.2}, {rate:2.8,dmg:22,reihen:2.3}, {rate:3.4,dmg:30,reihen:2.4}, {rate:4,dmg:40,reihen:2.5} ];
 // Langfinger-Lutz: cap = so viele Münzen passen in den Sack, steal = Sekunden pro Griff, n = so viele Räuber
