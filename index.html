@@ -118,6 +118,27 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .stufe{border:3px solid var(--parch-edge);background:var(--parch-hi);border-radius:14px;padding:6px 14px;font-family:var(--display);font-size:18px;cursor:pointer;color:var(--ink)}
 .stufe.on{background:var(--gold);border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}
 .mapinfo{display:block;font-family:var(--body);font-size:11px;font-weight:800;color:var(--ink-soft)}
+.setup .sub{text-align:center;margin-top:4px}
+.mapcards,.stufcards{display:grid;gap:10px;width:100%;margin:6px 0 10px}
+.mapcards{grid-template-columns:repeat(3,1fr)}
+.stufcards{grid-template-columns:repeat(3,1fr)}
+.mapcard,.stufcard{border:3px solid var(--parch-edge);background:var(--parch-hi);border-radius:16px;padding:8px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
+.mapcard img{width:100%;aspect-ratio:16/10;border-radius:10px;border:2px solid var(--ink);display:block;background:#ddd}
+.mapcard b,.stufcard b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.1}
+.mapcard small,.stufcard small{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.25}
+.mapcard.on,.stufcard.on{background:var(--gold);border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+.mapcard.on small,.stufcard.on small{color:var(--ink)}
+.stars{font-size:22px;line-height:1;letter-spacing:2px;white-space:nowrap}
+.stars i{font-style:normal;color:#ffb800;-webkit-text-stroke:1px var(--ink);text-shadow:0 2px 0 rgba(0,0,0,.18)}
+.stars i.off{color:rgba(90,60,20,.18);-webkit-text-stroke:0;text-shadow:none}
+.mapcard.on .stars i:not(.off){color:#fff}
+.stars.mini{font-size:14px}
+.stars.mini i{-webkit-text-stroke:.6px var(--ink)}
+.stufcard.on .stars i:not(.off){color:#fff}
+@media (max-height:520px){ .setup .sub{font-size:18px;margin:0} .mapcard img{aspect-ratio:auto;height:50px;object-fit:cover} .mapcard{padding:5px;gap:2px} .stars{font-size:17px} .stufcard small,.mapcard small{display:none}
+  .setup .prep-head{position:absolute;margin:0} .setup .prep-head .small{font-size:13px;padding:3px 9px} .mapcard img{object-position:center 65%} .setup{position:relative} .setup .big{padding-top:6px;padding-bottom:6px} }
+.choice{border:3px solid var(--ink);background:var(--gold);border-radius:14px;padding:5px 12px;font-family:var(--display);font-size:17px;cursor:pointer;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+@media (max-height:520px){ .mapcard img{aspect-ratio:16/8} .mapcard b,.stufcard b{font-size:16px} .mapcards,.stufcards{gap:7px;margin:4px 0 6px} .stufcard{padding:5px} }
 .hint{margin:0;font-weight:700;font-size:14px;color:var(--ink-soft)}
 .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;width:100%}
 .pick{display:grid;grid-template-columns:34px 1fr;column-gap:8px;text-align:left;background:var(--parch-hi);border:3px solid var(--parch-edge);border-radius:14px;padding:8px;cursor:pointer;min-width:0}
@@ -240,12 +261,22 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
   </div>
 </div>
 
+<div class="overlay" id="setup" hidden>
+  <div class="sheet prep setup">
+    <div class="prep-head"><button class="small" id="setupBack">← Zurück</button></div>
+    <h2 class="sub">Wo kämpfst du?</h2>
+    <div class="mapcards" id="karten"></div>
+    <h2 class="sub">Wie schwer?</h2>
+    <div class="stufcards" id="stufen"></div>
+    <button class="big" id="setupNext">Weiter: Helfer wählen →</button>
+  </div>
+</div>
+
 <div class="overlay" id="start" hidden>
   <div class="sheet prep">
     <div class="prep-head">
       <button class="small" id="btnBack">← Zurück</button>
-      <div class="stufen" id="karten"></div>
-      <div class="stufen" id="stufen"></div>
+      <button class="choice" id="choiceChip" title="Karte und Schwierigkeit ändern"></button>
     </div>
     <div class="prep-cols">
       <section>
@@ -1801,6 +1832,9 @@ function endGame(won){
     $('endEntry').hidden=false; $('hsSave').disabled=false;
     $('hsName').value=(()=>{ try{ return localStorage.getItem('md_name')||''; }catch(e){ return ''; } })();
     renderScores($('endList'), null, 5);
+    if(won){ const neu=STERN_WERT[STUFE_WAHL]||0, st=loadStars(), alt=st[MAP_ID]||0;
+      if(neu>alt){ st[MAP_ID]=neu; try{ localStorage.setItem('md_stars',JSON.stringify(st)); }catch(e){}
+        $('endText').textContent+=` Neu: ${sternText(neu)} für ${MAPS[MAP_ID].name}!`; } }
     const erg=won?'gewonnen':'verloren';
     track('spiel-ende',{ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
@@ -1850,7 +1884,7 @@ function start(lo){
   if(AC && AC.state==='suspended') AC.resume();
   musicInit();
   timers=[]; newGame(); G.running=true; resize(); G.bgDirty=true; refreshToolbar();
-  $('start').hidden=true; $('end').hidden=true; $('title').hidden=true; $('help').hidden=true; $('settings').hidden=true;
+  $('start').hidden=true; $('setup').hidden=true; $('end').hidden=true; $('title').hidden=true; $('help').hidden=true; $('settings').hidden=true;
   track('spiel-start',{karte:MAP_ID, stufe:STUFE_WAHL, helfer:LOADOUT.slice().sort().join(',')});
   toast('Tippe auf den linken Turm – dann schießt Brokkoli! In der Holz-Leiste baust du aus.');
 }
@@ -1860,16 +1894,16 @@ $('btnFull').addEventListener('click',()=>{ const el=document.documentElement; c
   try{ const r=f&&f.call(el); if(r&&r.catch) r.catch(()=>toast('Vollbild ist hier leider gesperrt.')); else if(!f) toast('Vollbild ist hier leider gesperrt.'); }catch(e){ toast('Vollbild ist hier leider gesperrt.'); } });
 addEventListener('fullscreenchange',()=>setTimeout(resize,100)); addEventListener('webkitfullscreenchange',()=>setTimeout(resize,100));
 $('btnStart').addEventListener('click',()=>start());
-$('btnAgain').addEventListener('click',()=>{ newRound(); $('end').hidden=true; $('start').hidden=false; });
+$('btnAgain').addEventListener('click',()=>{ newRound(); openSetup(); });
 $('btnMenu').addEventListener('click',()=>{ newRound(); $('end').hidden=true; $('title').hidden=false; });
 let seenHelp=false; try{ seenHelp=localStorage.getItem('md_help')==='1'; }catch(e){}
 let helpThen=null;
 function openHelp(then){ helpThen=then||null; $('help').hidden=false; }
 $('helpClose').addEventListener('click',()=>{ $('help').hidden=true; seenHelp=true; try{ localStorage.setItem('md_help','1'); }catch(e){} if(helpThen){ const f=helpThen; helpThen=null; f(); } });
 $('btnPlay').addEventListener('click',()=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
-  const go=()=>{ $('title').hidden=true; renderStart(); $('start').hidden=false; };
+  const go=()=>openSetup();
   if(!seenHelp) openHelp(go); else go(); });
-$('btnBack').addEventListener('click',()=>{ $('start').hidden=true; $('title').hidden=false; });
+$('btnBack').addEventListener('click',()=>openSetup());
 $('btnHelp').addEventListener('click',()=>openHelp());
 $('pHelp').addEventListener('click',()=>openHelp());
 function openSettings(){ renderSettings(); $('settings').hidden=false; }
@@ -1942,12 +1976,7 @@ function renderStart(){
     b.innerHTML=`<img src="${ICONS[t.id]}" alt=""><span><b>${t.name}</b><small>ab Welle ${(firstWave[t.id]??0)+1} · ${weakText(t)||(t.boss?'Endboss':'–')}</small></span>`;
     b.addEventListener('click',()=>toast(`${t.name}: ${t.desc}. ${weakLine(t).replace(/^./,c=>c.toUpperCase())}.`));
     $('monsterList').appendChild(b); }
-  $('karten').innerHTML='';
-  for(const [k,m] of Object.entries(MAPS)){ const b=document.createElement('button'); b.type='button'; b.className='stufe'+(k===MAP_ID?' on':''); b.innerHTML=`${m.name}<small class="mapinfo">${m.info}</small>`;
-    b.addEventListener('click',()=>{ if(k===MAP_ID) return; applyMap(k); try{ localStorage.setItem('md_map',k); }catch(e){} newGame(); G.bgDirty=true; renderStart(); }); $('karten').appendChild(b); }
-  $('stufen').innerHTML='';
-  for(const [k,v] of Object.entries(STUFEN)){ const b=document.createElement('button'); b.type='button'; b.className='stufe'+(k===STUFE_WAHL?' on':''); b.textContent=v.name;
-    b.addEventListener('click',()=>{ STUFE_WAHL=k; try{ localStorage.setItem('md_stufe',k); }catch(e){} renderStart(); }); $('stufen').appendChild(b); }
+  $('choiceChip').textContent=`${MAPS[MAP_ID].name} · ${STUFEN[STUFE_WAHL].name}  ✏️`;
   $('slotsTxt').textContent=PLAETZE;
   $('pickList').innerHTML=''; 
   for(const id of Object.keys(WAHL)){ const it=ITEMS.find(x=>x.id===id), w=WAHL[id];
@@ -1960,6 +1989,46 @@ function renderStart(){
   $('btnStart').disabled=LOADOUT.length!==PLAETZE;
   $('btnStart').textContent=LOADOUT.length===PLAETZE?"Los geht's!":`Noch ${PLAETZE-LOADOUT.length} Helfer wählen`;
 }
+/* Karte & Schwierigkeit – eigener Bildschirm vor der Helfer-Wahl */
+const STERN_WERT={leicht:1, normal:2, schwer:3};
+function loadStars(){ try{ const o=JSON.parse(localStorage.getItem('md_stars')||'{}'); return o&&typeof o==='object'?o:{}; }catch(e){ return {}; } }
+function sternText(n){ return '★'.repeat(n)+'☆'.repeat(3-n); }
+function sternHtml(n){ let s=''; for(let i=0;i<3;i++) s+=`<i${i<n?'':' class="off"'}>★</i>`; return s; }
+const STUFEN_INFO={leicht:'Weniger Monster, starke Burg. Gut für Anfänger.', normal:'Das richtige Abenteuer.', schwer:'Mehr und zähere Monster. Für Profis!'};
+let MAP_THUMBS=null;
+function makeThumbs(){
+  const keep=MAP_ID, out={};
+  for(const k of Object.keys(MAPS)){
+    applyMap(k); const T=THEME, c=document.createElement('canvas'); c.width=320; c.height=200; const g=c.getContext('2d'), f=320/W;
+    g.fillStyle=T.ground[1]; g.fillRect(0,0,320,200);
+    const sk=g.createLinearGradient(0,0,0,HORIZON*f); sk.addColorStop(0,T.sky[0]); sk.addColorStop(1,T.sky[1]); g.fillStyle=sk; g.fillRect(0,0,320,HORIZON*f);
+    g.lineCap='round'; g.lineJoin='round';
+    for(const [col,wd] of [[INK,30],[T.path[1],24]]){ g.strokeStyle=col;
+      for(let i=0;i<L-8;i+=8){ g.lineWidth=wd*SCy(PY[i])*f*2.2; g.beginPath(); g.moveTo(PX[i]*f,PY[i]*f); g.lineTo(PX[i+8]*f,PY[i+8]*f); g.stroke(); } }
+    g.fillStyle='#e8dcc0'; g.strokeStyle=INK; g.lineWidth=2; g.fillRect(4,140,46,58); g.strokeRect(4,140,46,58);
+    g.fillStyle='#7a6a5a'; g.beginPath(); g.moveTo(VOLC.x*f-16*VOLC.s,VOLC.y*f); g.lineTo(VOLC.x*f,VOLC.y*f-20*VOLC.s); g.lineTo(VOLC.x*f+16*VOLC.s,VOLC.y*f); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle='#ff8a2a'; g.beginPath(); g.arc(VOLC.x*f,VOLC.y*f-20*VOLC.s,3,0,7); g.fill();
+    out[k]=c.toDataURL();
+  }
+  applyMap(keep); if(G) G.bgDirty=true;
+  return out;
+}
+function renderSetup(){
+  if(!MAP_THUMBS){ try{ MAP_THUMBS=makeThumbs(); }catch(e){ MAP_THUMBS={}; } }
+  $('karten').innerHTML=''; const stars=loadStars();
+  for(const [k,m] of Object.entries(MAPS)){ const b=document.createElement('button'); b.type='button'; b.className='mapcard'+(k===MAP_ID?' on':'');
+    const n=Math.max(0,Math.min(3,stars[k]|0));
+    b.innerHTML=`${MAP_THUMBS[k]?`<img src="${MAP_THUMBS[k]}" alt="">`:''}<b>${m.name}</b><span class="stars" aria-label="${n} von 3 Sternen">${sternHtml(n)}</span><small>${m.info}</small>`;
+    b.addEventListener('click',()=>{ if(k!==MAP_ID){ applyMap(k); try{ localStorage.setItem('md_map',k); }catch(e){} newGame(); G.bgDirty=true; } renderSetup(); }); $('karten').appendChild(b); }
+  $('stufen').innerHTML='';
+  for(const [k,v] of Object.entries(STUFEN)){ const b=document.createElement('button'); b.type='button'; b.className='stufcard'+(k===STUFE_WAHL?' on':'');
+    b.innerHTML=`<b>${v.name}</b><span class="stars mini" aria-label="gibt ${STERN_WERT[k]} Sterne">${sternHtml(STERN_WERT[k])}</span><small>${STUFEN_INFO[k]||''}</small>`;
+    b.addEventListener('click',()=>{ STUFE_WAHL=k; try{ localStorage.setItem('md_stufe',k); }catch(e){} renderSetup(); }); $('stufen').appendChild(b); }
+}
+function openSetup(){ renderSetup(); $('title').hidden=true; $('start').hidden=true; $('end').hidden=true; $('setup').hidden=false; }
+$('setupNext').addEventListener('click',()=>{ $('setup').hidden=true; renderStart(); $('start').hidden=false; });
+$('setupBack').addEventListener('click',()=>{ $('setup').hidden=true; $('title').hidden=false; });
+$('choiceChip').addEventListener('click',openSetup);
 function newRound(){ pickToday(); genWaves(); if(G) G.running=false; buildToolbar(); newGame(); G.bgDirty=true; renderStart(); }
 
 let last=performance.now(), frameAvg=1/60;
