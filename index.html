@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791738484">
+<meta name="md-build" content="1791739515">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -154,6 +154,15 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .big:disabled{background:var(--muted);cursor:default}
 .stats{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .stats .plate b{color:var(--gold)}
+.bilanz{width:min(560px,100%);display:flex;flex-direction:column;gap:4px;margin:6px auto 2px}
+.bilanz h3{margin:0 0 2px;text-align:center;font-family:var(--display);font-weight:400;font-size:18px;color:var(--wood-dark)}
+.brow{display:grid;grid-template-columns:150px 1fr 64px;align-items:center;gap:8px;font-weight:800;font-size:14px}
+.brow .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bb{height:14px;border-radius:7px;background:var(--parch-edge);overflow:hidden;border:2px solid var(--ink)}
+.brow .bb i{display:block;height:100%;background:var(--gold);border-radius:5px}
+.brow:first-of-type .bb i{background:#ff9a2a}
+.brow .bv{text-align:right;font-family:var(--display);font-weight:400;font-variant-numeric:tabular-nums}
+@media (max-height:520px){ .brow{grid-template-columns:120px 1fr 54px;font-size:12px} .bilanz h3{font-size:15px} .brow .bb{height:10px} }
 .scorebig{font-family:var(--display);font-size:clamp(26px,4vw,40px);color:var(--ink);text-align:center;margin:4px 0}
 .entry{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap}
 .entry input{font:800 18px var(--body,Nunito),sans-serif;padding:9px 12px;border:3px solid var(--ink);border-radius:12px;width:min(220px,60vw);background:#fffaf0;color:var(--ink);user-select:text;-webkit-user-select:text;touch-action:manipulation}
@@ -302,7 +311,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <div class="helpgrid">
       <div><b>🥦 Brokkoli</b>Tippe auf den linken Turm: Brokkoli schießt. Tippe vors Tor: er kämpft mit dem Schwert. Tippe in den Hof: er ruht sich aus.</div>
       <div><b>🛠️ Ausbauen</b>Unten in der Leiste kaufst und verbesserst du deine Helfer mit Münzen aus dem Briefkasten.</div>
-      <div><b>🪨⛈️🌋 Selbst auslösen</b>Tippe auf Katapult, Wolke, Vulkan oder Ölkessel. Ein gelber Weg zeigt, wie weit sie reichen.</div>
+      <div><b>⛈️🌋 Selbst auslösen</b>Tippe auf Wolke, Vulkan oder Ölkessel. Ein gelber Weg zeigt, wie weit sie reichen. Das Katapult wirft von selbst – du kannst es aber auch antippen und selbst zielen.</div>
       <div><b>🎯 Zielen</b>Tippe ein Monster an: Alle Schützen nehmen es zuerst ins Visier, zum Beispiel Pflaster-Paula.</div>
       <div><b>💥 Power-Attacke</b>Eine goldene Blase über einer Waffe heißt: Super-Angriff bereit! Antippen.</div>
       <div><b>👆 Münzen</b>Wisch mit dem Finger über liegende Münzen, dann gibt es einen kleinen Bonus.</div>
@@ -330,6 +339,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <h1 class="title" id="endTitle">Gewonnen!</h1>
     <p class="lead" id="endText"></p>
     <div class="stats" id="endStats"></div>
+    <div class="bilanz" id="endBilanz"></div>
     <div class="scorebig" id="endScore"></div>
     <div class="entry" id="endEntry"><input id="hsName" maxlength="14" placeholder="Dein Name" autocomplete="off"><button class="small" id="hsSave">🏆 Eintragen</button></div>
     <div class="hswrap" id="endList"></div>
@@ -445,10 +455,10 @@ const PLAETZE = 5;   // so viele Helfer darf man pro Spiel mitnehmen
 const WAHL = { // aktiv = selbst auslösen, passiv = arbeitet allein
   bogen:{art:'passiv', gut:'gut gegen Flieger, schwach gegen Rüstung'},
   messer:{art:'passiv', gut:'kämpfen vorm Tor'},
-  zauber:{art:'passiv', gut:'einziger, der Spukolino besiegt'},
+  zauber:{art:'passiv', gut:'Zauber springt von Monster zu Monster – einziger, der Spukolino besiegt'},
   raeuber:{art:'passiv', gut:'klaut Münzen'},
   oel:{art:'aktiv', gut:'gegen Monster am Tor'},
-  katapult:{art:'aktiv', gut:'gegen Horden und Buddelbert – mit Mega-Bumm'},
+  katapult:{art:'passiv', gut:'wirft von selbst auf die größte Gruppe – antippen zum Selberzielen'},
   gewitter:{art:'aktiv', gut:'blitzt überall, sogar ganz hinten – gegen Ritter und Rammbock'},
   vulkan:{art:'aktiv', gut:'Lava gegen Horden und Stampfi'},
 };
@@ -462,7 +472,8 @@ const BROK = [ {dmg:3,rate:1.6,n:1,sword:5,reihen:1.3}, {dmg:4.5,rate:1.9,n:1,sw
 const BROK_PREIS = [80, 200, 680, 1350, 2400, 4200, 6750];
 const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.5}, {rate:2,dmg:2.5,n:1,reihen:1.65}, {rate:2.4,dmg:3.5,n:2,reihen:1.8}, {rate:2.8,dmg:4.5,n:2,reihen:1.95}, {rate:3,dmg:5.5,n:3,reihen:2.1}, {rate:3.3,dmg:6.5,n:3,reihen:2.25}, {rate:3.6,dmg:7.5,n:4,reihen:2.4}, {rate:4,dmg:9,n:4,reihen:2.6} ];
 const BOGEN_PREIS = [25, 70, 260, 630, 1420, 2400, 3900, 6000];
-const ZAUBER = [ {rate:0.9,dmg:6,reihen:1.6}, {rate:1.5,dmg:10,reihen:1.9}, {rate:2.2,dmg:16,reihen:2.2}, {rate:2.8,dmg:22,reihen:2.3}, {rate:3.4,dmg:30,reihen:2.4}, {rate:4,dmg:40,reihen:2.5} ];
+// chain = auf so viele weitere Monster springt der Zauber über
+const ZAUBER = [ {rate:0.9,dmg:6,reihen:1.6,chain:1}, {rate:1.5,dmg:10,reihen:1.9,chain:1}, {rate:2.2,dmg:16,reihen:2.2,chain:2}, {rate:2.8,dmg:22,reihen:2.3,chain:3}, {rate:3.4,dmg:30,reihen:2.4,chain:3}, {rate:4,dmg:40,reihen:2.5,chain:4} ];
 // Langfinger-Lutz: cap = so viele Münzen passen in den Sack, steal = Sekunden pro Griff, n = so viele Räuber
 const ROB = [ {cap:30,speed:140,steal:0.5,n:1}, {cap:50,speed:150,steal:0.4,n:1}, {cap:70,speed:160,steal:0.35,n:2}, {cap:100,speed:170,steal:0.3,n:2}, {cap:140,speed:190,steal:0.25,n:3} ];
 const ROB_PREIS = [150, 400, 1350, 2700, 4500];
@@ -837,10 +848,13 @@ function buildQueue(){
   const q=[];
   WAVES.forEach((wave,w)=>{
     const start=w*CFG.wellenAbstand;
-    let total=0; for(const g of wave) total+=g[1]*CFG.horden*G.diff.horden;
+    // die letzten 3 Wellen sind auf Leicht und Normal etwas kleiner
+    const mul=CFG.horden*G.diff.horden*(w>=WAVES.length-3 && STUFE_WAHL!=='schwer' ? 0.85 : 1);
+    let total=0; for(const g of wave) total+=g[1]*mul;
     const dur=Math.min(CFG.wellenAbstand-6, 16+total*0.028);
     const clumps=Math.max(3,Math.round(total/45));
-    for(const [id,cnt] of wave){ const type=T_[id]; const count=TYPES[type].boss?cnt:Math.max(1,Math.round(cnt*CFG.horden*G.diff.horden));
+    for(const [id,cnt] of wave){ const type=T_[id]; let count=TYPES[type].boss?cnt:Math.max(1,Math.round(cnt*mul));
+      if(TYPES[type].ghost) count=Math.min(count, Math.round(10*G.diff.horden));   // nicht zu viele Gespenster auf einmal
       for(let i=0;i<count;i++){
         let t;
         if(TYPES[type].boss) t=start+dur*0.35;
@@ -908,12 +922,17 @@ function targetable(i,el){
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
   const m=ty.weak[el]; return m!==0;
 }
+// Wer hat den Schaden gemacht? (für die Bilanz am Spielende)
+let HSRC=null;
+const EL_SRC={pfeil:'bogen', messer:'messer', schwert:'brok', zauber:'zauber', stein:'katapult', blitz:'gewitter', tnt:'tnt', feuer:'vulkan'};
 function hurt(i,dmg,el){
   if(!eAlive[i]) return false;
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
   const ty=TYPES[eType[i]]; const m=ty.weak[el]; let mult=(m===undefined)?1:m;
   if(mult===0) return false;
   if(el==='pfeil' && eShield[i]) mult*=0.2;
+  const real=Math.min(Math.max(0,eHp[i]), dmg*mult), src=HSRC||EL_SRC[el]||el;
+  const db=G.dmgBy||(G.dmgBy={}); db[src]=(db[src]||0)+real;
   eHp[i]-=dmg*mult;
   if(mult>=2 && Math.random()<0.12) G.pops.push({x:eX[i],y:eY[i]-20*eS[i],t:0,txt:EL_ICON[el]||'💥'});
   if(eHp[i]<=0) kill(i);
@@ -990,8 +1009,8 @@ function updateHero(dt){
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
   if(where==='turm' && h.cd<=0){
     const minD=reihen(B.reihen); const best=pickFront(minD,'pfeil');
-    if(best>=0){ h.cd=1/B.rate; shoot(BTOWER.x,BTOWER.y-30,best,B.dmg,'#3f9b45');
-      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'pfeil'); if(j>=0) shoot(BTOWER.x,BTOWER.y-30,j,B.dmg,'#3f9b45'); }
+    if(best>=0){ h.cd=1/B.rate; shoot(BTOWER.x,BTOWER.y-30,best,B.dmg,'#3f9b45',false,'pfeil','brok');
+      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'pfeil'); if(j>=0) shoot(BTOWER.x,BTOWER.y-30,j,B.dmg,'#3f9b45',false,'pfeil','brok'); }
       sfx('twang'); }
   }
 }
@@ -1077,16 +1096,26 @@ function updateWizard(dt){
   for(let i=0;i<eHi;i++){ if(!eAlive[i] || !TYPES[eType[i]].ghost || eDist[i]<minD) continue; if(eDist[i]>bd){bd=eDist[i];best=i;} }
   if(best<0) best=pickFront(minD,'zauber');
   if(best<0){ G.wizCd=0.2; return; }
-  G.wizCd=1/Z.rate; shoot(WIZPOS.x,WIZPOS.y-34,best,Z.dmg,'#b06cff',false,'zauber'); sfx('magic');
+  G.wizCd=1/Z.rate; const a=shoot(WIZPOS.x,WIZPOS.y-34,best,Z.dmg,'#b06cff',false,'zauber','zauber'); a.chain=Z.chain||0; a.hit=[eUid[best]]; sfx('magic');
 }
-function shoot(x0,y0,i,dmg,color,fire,el){
+function shoot(x0,y0,i,dmg,color,fire,el,src){
   const dx=eX[i]-x0, dy=eY[i]-y0, d=Math.hypot(dx,dy);
-  G.arrows.push({x0,y0,tgt:i,uid:eUid[i],tx:eX[i],ty:eY[i],t:0,dur:Math.max(0.12,d/(fire?1300:1000)),dmg,color:color||'#5a3818',fire,el:el||'pfeil'});
+  const a={x0,y0,tgt:i,uid:eUid[i],tx:eX[i],ty:eY[i],t:0,dur:Math.max(0.12,d/(fire?1300:1000)),dmg,color:color||'#5a3818',fire,el:el||'pfeil',src:src||null};
+  G.arrows.push(a); return a;
+}
+// Zappelbarts Zauber springt zum nächsten Monster (Gespenster zuerst), keins doppelt
+function chainNext(a){
+  const R=150, R2=R*R; let best=1e18, bi=-1;
+  for(let i=0;i<eHi;i++){ if(!eAlive[i] || a.hit.includes(eUid[i]) || !targetable(i,'zauber')) continue;
+    const dx=eX[i]-a.tx, dy=eY[i]-a.ty, q=dx*dx+dy*dy; if(q>R2) continue; const m=wmult(i,'zauber'), sc=q/(m*m); if(sc<best){best=sc; bi=i;} }
+  if(bi<0) return;
+  const n=shoot(a.tx,a.ty,bi,a.dmg*0.8,'#b06cff',false,'zauber','zauber'); n.chain=a.chain-1; n.hit=[...a.hit,eUid[bi]]; n.dur=Math.max(0.08,n.dur*0.7);
 }
 function updateProjectiles(dt){
   for(let k=G.arrows.length-1;k>=0;k--){ const a=G.arrows[k]; a.t+=dt;
     if(eAlive[a.tgt] && eUid[a.tgt]===a.uid){ a.tx=eX[a.tgt]; a.ty=eY[a.tgt]-8*eS[a.tgt]; }
-    if(a.t>=a.dur){ if(eAlive[a.tgt] && eUid[a.tgt]===a.uid) hurt(a.tgt,a.dmg,a.el); G.arrows.splice(k,1); } }
+    if(a.t>=a.dur){ if(eAlive[a.tgt] && eUid[a.tgt]===a.uid){ HSRC=a.src; hurt(a.tgt,a.dmg,a.el); HSRC=null; }
+      G.arrows.splice(k,1); if(a.chain>0) chainNext(a); } }
   for(let k=G.boulders.length-1;k>=0;k--){ const b=G.boulders[k]; b.t+=dt;
     if(b.t>=b.dur){ G.boulders.splice(k,1); if(b.tnt) tntBoom(); else boulderHit(b); } }
   for(let k=G.cannon.length-1;k>=0;k--){ const c=G.cannon[k]; c.t+=dt; if(c.t>=c.life){ G.cannon.splice(k,1); if(!G.over){ G.hp-=8; G.hurtFlash=0.3; G.shake=Math.max(G.shake,4); G.booms.push({x:c.x1,y:c.y1,r:26,t:0}); sfx('boom'); if(G.hp<=0){ G.hp=0; endGame(false); } } } }
@@ -1096,7 +1125,7 @@ function updateProjectiles(dt){
 // ----- Schleuder-Susi -----
 function boulderHit(b){
   const r2=b.r*b.r;
-  for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const dx=eX[i]-b.x1, dy=(eY[i]-b.y1)*1.4; if(dx*dx+dy*dy<r2) hurt(i,b.dmg,b.fire?'feuer':'stein'); }
+  HSRC='katapult'; for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const dx=eX[i]-b.x1, dy=(eY[i]-b.y1)*1.4; if(dx*dx+dy*dy<r2) hurt(i,b.dmg,b.fire?'feuer':'stein'); } HSRC=null;
   G.booms.push({x:b.x1,y:b.y1,r:b.r,t:0,fire:b.fire}); G.shake=Math.max(G.shake,6); sfx('boom');
 }
 function fireCatapult(x,y,opts){
@@ -1126,7 +1155,7 @@ function lavaRange(){ const V=VULKAN[Math.max(0,G.vul.lvl)]; return G.lavaPow?[L
 function updateLava(dt){
   if(G.lavaT<=0) return;
   G.lavaT-=dt; const V=VULKAN[Math.max(0,G.vul.lvl)]; const [a,b]=lavaRange(); const dps=V.dps*(G.lavaPow?1.6:1);
-  for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const d=eDist[i]; if(d>a && d<b) hurt(i,dps*dt,'feuer'); }
+  HSRC='vulkan'; for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const d=eDist[i]; if(d>a && d<b) hurt(i,dps*dt,'feuer'); } HSRC=null;
 }
 function tntBoom(){
   G.flash=1; G.shake=28; sfx('mega');
@@ -1139,10 +1168,26 @@ function tntBoom(){
   }
   toast('MEGA-BUMM! Der Vulkan ist explodiert!');
 }
+// ----- Schleuder-Susi wirft von selbst auf die größte Gruppe -----
+let katScan=0;
+function autoCatapult(dt){
+  if(G.kat.lvl<0 || G.kat.cd>0 || G.tnt || G.mode==='kat' || G.mode==='katPow') return;
+  katScan-=dt; if(katScan>0) return; katScan=0.3;
+  const K=KATAPULT[G.kat.lvl], minD=reihen(K.reihen);
+  // Kandidaten: eine Stichprobe von Bodenmonstern in Reichweite
+  const step=Math.max(1,(G.alive/80)|0); let best=-1, bs=0;
+  for(let i=0;i<eHi;i+=step){ if(!eAlive[i] || eDist[i]<minD || TYPES[eType[i]].fly || eUnder[i]) continue;
+    const r=K.r*(0.55+0.45*SCy(eY[i])), r2=r*r; let sc=0;
+    const st=Math.max(1,(G.alive/400)|0);
+    for(let j=0;j<eHi;j+=st){ if(!eAlive[j]) continue; const dx=eX[j]-eX[i], dy=(eY[j]-eY[i])*1.4; if(dx*dx+dy*dy<r2) sc+=Math.min(eHp[j],K.dmg)*wmult(j,'stein'); }
+    if(sc>bs){ bs=sc; best=i; } }
+  if(best<0 || bs<K.dmg*1.5) return;   // lohnt sich noch nicht
+  fireCatapult(eX[best],eY[best]); G.kat.cd=K.cd;
+}
 // ----- Brutzel-Kessel -----
 function pourOil(){
   const O=OEL[G.oil.lvl]; G.oil.cd=O.cd;
-  for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.dmg,'feuer'); }
+  HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.dmg,'feuer'); } HSRC=null;
   G.burnT=OEL_BRENNZEIT;
   for(let n=0;n<26;n++) G.oilFx.push({x:GATE.x+10+Math.random()*150,y:GATE.y-30+Math.random()*60,t:-Math.random()*0.3,life:0.9});
   sfx('splash');
@@ -1189,7 +1234,8 @@ function update(dt){
   if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt; if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! Schnell: Brutzel-Kessel, Piekser oder Brokkoli vors Tor!'); } if(G.hp<=0){ G.hp=0; endGame(false); } }
   updateFighters(dt); updateHero(dt); updateArcher(dt); updateWizard(dt); updateRobbers(dt);
   updateProjectiles(dt); updateLava(dt); updateTimers(dt);
-  if(G.burnT>0){ G.burnT-=dt; const O=OEL[G.oil.lvl]; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.burn*dt,'feuer'); } }
+  if(G.burnT>0){ G.burnT-=dt; const O=OEL[G.oil.lvl]; HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.burn*dt,'feuer'); } HSRC=null; }
+  autoCatapult(dt);
   updateCoins(dt); updateCorpses(dt);
   for(const k of ['kat','gew','vul','oil']) if(G[k].cd>0) G[k].cd=Math.max(0,G[k].cd-dt);
   if(G.archer>=0) G.pow.bogen+=dt; if(G.kat.lvl>=0) G.pow.kat+=dt; if(G.gew.lvl>=0) G.pow.gew+=dt; if(G.vul.lvl>=0) G.pow.vul+=dt;
@@ -1691,12 +1737,12 @@ const ITEMS = [
     lvl:()=>`${G.fighters.length}/14`, done:()=>G.fighters.length>=14, price:()=>Math.round(20+G.fighters.length*15+Math.max(0,G.fighters.length-7)**2*40), buy:()=>addFighter()},
   {id:'raeuber', ic:'💰', name:'Langfinger-Lutz', info:'Ein Räuber auf eurer Seite: Er schleicht sich sogar hinter die Reichweite-Grenze und klaut den Monstern ihre Münzen!',
     lvl:()=>G.rob<0?'neu':lv(G.rob+1,ROB.length), done:()=>G.rob>=ROB.length-1, price:()=>ROB_PREIS[G.rob+1], buy:()=>{G.rob++; while(G.robbers.length<ROB[G.rob].n) addRobber(); if(G.rob===0) toast('Langfinger-Lutz schleicht los und klaut den Monstern die Münzen! 💰');}},
-  {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Nur er kann Spukolino besiegen!',
+  {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Sein Zauber springt auf weitere Monster über. Nur er kann Spukolino besiegen!',
     lvl:()=>G.wiz<0?'neu':lv(G.wiz+1,ZAUBER.length), done:()=>G.wiz>=ZAUBER.length-1, price:()=>ZAUBER_PREIS[G.wiz+1], buy:()=>{G.wiz++; G.wizCd=0;}},
   {id:'oel', ic:'🫕', name:'Brutzel-Kessel', info:'Kessel über dem Tor. Antippen: heißes Öl auf alle Monster am Tor!',
     lvl:()=>G.oil.lvl<0?'neu':lv(G.oil.lvl+1,OEL.length), done:()=>G.oil.lvl>=OEL.length-1, price:()=>OEL_PREIS[G.oil.lvl+1], buy:()=>{G.oil.lvl++; if(G.oil.lvl===0) toast('Tippe auf den Kessel über dem Tor!');}},
-  {id:'katapult', ic:'🪨', name:'Schleuder-Susi', info:'Katapult antippen, dann ein Ziel. Gut gegen Horden weit hinten.',
-    lvl:()=>G.kat.lvl<0?'neu':lv(G.kat.lvl+1,KATAPULT.length), done:()=>G.kat.lvl>=KATAPULT.length-1, price:()=>KATAPULT_PREIS[G.kat.lvl+1], buy:()=>{G.kat.lvl++; if(G.kat.lvl===0) toast('Tippe auf Schleuder-Susi in der Burg und dann auf ein Ziel!');}},
+  {id:'katapult', ic:'🪨', name:'Schleuder-Susi', info:'Wirft von selbst auf die größte Gruppe. Du kannst auch Susi antippen und selbst ein Ziel wählen.',
+    lvl:()=>G.kat.lvl<0?'neu':lv(G.kat.lvl+1,KATAPULT.length), done:()=>G.kat.lvl>=KATAPULT.length-1, price:()=>KATAPULT_PREIS[G.kat.lvl+1], buy:()=>{G.kat.lvl++; if(G.kat.lvl===0) toast('Schleuder-Susi wirft jetzt von selbst! Wenn du willst: Susi antippen und selbst zielen.');}},
   {id:'gewitter', ic:'⛈️', name:'Donner-Doris', info:'Wolke antippen, dann ein Ziel. Super gegen Ritter und Rammböcke.',
     lvl:()=>G.gew.lvl<0?'neu':lv(G.gew.lvl+1,GEWITTER.length), done:()=>G.gew.lvl>=GEWITTER.length-1, price:()=>GEWITTER_PREIS[G.gew.lvl+1], buy:()=>{G.gew.lvl++; if(G.gew.lvl===0) toast('Tippe auf Donner-Doris links oben und dann auf ein Ziel!');}},
   {id:'vulkan', ic:'🌋', name:'Vulkan Volker', info:'Vulkan antippen: Lava fließt auf die mittleren Wege. Stampfi hasst Feuer!',
@@ -1860,6 +1906,7 @@ function endGame(won){
     $('endText').textContent= won ? 'Alle Wellen sind besiegt, sogar Gromp der Riese. Deine Burg steht!' : 'Die Monster haben die Burg überrannt. Versuch es nochmal – vielleicht mit Schleuder-Susi gegen die Horden weiter hinten?';
     const sec=Math.max(0,G.t-G.t0), m=Math.floor(sec/60), s=Math.floor(sec%60);
     $('endStats').innerHTML=`<div class="plate">👼 <b>${G.kills.toLocaleString('de-DE')}</b> Monster</div><div class="plate">🪙 <b>${Math.floor(G.earned).toLocaleString('de-DE')}</b> gesammelt</div><div class="plate">⏱ <b>${m}:${String(s).padStart(2,'0')}</b></div>`;
+    renderBilanz();
     const wv=Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1);
     const pts=Math.round((G.kills*10 + wv*300 + (won ? 5000+5000*Math.max(0,G.hp/maxHp()) : 0)) * SCORE_MULT[STUFE_WAHL]);
     HS_PENDING={pts, won, wave:wv, waves:WAVES.length, stufe:STUFE_WAHL, map:MAP_ID, d:Date.now()};
@@ -1871,7 +1918,8 @@ function endGame(won){
       if(neu>alt){ st[MAP_ID]=neu; try{ localStorage.setItem('md_stars',JSON.stringify(st)); }catch(e){}
         $('endText').textContent+=` Neu: ${sternText(neu)} für ${MAPS[MAP_ID].name}!`; } }
     const erg=won?'gewonnen':'verloren';
-    track('spiel-ende',{ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
+    const top=Object.entries(G.dmgBy||{}).sort((a,b)=>b[1]-a[1])[0];
+    track('spiel-ende',{bester_helfer:top?top[0]:'-', ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
 }
 /* ---------- Auto-Update (wichtig für die Homescreen-App) ---------- */
@@ -1899,6 +1947,20 @@ function endGame(won){
 function track(name,data){ try{ if(window.umami && typeof umami.track==='function') umami.track(name,data); }catch(e){} }
 (function(){ let mode='browser'; try{ if(matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone) mode='app'; }catch(e){}
   addEventListener('load',()=>setTimeout(()=>track('geoeffnet',{als:mode}),1500)); })();
+/* ---------- Wer hat den meisten Schaden gemacht? ---------- */
+function renderBilanz(){
+  const el=$('endBilanz'); el.innerHTML='';
+  const rows=Object.entries(G.dmgBy||{}).filter(([k,v])=>v>=1 && ITEMS.find(x=>x.id===k)).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length) return;
+  const h=document.createElement('h3'); h.textContent='Wer hat den meisten Schaden gemacht?'; el.appendChild(h);
+  const max=rows[0][1];
+  rows.slice(0,8).forEach(([k,v],n)=>{ const it=ITEMS.find(x=>x.id===k);
+    const r=document.createElement('div'); r.className='brow';
+    const nm=document.createElement('span'); nm.className='bn'; nm.textContent=(n===0?'👑 ':'')+it.ic+' '+it.name;
+    const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(2,100*v/max)+'%'; bb.appendChild(bi);
+    const val=document.createElement('span'); val.className='bv'; val.textContent=Math.round(v).toLocaleString('de-DE');
+    r.append(nm,bb,val); el.appendChild(r); });
+}
 /* ---------- Bestenliste (auf diesem Gerät) ---------- */
 const SCORE_MULT={leicht:0.5, normal:1, schwer:1.6};
 let HS_PENDING=null;
