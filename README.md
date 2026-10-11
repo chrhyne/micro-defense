@@ -2,7 +2,7 @@
 
 Ein kleines Tower-Defense-Spiel von und für Kinder – erfunden von Adrian und Papa, programmiert mit Claude.
 
-**Spielen:** https://chrhyne.github.io/micro-defense/
+**Spielen:** https://micro-defense.christian-hein.de/
 
 - Läuft im Browser, am besten auf dem iPad quer.
 - Auf dem iPad in Safari: Teilen → „Zum Home-Bildschirm“ – dann startet es wie eine App im Vollbild.
