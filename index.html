@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791741061">
+<meta name="md-build" content="1791742222">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -71,6 +71,13 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .tool.active{background:var(--gold);color:var(--ink)}
 .tool.active .lv{color:var(--ink-soft)}
 
+#bossBar{position:fixed;left:50%;transform:translateX(-50%);bottom:140px;z-index:3;width:min(460px,62vw);pointer-events:none;text-align:center}
+#bossBar .bn{font-family:var(--display);font-size:clamp(15px,2vw,20px);color:#fff;-webkit-text-stroke:1px var(--ink);text-shadow:0 2px 0 var(--ink);letter-spacing:.04em}
+#bossBar .bbar{position:relative;height:16px;border:3px solid var(--ink);border-radius:9px;background:#3a2410;overflow:hidden;margin-top:2px;box-shadow:0 3px 0 var(--ink)}
+#bossBar .bbar i{display:block;height:100%;width:100%;background:linear-gradient(#c86bff,#8a3fc0);transition:width .2s}
+#bossBar .bbar b{position:absolute;top:0;bottom:0;width:2px;background:rgba(255,255,255,.55)}
+body.inmenu #bossBar{display:none}
+.version{position:absolute;right:calc(env(safe-area-inset-right,0px) + 12px);bottom:calc(env(safe-area-inset-bottom,0px) + 8px);font-size:11px;font-weight:700;color:rgba(255,248,230,.6);pointer-events:none}
 /* Handy quer: Leiste an den rechten Rand, alles kompakter */
 @media (orientation:landscape) and (max-height:520px){
   #toolbar{left:auto;top:0;right:0;bottom:0;width:calc(150px + env(safe-area-inset-right,0px));box-sizing:border-box;border-top:0;border-left:3px solid var(--ink);padding:6px calc(env(safe-area-inset-right,0px) + 6px) calc(env(safe-area-inset-bottom,0px) + 6px) 6px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;align-content:start;gap:5px;overflow-x:hidden;overflow-y:auto;touch-action:pan-y}
@@ -88,6 +95,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   .bar{width:56px;height:9px}
   #nextList{gap:5px}
   #nextList img{height:16px}
+  #bossBar{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;left:calc(50% - 75px);width:min(320px,50vw)} #bossBar .bbar{height:11px;border-width:2px}
   #toast,#modeHint{left:calc(50% - 75px);top:calc(env(safe-area-inset-top,0px) + 40px);font-size:14px;padding:5px 10px;max-width:calc(100vw - 180px)}
   #modeHint button{font-size:12px;padding:2px 7px}
 }
@@ -242,6 +250,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
   </div>
 </div>
 
+<div id="bossBar" hidden><span class="bn">👹 GROMP DER RIESE</span><div class="bbar"><i id="bossFill"></i><b style="left:25%"></b><b style="left:50%"></b><b style="left:75%"></b></div></div>
 <div id="toolbar"></div>
 <div id="toast" class="hide"></div>
 <div id="modeHint" hidden><span id="modeText"></span><button id="modeCancel">✖ Abbrechen</button></div>
@@ -271,6 +280,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
       <button class="installhint" id="installHint" hidden>📲 Als App auf den Homescreen holen</button>
     </div>
   </div>
+  <div class="version" id="versionTxt"></div>
 </div>
 
 <div class="overlay" id="setup" hidden>
@@ -472,7 +482,7 @@ try{ const l=JSON.parse(localStorage.getItem('md_loadout')||'null'); if(Array.is
 // reihen = Reichweite: 1 = nur der vorderste Weg, 2 = die vorderen zwei Wege, 2.5 = bis zur Mitte des dritten Weges (weiter geht nichts!)
 const BROK = [ {dmg:3,rate:1.6,n:1,sword:5,reihen:1.3}, {dmg:4.5,rate:1.9,n:1,sword:8,reihen:1.45}, {dmg:6,rate:2.2,n:2,sword:12,reihen:1.6}, {dmg:8,rate:2.6,n:2,sword:17,reihen:1.7}, {dmg:11,rate:3,n:3,sword:24,reihen:1.8}, {dmg:15,rate:3.4,n:3,sword:32,reihen:1.9}, {dmg:20,rate:3.8,n:4,sword:42,reihen:2.0}, {dmg:27,rate:4.2,n:4,sword:55,reihen:2.0} ];
 const BROK_PREIS = [80, 200, 680, 1350, 2400, 4200, 6750];
-const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.5}, {rate:2,dmg:2.5,n:1,reihen:1.65}, {rate:2.4,dmg:3.5,n:2,reihen:1.8}, {rate:2.8,dmg:4.5,n:2,reihen:1.95}, {rate:3,dmg:5.5,n:3,reihen:2.1}, {rate:3.3,dmg:6.5,n:3,reihen:2.25}, {rate:3.6,dmg:7.5,n:4,reihen:2.4}, {rate:4,dmg:9,n:4,reihen:2.6} ];
+const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.5}, {rate:2,dmg:3,n:1,reihen:1.65}, {rate:2.4,dmg:4.5,n:2,reihen:1.8}, {rate:2.8,dmg:6,n:2,reihen:1.95}, {rate:3,dmg:8,n:3,reihen:2.1}, {rate:3.3,dmg:10.5,n:3,reihen:2.25}, {rate:3.6,dmg:13,n:4,reihen:2.4}, {rate:4,dmg:16,n:4,reihen:2.6} ];
 const BOGEN_PREIS = [25, 70, 260, 630, 1420, 2400, 3900, 6000];
 // chain = auf so viele weitere Monster springt der Zauber über
 const ZAUBER = [ {rate:0.9,dmg:6,reihen:1.6,chain:1}, {rate:1.5,dmg:10,reihen:1.9,chain:1}, {rate:2.2,dmg:16,reihen:2.2,chain:2}, {rate:2.8,dmg:22,reihen:2.3,chain:3}, {rate:3.4,dmg:30,reihen:2.4,chain:3}, {rate:4,dmg:40,reihen:2.5,chain:4} ];
@@ -879,7 +889,7 @@ function spawn(type,w,dist,lat){
   const di=Math.max(0,eDist[i]|0); eX[i]=PX[di]; eY[i]=PY[di]; eS[i]=PS[di];
   G.alive++;
   if(ty.boss) G.bossOut=true;
-  if(ty.boss && G.running){ toast('Gromp der Riese ist aus der Höhle gekommen! Ganz oben links!'); sfx('boss'); }
+  if(ty.boss) startBoss(i);
   return i;
 }
 
@@ -894,6 +904,7 @@ function moveEnemies(dt){
     let sp=ty.speed*PSP[di0]*G.diff.tempo;
     if(windD.length && !ty.wind){ for(const wd of windD){ if(d>wd && d<wd+130){ sp*=1.6; break; } } }
     if(ty.hop){ const ph=G.t*ty.anim+ePh[i]; sp*=Math.sin(ph*TAU)>0?1.8:0.25; }
+    if(ty.boss && G.boss){ if(G.boss.stun>0||G.boss.roar>0) sp=0; else if(G.boss.rage) sp*=1.5; }
     let nd=d+sp*dt;
     if(ty.cannon && nd>=KALLE_STOP){ nd=Math.max(d,KALLE_STOP-eJit[i]*2); eT[i]+=dt; if(eT[i]>=3){ eT[i]=0; fireCannon(i); } }
     const gStop=L-eJit[i]*1.8;
@@ -927,6 +938,20 @@ function targetable(i,el){
   const m=weakOf(ty,el); return m!==0;
 }
 // Schadenszahlen, die kurz über einer Attacke aufsteigen
+// Einzeltreffer (Pfeile, Zauber, Piekser, Schwert) werden pro Monster kurz gesammelt und als kleine Zahl gezeigt – bei Gromp jeder Schaden
+const AREA_SRC=new Set(['katapult','oel','vulkan','gewitter','tnt']);
+const eAcc=new Float32Array(CAP), eAccT=new Float32Array(CAP), eCrit=new Uint8Array(CAP); let accList=[];
+function flushHitNumbers(dt){
+  if(!accList.length) return; const keep=[]; let n=G.pops.length;
+  for(const i of accList){ eAccT[i]+=dt; const boss=TYPES[eType[i]].boss;
+    if(eAccT[i]<(boss?0.12:0.15) && eAlive[i]) { keep.push(i); continue; }
+    const v=eAcc[i]; eAcc[i]=0;
+    const crit=eCrit[i]; eCrit[i]=0;
+    if(v<1 || (!boss && (eS[i]<FAR || n>(crit?140:110)))) continue;
+    const s=eS[i], m=s*(boss?1+0.3*s:1+0.75*s), h=(SPR[TYPES[eType[i]].id]?SPR[TYPES[eType[i]].id][0].ay:30)*m;
+    G.pops.push({x:eX[i]+(Math.random()-.5)*16*s,y:eY[i]-h-6,t:0,life:0.8,coin:true,txt:Math.round(v).toLocaleString('de-DE')+(crit?'!':''),sc:(boss?0.95:Math.max(0.42,0.6*s))*(crit?1.35:1),col:crit?'#ff4d4d':'#ffffff'}); n++; }
+  accList=keep;
+}
 function dmgSnap(src){ return (G.dmgBy&&G.dmgBy[src])||0; }
 function dmgPop(x,y,v,col){ if(v<1) return; G.pops.push({x,y,t:0,life:1.2,coin:true,txt:Math.round(v).toLocaleString('de-DE'),sc:1.05,col}); }
 // zählt mit, solange die Attacke wirkt (Öl, Lava, Blitze, Mega-Bumm)
@@ -940,10 +965,11 @@ function hurt(i,dmg,el){
   const ty=TYPES[eType[i]]; const m=weakOf(ty,el); let mult=(m===undefined)?1:m;
   if(mult===0) return false;
   if((el==='pfeil'||el==='brok') && eShield[i]) mult*=0.2;
+  if(ty.boss && G.boss && G.boss.stun>0) mult*=2;   // Gromp lacht: doppelter Schaden
   const real=Math.min(Math.max(0,eHp[i]), dmg*mult), src=HSRC||EL_SRC[el]||el;
   const db=G.dmgBy||(G.dmgBy={}); db[src]=(db[src]||0)+real;
+  if(real>0 && (ty.boss || !AREA_SRC.has(src))){ if(eAcc[i]===0){ accList.push(i); eAccT[i]=0; eCrit[i]=0; } eAcc[i]+=real; if(m!==undefined && m>=1.5) eCrit[i]=1; }
   eHp[i]-=dmg*mult;
-  if(mult>=2 && Math.random()<0.12) G.pops.push({x:eX[i],y:eY[i]-20*eS[i],t:0,txt:EL_ICON[el]||'💥'});
   if(eHp[i]<=0) kill(i);
   return true;
 }
@@ -992,7 +1018,7 @@ function updateFighters(dt){
     if(!valid && f.scan<=0){ f.scan=0.25; f.tgt=nearestEnemy(f.x,f.y,1e5,true,L-480,'messer'); if(f.tgt>=0) f.uid=eUid[f.tgt]; valid=f.tgt>=0; }
     let tx=f.hx, ty=f.hy; if(valid){ tx=eX[f.tgt]; ty=eY[f.tgt]; }
     const dx=tx-f.x, dy=ty-f.y, d=Math.hypot(dx,dy);
-    if(valid && d<15){ if(f.cd<=0){ f.cd=0.7; f.stab=0.15; hurt(f.tgt,1.6,'messer'); } }
+    if(valid && d<15){ if(f.cd<=0){ f.cd=0.6; f.stab=0.15; hurt(f.tgt,4,'messer'); } }
     else if(d>2){ const sp=140*dt; f.x+=dx/d*Math.min(sp,d); f.y+=dy/d*Math.min(sp,d); f.walk+=dt*10; }
   }
 }
@@ -1125,7 +1151,7 @@ function chainNext(a){
   for(let i=0;i<eHi;i++){ if(!eAlive[i] || a.hit.includes(eUid[i]) || !targetable(i,'zauber')) continue;
     const dx=eX[i]-a.tx, dy=eY[i]-a.ty, q=dx*dx+dy*dy; if(q>R2) continue; const m=wmult(i,'zauber'), sc=q/(m*m); if(sc<best){best=sc; bi=i;} }
   if(bi<0) return;
-  const n=shoot(a.tx,a.ty,bi,a.dmg*0.8,'#b06cff',false,'zauber','zauber'); n.chain=a.chain-1; n.hit=[...a.hit,eUid[bi]]; n.dur=Math.max(0.08,n.dur*0.7);
+  const n=shoot(a.tx,a.ty,bi,a.dmg*0.55,'#b06cff',false,'zauber','zauber'); n.chain=a.chain-1; n.hit=[...a.hit,eUid[bi]]; n.dur=Math.max(0.08,n.dur*0.7);
 }
 function updateProjectiles(dt){
   for(let k=G.arrows.length-1;k>=0;k--){ const a=G.arrows[k]; a.t+=dt;
@@ -1251,7 +1277,7 @@ function updateCorpses(dt){
 function update(dt){
   G.t+=dt;
   spawnDue();
-  moveEnemies(dt);
+  moveEnemies(dt); updateBoss(dt);
   if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt; if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! Schnell: Brutzel-Kessel, Piekser oder Brokkoli vors Tor!'); } if(G.hp<=0){ G.hp=0; endGame(false); } }
   updateFighters(dt); updateHero(dt); updateArcher(dt); updateWizard(dt); updateRobbers(dt);
   updateProjectiles(dt); updateLava(dt); updateTimers(dt);
@@ -1264,6 +1290,87 @@ function update(dt){
   if(!G.over && G.qi>=G.queue.length && G.alive<=0) endGame(true);
   if(!G.tips.kat && G.kat.lvl<0 && G.t>G.t0+150){ G.tips.kat=1; toast('Tipp: Mit Schleuder-Susi erwischst du die Horden weiter hinten!'); }
   if(!G.tips.spuk && G.wiz<0){ for(let i=0;i<eHi;i+=7){ if(eAlive[i] && TYPES[eType[i]].ghost && eDist[i]>LS[2]){ G.tips.spuk=1; toast('Spukolino kommt! Gegen Gespenster hilft Zauberer Zappelbart am besten – Brokkoli schafft nur ein bisschen.'); break; } } }
+  flushHitNumbers(dt);
+}
+
+/* ============================ GROMP DER RIESE ============================ */
+// Phasen: 0 = marschiert, 1 (75 %) = wirft Felsbrocken + Kitzel-Bauch, 2 (50 %) = ruft Verstärkung, 3 (25 %) = wütend & schneller
+function startBoss(i){
+  G.boss={i,uid:eUid[i],phase:0,stun:0,roar:0,rage:false,rockCd:3,minCd:18,tickle:0,tickleCd:6,tickles:0};
+  G.rocks=G.rocks||[];
+  if(G.running){ G.shake=16; sfx('boss'); sfx('rumble'); toast('⚠️ GROMP DER RIESE kommt! Der Boden bebt …'); }
+}
+function bossAlive(){ const b=G.boss; return !!(b && eAlive[b.i] && eUid[b.i]===b.uid); }
+const KITZEL_NOETIG=6;
+function updateBoss(dt){
+  const b=G.boss; if(!b) return;
+  // Felsbrocken im Flug
+  for(let k=G.rocks.length-1;k>=0;k--){ const r=G.rocks[k]; r.t+=dt;
+    if(r.t>=r.dur){ G.rocks.splice(k,1);
+      if(!G.over){ G.hp-=r.dmg; G.hurtFlash=0.4; G.shake=Math.max(G.shake,10); G.booms.push({x:r.x1,y:r.y1,r:40,t:0}); sfx('boom');
+        G.pops.push({x:r.x1,y:r.y1-30,t:0,life:1.2,coin:true,txt:'-'+Math.round(r.dmg)+' 🏰',sc:1,col:'#ff5a4a'});
+        if(G.hp<=0){ G.hp=0; endGame(false); } } } }
+  if(!bossAlive()) return;
+  const i=b.i, ratio=eHp[i]/eMax[i];
+  b.stun=Math.max(0,b.stun-dt); b.roar=Math.max(0,b.roar-dt);
+  const ph = ratio<=0.25?3 : ratio<=0.5?2 : ratio<=0.75?1 : 0;
+  if(ph>b.phase){ b.phase=ph; b.roar=1.6; G.shake=Math.max(G.shake,14); sfx('boss');
+    if(ph===1) toast('GROMP BRÜLLT! Er wirft Felsbrocken – tippe sie an, bevor sie landen!');
+    if(ph===2){ toast('GROMP STAMPFT! Er ruft Verstärkung!'); summon(1); b.minCd=20; }
+    if(ph===3){ b.rage=true; b.tickleCd=1.5; toast('GROMP IST WÜTEND und wird schneller! Kitzel seinen Bauch!'); } }
+  if(b.stun>0 || b.roar>0) return;
+  if(b.phase>=1){ b.rockCd-=dt; if(b.rockCd<=0){ b.rockCd=b.rage?4.5:7; throwRock(i); } }
+  if(b.phase>=2){ b.minCd-=dt; if(b.minCd<=0){ b.minCd=20; summon(0.6); } }
+  if(b.phase>=1){
+    if(b.tickle>0){ b.tickle-=dt; if(b.tickle<=0){ b.tickles=0; b.tickleCd=b.rage?7:10; } }
+    else { b.tickleCd-=dt; if(b.tickleCd<=0){ b.tickle=5; b.tickles=0; if(!G.tips.kitzel){ G.tips.kitzel=1; toast('Gromps Bauch leuchtet! Schnell ganz oft drauftippen – er ist kitzelig!'); } } } }
+}
+function summon(f){
+  const i=G.boss.i, pool=TODAY.filter(id=>id==='misti' || STUFE[id]===1);
+  const n=Math.max(4,Math.round(16*f*G.diff.horden));
+  for(let k=0;k<n;k++){ const id=pool[(Math.random()*pool.length)|0]; spawn(T_[id],WAVES.length-1,Math.max(0,eDist[i]-30-Math.random()*160),Math.random()*2-1); }
+  G.shake=Math.max(G.shake,12);
+}
+function throwRock(i){
+  const s=eS[i], m=s*(1+0.3*s);
+  G.rocks.push({x0:eX[i],y0:eY[i]-SPR.gromp[0].ay*m*0.8,x1:200+Math.random()*170,y1:820+Math.random()*90,t:0,dur:2.8,h:260,dmg:Math.round(18*G.diff.hp)});
+  sfx('throw');
+}
+function rockPos(r){ const p=Math.min(1,r.t/r.dur); return {x:r.x0+(r.x1-r.x0)*p, y:r.y0+(r.y1-r.y0)*p-Math.sin(p*Math.PI)*r.h, p}; }
+function bellyPos(){ const i=G.boss.i, s=eS[i], m=s*(1+0.3*s), h=SPR.gromp[0].ay*m; return {x:eX[i], y:eY[i]-h*0.42, r:Math.max(30,h*0.3)}; }
+// Antippen: Felsbrocken zerschlagen oder Gromp kitzeln
+function bossTap(p){
+  if(!G.boss) return false;
+  for(let k=G.rocks.length-1;k>=0;k--){ const r=G.rocks[k], q=rockPos(r); if(Math.hypot(p.x-q.x,p.y-q.y)<60){
+    G.rocks.splice(k,1); G.booms.push({x:q.x,y:q.y,r:34,t:0}); sfx('boom');
+    G.pops.push({x:q.x,y:q.y-20,t:0,life:1.1,coin:true,txt:'Zerschlagen!',sc:0.9,col:'#ffffff'});
+    dropCoin(q.x,q.y,10,1); if(kN>0) startCoinFly(kN-1,1); return true; } }
+  const b=G.boss; if(bossAlive() && b.tickle>0){ const bp=bellyPos(); if(Math.hypot(p.x-bp.x,p.y-bp.y)<bp.r*1.4){
+    b.tickles++; const i=b.i; HSRC='kitzeln'; hurt(i,eMax[i]*0.012,'kitzeln'); HSRC=null; sfx('swish');
+    G.pops.push({x:bp.x+(Math.random()-.5)*40,y:bp.y-10,t:0,life:0.8,coin:true,txt:['hihi','haha','hihihi'][(Math.random()*3)|0],sc:0.8,col:'#ffe27a'});
+    if(b.tickles>=KITZEL_NOETIG){ b.tickle=0; b.tickles=0; b.tickleCd=b.rage?8:12; b.stun=4; G.shake=Math.max(G.shake,8);
+      toast('HAHAHA! Gromp lacht sich kaputt und bleibt stehen – jetzt doppelter Schaden!'); }
+    return true; } }
+  return false;
+}
+function drawBossFx(T){
+  if(!G.boss) return;
+  for(const r of G.rocks){ const q=rockPos(r);
+    ctx.globalAlpha=0.25+0.45*q.p; ell(ctx,r.x1,r.y1,30*(0.4+0.6*q.p),11*(0.4+0.6*q.p),'rgba(0,0,0,0.5)');
+    ctx.strokeStyle='#e0453f'; ctx.lineWidth=3; ctx.beginPath(); ctx.ellipse(r.x1,r.y1,34,13,0,0,TAU); ctx.stroke(); ctx.globalAlpha=1;
+    const rr2=26+4*Math.sin(T*10); circ(ctx,q.x,q.y,rr2,'#8f877c',INK,3.5); circ(ctx,q.x-5,q.y-5,rr2*0.35,'#b8b0a5');
+    ctx.strokeStyle=INK; ctx.lineWidth=1.5; ln(ctx,q.x-4,q.y+2,q.x+3,q.y+8); ln(ctx,q.x+5,q.y-6,q.x+9,q.y);
+    ctx.font='26px sans-serif'; ctx.textAlign='center'; ctx.fillText('👆',q.x+30,q.y-20); }
+  if(!bossAlive()) return;
+  const b=G.boss, i=b.i, s=eS[i], m=s*(1+0.3*s), h=SPR.gromp[0].ay*m, x=eX[i], y=eY[i];
+  ctx.textAlign='center'; ctx.lineJoin='round';
+  const say=(t,yy,size,col)=>{ ctx.font=`${size}px "Lilita One", sans-serif`; ctx.lineWidth=size/5; ctx.strokeStyle='#3a2410'; ctx.strokeText(t,x,yy); ctx.fillStyle=col; ctx.fillText(t,x,yy); };
+  if(b.rage && b.stun<=0){ ctx.globalAlpha=0.35+0.2*Math.sin(T*8); ell(ctx,x,y,h*0.55,h*0.18,'#ff3a2a'); ctx.globalAlpha=1; }
+  if(b.tickle>0){ const bp=bellyPos(), pr=bp.r*(1+0.12*Math.sin(T*12));
+    const g=ctx.createRadialGradient(bp.x,bp.y,2,bp.x,bp.y,pr); g.addColorStop(0,'rgba(255,240,120,0.95)'); g.addColorStop(1,'rgba(255,200,60,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(bp.x,bp.y,pr,0,TAU); ctx.fill();
+    say(`👆 Kitzeln! ${b.tickles}/${KITZEL_NOETIG}`, y+26, 26, '#ffe27a'); }
+  if(b.stun>0) say('HA HA HA!', y-h-14-Math.abs(Math.sin(T*9))*10, 30, '#ffffff');
+  if(b.roar>0) say('ROOOAAAR!', y-h-14, 34+8*Math.sin(T*20), '#ff5a4a');
 }
 
 /* ============================ ZEICHNEN ============================ */
@@ -1501,6 +1608,7 @@ function render(time){
     if(ty.ghost) ctx.globalAlpha=0.72+0.15*Math.sin(T*3+ePh[i]);
     drawSprite(SPR[ty.id][fr],eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])); ctx.globalAlpha=1;
     if(ty.hp>=14 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]-16*eS[i], eHp[i]/eMax[i], 20*Math.max(0.5,eS[i]), Math.max(2,4*eS[i])); }
+  drawBossFx(T);
   // Markierung
   const mk=markValid(); if(mk>=0){ const x=eX[mk], y=eY[mk]-38*eS[mk]*(1+0.75*eS[mk])-Math.abs(Math.sin(T*6))*5; poly(ctx,[x-7,y-12,x+7,y-12,x,y],'#e0453f',INK,2); }
   // Geschosse
@@ -1723,6 +1831,7 @@ function swipe(p){
 const near=(p,o,r)=>Math.hypot(p.x-o.x,p.y-o.y)<r;
 function tap(p){
   if(G.over) return;
+  if(!G.mode && bossTap(p)) return;
   if(G.mode==='kat'||G.mode==='katPow'||G.mode==='gew'){ const n=nearestPathDist(p.x,p.y); if(n.d<modeReach()){ toast(G.mode==='gew'?'So weit hinten kann Donner-Doris nicht blitzen – nur auf dem gelben Weg.':'Zu weit! Schleuder-Susi schafft es nur bis zum gelben Weg.'); return; } }
   if(G.mode==='kat'){ fireCatapult(p.x,p.y); G.kat.cd=KATAPULT[G.kat.lvl].cd; setMode(null); return; }
   if(G.mode==='katPow'){ G.pow.kat=0; for(let n=0;n<5;n++){ const a=Math.random()*6.283, r=(n?60+Math.random()*80:0)*SCy(p.y); fireCatapult(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*0.6,{fire:true,delay:n*0.12}); } toast('5 Feuerbälle!'); setMode(null); return; }
@@ -1851,6 +1960,7 @@ function updateHud(dt){
     if(G.lastWaveShown!==started){ G.lastWaveShown=started;
       $('nextList').innerHTML=WAVES[started].map(([id,n])=>{ const ty=TYPES[T_[id]]; return `<span title="${ty.name}"><img src="${ICONS[ty.id]}" alt="${ty.name}">×${n}<small>${weakText(ty)}</small></span>`; }).join(''); }
   } else { $('waveTxt').textContent='Alle Wellen sind unterwegs!'; $('nextList').textContent=`Noch ${G.alive} Monster`; G.lastWaveShown=-1; }
+  const ba=G.boss && bossAlive(); $('bossBar').hidden=!ba; if(ba){ $('bossBar').style.bottom=(($('toolbar').offsetWidth<innerWidth*0.5)?8:$('toolbar').offsetHeight+10)+'px'; } if(ba) $('bossFill').style.width=(100*Math.max(0,eHp[G.boss.i]/eMax[G.boss.i]))+'%';
   refreshToolbar();
 }
 
@@ -1966,6 +2076,10 @@ function endGame(won){
     track('spiel-ende',{bester_helfer:top?top[0]:'-', ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
 }
+/* ---------- Versionsanzeige auf dem Startbild ---------- */
+(function(){ const m=document.querySelector('meta[name="md-build"]'); let t='Vorschau';
+  if(m){ const d=new Date(+m.content*1000); const z=n=>String(n).padStart(2,'0'); t=`Version ${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} · ${z(d.getHours())}:${z(d.getMinutes())}`; }
+  $('versionTxt').textContent=t; })();
 /* ---------- Auto-Update (wichtig für die Homescreen-App) ---------- */
 (function(){
   const meta=document.querySelector('meta[name="md-build"]'); if(!meta || !window.fetch) return;
@@ -1994,14 +2108,14 @@ function track(name,data){ try{ if(window.umami && typeof umami.track==='functio
 /* ---------- Wer hat den meisten Schaden gemacht? ---------- */
 function renderBilanz(){
   const el=$('endBilanz'); el.innerHTML='';
-  const rows=Object.entries(G.dmgBy||{}).filter(([k,v])=>v>=1 && ITEMS.find(x=>x.id===k)).sort((a,b)=>b[1]-a[1]);
+  const rows=Object.entries(G.dmgBy||{}).filter(([k,v])=>v>=1 && (ITEMS.find(x=>x.id===k)||k==='kitzeln')).sort((a,b)=>b[1]-a[1]);
   if(!rows.length){ lutzZeile(el); return; }
   const h=document.createElement('h3'); h.textContent='Wer hat den meisten Schaden gemacht?'; el.appendChild(h);
   const max=rows[0][1];
-  rows.slice(0,8).forEach(([k,v],n)=>{ const it=ITEMS.find(x=>x.id===k);
+  rows.slice(0,8).forEach(([k,v],n)=>{ const it=ITEMS.find(x=>x.id===k)||{ic:'👆',name:'Du (Gromp gekitzelt)',lvl:()=>''};
     const r=document.createElement('div'); r.className='brow';
     const nm=document.createElement('span'); nm.className='bn'; nm.textContent=(n===0?'👑 ':'')+it.ic+' '+it.name;
-    if(k!=='tnt'){ const lvTxt=k==='messer'?`${G.fighters.length} Stück`:it.lvl().replace(/\/\d+$/,''); const sm=document.createElement('small'); sm.textContent=' · '+lvTxt; nm.appendChild(sm); }
+    if(k!=='tnt' && k!=='kitzeln'){ const lvTxt=k==='messer'?`${G.fighters.length} Stück`:it.lvl().replace(/\/\d+$/,''); const sm=document.createElement('small'); sm.textContent=' · '+lvTxt; nm.appendChild(sm); }
     const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(2,100*v/max)+'%'; bb.appendChild(bi);
     const val=document.createElement('span'); val.className='bv'; val.textContent=Math.round(v).toLocaleString('de-DE');
     r.append(nm,bb,val); el.appendChild(r); });
