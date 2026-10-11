@@ -69,7 +69,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .tool.active{background:var(--gold);color:var(--ink)}
 .tool.active .lv{color:var(--ink-soft)}
 
-#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 60px);transform:translateX(-50%);background:var(--parch);border:3px solid var(--ink);border-radius:16px;padding:8px 16px;font-family:var(--display);font-size:clamp(15px,2vw,20px);color:var(--ink);box-shadow:0 4px 0 var(--ink);text-align:center;max-width:min(90vw,640px);pointer-events:none;transition:opacity .3s,transform .3s;z-index:3}
+#toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 60px);transform:translateX(-50%);background:var(--parch);border:3px solid var(--ink);border-radius:16px;padding:8px 16px;font-family:var(--display);font-size:clamp(15px,2vw,20px);color:var(--ink);box-shadow:0 4px 0 var(--ink);text-align:center;max-width:min(90vw,640px);pointer-events:none;transition:opacity .3s,transform .3s;z-index:8}
 #toast.hide{opacity:0;transform:translate(-50%,-10px)}
 #modeHint{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;background:var(--gold);border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);padding:8px 10px 8px 16px;font-family:var(--display);font-size:clamp(16px,2.2vw,22px);color:var(--ink);max-width:min(94vw,720px);animation:hint 1s ease-in-out infinite}
 #modeHint button{border:3px solid var(--ink);border-radius:12px;background:var(--parch);font-family:var(--display);font-size:15px;padding:4px 10px;cursor:pointer;white-space:nowrap}
@@ -113,6 +113,48 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 #rotate div{font-size:60px}
 @media (orientation:landscape){#rotate{display:none}}
 @media (prefers-reduced-motion:reduce){#hpPlate.alarm,#modeHint{animation:none}}
+
+/* Titelbild, Vorbereitung, Menüs */
+.title-ov{background:radial-gradient(ellipse at center,rgba(30,20,6,.25),rgba(30,20,6,.65))}
+.titlebox{display:flex;gap:24px;align-items:center;justify-content:center;flex-wrap:wrap;max-width:900px}
+#titleArt{width:min(300px,40vw);height:auto;aspect-ratio:1;border:4px solid var(--ink);border-radius:36px;box-shadow:0 8px 0 var(--ink);background:#7cc8f7;animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-1deg)}}
+.titletext{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center;max-width:460px}
+.titletext .title{font-size:clamp(46px,8vw,84px)}
+.tag{margin:0;font-family:var(--display);font-size:clamp(17px,2.4vw,22px);color:var(--parch);text-shadow:0 2px 0 var(--ink);text-wrap:balance}
+.big.huge{font-size:clamp(24px,3.6vw,34px);padding:12px 38px}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.small{border:3px solid var(--ink);border-radius:14px;background:var(--parch);color:var(--ink);font-family:var(--display);font-size:17px;padding:6px 16px;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.installhint{border:2px dashed var(--parch);background:rgba(43,33,24,.55);color:var(--parch);border-radius:14px;padding:8px 14px;font-family:var(--display);font-size:16px;cursor:pointer}
+.menu{display:flex;flex-direction:column;gap:12px;align-items:stretch;text-align:center;width:min(440px,100%)}
+.prep{display:flex;flex-direction:column;gap:10px;width:min(1100px,100%)}
+.prep-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.prep-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:18px}
+@media (max-width:760px){.prep-cols{grid-template-columns:1fr}}
+.prep-cols section{display:flex;flex-direction:column;gap:6px;min-width:0}
+.prep .sub{margin:0}
+.prep #btnStart{align-self:center}
+.mons{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.mchip{display:flex;gap:6px;align-items:center;text-align:left;background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:12px;padding:4px 8px;cursor:pointer;min-width:0}
+.mchip img{height:30px;width:38px;object-fit:contain;flex:0 0 auto}
+.mchip span{display:flex;flex-direction:column;min-width:0}
+.mchip b{font-family:var(--display);font-weight:400;font-size:14px;line-height:1.1}
+.mchip small{font-size:11px;font-weight:700;color:var(--ink-soft)}
+.mchip.boss{border-color:#9b59d0}
+.helpsheet{display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.helpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;width:100%;text-align:left}
+.helpgrid div{background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:12px;padding:8px 10px;font-size:14px;font-weight:600;line-height:1.35}
+.helpgrid b{display:block;font-family:var(--display);font-weight:400;font-size:17px;margin-bottom:2px}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-family:var(--display);font-size:18px;text-align:left}
+.setrow.col{flex-direction:column;align-items:stretch}
+.seg{display:flex;border:3px solid var(--ink);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:var(--parch-hi);font-family:var(--display);font-size:15px;padding:5px 10px;cursor:pointer}
+.seg button+button{border-left:2px solid var(--ink)}
+.seg button.on{background:var(--gold)}
+.installbox{font-family:var(--body);font-size:15px;font-weight:700;line-height:1.4;background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:12px;padding:10px}
+.installbox p{margin:0}
+@media (prefers-reduced-motion:reduce){#titleArt{animation:none}}
+body.inmenu #hud, body.inmenu #toolbar{display:none}
 </style>
 
 <canvas id="game"></canvas>
@@ -126,9 +168,9 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     <div class="plate" id="hpPlate">🏰 <div class="bar"><i id="hpFill"></i></div> <span id="hpTxt">300</span></div>
     <button class="plate hbtn" id="btnSpeed" aria-label="Schneller">⏩</button>
     <button class="plate hbtn" id="btnMusic" aria-label="Musik: laut, leise oder aus">🎵</button>
-    <button class="plate hbtn" id="btnSound" aria-label="Geräusche an oder aus">🔊</button>
-    <button class="plate hbtn" id="btnFull" aria-label="Vollbild">⛶</button>
-    <button class="plate hbtn" id="btnPause" aria-label="Pause">⏸</button>
+    <button class="plate hbtn" id="btnSound" aria-label="Geräusche an oder aus" hidden>🔊</button>
+    <button class="plate hbtn" id="btnFull" aria-label="Vollbild" hidden>⛶</button>
+    <button class="plate hbtn" id="btnPause" aria-label="Menü und Pause">⏸</button>
   </div>
 </div>
 
@@ -137,33 +179,80 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 <div id="modeHint" hidden><span id="modeText"></span><button id="modeCancel">✖ Abbrechen</button></div>
 
 <div class="overlay" id="pause" hidden>
-  <div class="sheet" style="width:auto">
+  <div class="sheet menu">
     <h2>Pause</h2>
-    <p class="lead">Die Monster warten brav.</p>
-    <button class="big" id="resume">Weiter!</button>
+    <button class="big" id="resume">▶ Weiter</button>
+    <button class="small" id="pHelp">❓ So geht's</button>
+    <button class="small" id="pSettings">⚙️ Einstellungen</button>
+    <button class="small" id="pQuit">🏠 Hauptmenü</button>
   </div>
 </div>
 
-<div class="overlay" id="start">
-  <div class="sheet">
-    <h1 class="title">Micro Defense</h1>
-    <p class="lead">Ganz hinten am Horizont kommen schon die nächsten Horden. Je näher sie kommen, desto schneller laufen sie. Halte durch, bis Gromp der Riese besiegt ist!</p>
-    <div class="how">
-      <span>🥦 Turm antippen: Brokkoli schießt</span>
-      <span>⚔️ Vors Tor tippen: Brokkoli kämpft</span>
-      <span>🪨⛈️🌋 Katapult, Wolke oder Vulkan antippen</span>
-      <span>🎯 Monster antippen: alle schießen darauf</span>
-      <span>💥 Goldene Blase = Power-Attacke</span>
-      <span>👆 Über Münzen wischen = Bonus</span>
-      <span>💰 Langfinger-Lutz klaut den Monstern Münzen</span>
+<div class="overlay title-ov" id="title">
+  <div class="titlebox">
+    <canvas id="titleArt" width="300" height="300" aria-hidden="true"></canvas>
+    <div class="titletext">
+      <h1 class="title">Micro Defense</h1>
+      <p class="tag">Riesige Monster-Horden ziehen zur Burg. Brokkoli und seine Helfer halten sie auf!</p>
+      <button class="big huge" id="btnPlay">▶ Spiel starten</button>
+      <div class="row">
+        <button class="small" id="btnHelp">❓ So geht's</button>
+        <button class="small" id="btnSettings">⚙️ Einstellungen</button>
+      </div>
+      <button class="installhint" id="installHint" hidden>📲 Als App auf den Homescreen holen</button>
     </div>
-    <div class="stufen" id="stufen"></div>
-    <h2 class="sub">Heute greifen an</h2>
-    <div class="monsters" id="monsterList"></div>
-    <h2 class="sub">Wähle <span id="slotsTxt">5</span> Helfer <small id="slotsCount"></small></h2>
-    <p class="hint">Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.</p>
-    <div class="picks" id="pickList"></div>
+  </div>
+</div>
+
+<div class="overlay" id="start" hidden>
+  <div class="sheet prep">
+    <div class="prep-head">
+      <button class="small" id="btnBack">← Zurück</button>
+      <div class="stufen" id="stufen"></div>
+    </div>
+    <div class="prep-cols">
+      <section>
+        <h2 class="sub">Heute greifen an</h2>
+        <p class="hint">Tippe auf ein Monster für Infos.</p>
+        <div class="mons" id="monsterList"></div>
+      </section>
+      <section>
+        <h2 class="sub">Wähle <span id="slotsTxt">5</span> Helfer <small id="slotsCount"></small></h2>
+        <p class="hint">Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.</p>
+        <div class="picks" id="pickList"></div>
+      </section>
+    </div>
     <button class="big" id="btnStart">Los geht's!</button>
+  </div>
+</div>
+
+<div class="overlay" id="help" hidden>
+  <div class="sheet helpsheet">
+    <h2>So geht's</h2>
+    <p class="lead">Die Monster laufen den Schlangenweg hinunter zur Burg. Ganz hinten siehst du schon, wer als Nächstes kommt. Halte durch, bis Gromp der Riese besiegt ist!</p>
+    <div class="helpgrid">
+      <div><b>🥦 Brokkoli</b>Tippe auf den linken Turm: Brokkoli schießt. Tippe vors Tor: er kämpft mit dem Schwert. Tippe in den Hof: er ruht sich aus.</div>
+      <div><b>🛠️ Ausbauen</b>Unten in der Leiste kaufst und verbesserst du deine Helfer mit Münzen aus dem Briefkasten.</div>
+      <div><b>🪨⛈️🌋 Selbst auslösen</b>Tippe auf Katapult, Wolke, Vulkan oder Ölkessel. Ein gelber Weg zeigt, wie weit sie reichen.</div>
+      <div><b>🎯 Zielen</b>Tippe ein Monster an: Alle Schützen nehmen es zuerst ins Visier, zum Beispiel Pflaster-Paula.</div>
+      <div><b>💥 Power-Attacke</b>Eine goldene Blase über einer Waffe heißt: Super-Angriff bereit! Antippen.</div>
+      <div><b>👆 Münzen</b>Wisch mit dem Finger über liegende Münzen, dann gibt es einen kleinen Bonus.</div>
+      <div><b>🌫️ Nebel</b>Hinten im Nebel trifft nur Donner-Doris. Dort kannst du schauen, was kommt, und dich vorbereiten.</div>
+      <div><b>🏰 Burg</b>Monster am Tor knabbern an der Burg. Mit Brutzel-Kessel, Pieksern und Brokkoli wirst du sie wieder los.</div>
+    </div>
+    <button class="big" id="helpClose">Alles klar!</button>
+  </div>
+</div>
+
+<div class="overlay" id="settings" hidden>
+  <div class="sheet menu setsheet">
+    <h2>Einstellungen</h2>
+    <div class="setrow"><span>🎵 Musik</span><div class="seg" id="setMusic"><button data-v="2">laut</button><button data-v="1">leise</button><button data-v="0">aus</button></div></div>
+    <div class="setrow"><span>🔊 Geräusche</span><div class="seg" id="setSfx"><button data-v="1">an</button><button data-v="0">aus</button></div></div>
+    <div class="setrow"><span>👾 Gegner pro Spiel</span><div class="seg" id="setMon"><button data-v="zufall">9 zufällige</button><button data-v="alle">alle 15</button></div></div>
+    <div class="setrow"><span>⛶ Vollbild</span><button class="small" id="setFull">umschalten</button></div>
+    <div class="setrow col"><span>📲 Als App installieren</span><div id="installBox" class="installbox"></div></div>
+    <button class="big" id="setClose">Fertig</button>
   </div>
 </div>
 
@@ -172,7 +261,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     <h1 class="title" id="endTitle">Gewonnen!</h1>
     <p class="lead" id="endText"></p>
     <div class="stats" id="endStats"></div>
-    <button class="big" id="btnAgain">Nochmal spielen</button>
+    <div class="row"><button class="big" id="btnAgain">Nochmal spielen</button><button class="small" id="btnMenu">🏠 Hauptmenü</button></div>
   </div>
 </div>
 
@@ -233,7 +322,9 @@ const HEUTE_ANZAHL = {1:2, 2:3, 3:2};   // so viele Monster je Stufe greifen pro
 const WELLEN_BUDGET = [25,50,90,140,210,300,420,560,750,1000,1350,1700];  // Stärke jeder Welle (1 = ein Misti)
 let WAVES=[], TODAY=[];
 function shuffle(a){ return a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]); }
+let MON_MODE='zufall'; try{ if(localStorage.getItem('md_mon')==='alle') MON_MODE='alle'; }catch(e){}
 function pickToday(){
+  if(MON_MODE==='alle'){ TODAY=['misti',...Object.keys(STUFE),'gromp']; return; }
   TODAY=['misti'];
   for(const st of [1,2,3]) TODAY.push(...shuffle(Object.keys(STUFE).filter(id=>STUFE[id]===st)).slice(0,HEUTE_ANZAHL[st]));
   TODAY.push('gromp');
@@ -1045,6 +1136,13 @@ function renderBg(){
     for(let d=0;d<L;d+=5){ const e=Math.min(L,d+7), s=PS[d]; g.lineWidth=Math.max(5,90*s)*wmul; g.beginPath(); g.moveTo(PX[d],PY[d]+dy*s); g.lineTo(PX[e],PY[e]+dy*s); g.stroke(); }
   }
   for(let d=0;d<L;d+=13){ if(R()<0.5) continue; const s=PS[d], lat=(R()*2-1)*34*s; ell(g,PX[d]+NX[d]*lat,PY[d]+NY[d]*lat,2.4*s+0.4,1.4*s+0.3,'#c9a46e'); }
+  // Vorplatz vor der Burg: dunkler, hier wird's ernst
+  { const fc=document.createElement('canvas'); fc.width=bg.width; fc.height=bg.height; const f=fc.getContext('2d'); f.setTransform(k,0,0,k,ox*dpr,oy*dpr); f.lineCap='round'; f.strokeStyle='#4a2c14';
+    const Z=1100; for(let d=L-Z; d<L; d+=5){ const e=Math.min(L,d+7); f.globalAlpha=Math.min(1,(d-(L-Z))/500); f.lineWidth=92*PS[d]*1.25; f.beginPath(); f.moveTo(PX[d],PY[d]); f.lineTo(PX[e],PY[e]); f.stroke(); }
+    g.save(); g.setTransform(1,0,0,1,0,0); g.globalAlpha=0.5; g.drawImage(fc,0,0); g.restore();
+    const rg=g.createRadialGradient(GATE.x+60,GATE.y,40,GATE.x+60,GATE.y,520); rg.addColorStop(0,'rgba(50,25,10,0.32)'); rg.addColorStop(1,'rgba(50,25,10,0)'); g.fillStyle=rg; g.fillRect(GATE.x-500,GATE.y-520,1100,1040);
+    for(let n=0;n<14;n++){ const d=L-60-((n*137)%900), s2=PS[d], lat=((n*61)%100/50-1)*34*s2; const x=PX[d]+NX[d]*lat, y=PY[d]+NY[d]*lat; g.strokeStyle='rgba(60,35,15,0.45)'; g.lineWidth=1.6; g.beginPath(); g.moveTo(x-5,y); g.lineTo(x+1,y-2); g.lineTo(x+6,y+1); g.stroke(); }
+  }
   // Bäume und Büsche
   const trees=[];
   for(let i=0;i<170;i++){ const x=10+R()*(W-20), y=HORIZON+12+R()*(H-HORIZON-20); const s=SCy(y);
@@ -1616,7 +1714,7 @@ function start(lo){
   if(AC && AC.state==='suspended') AC.resume();
   musicInit();
   timers=[]; newGame(); G.running=true; resize(); G.bgDirty=true; refreshToolbar();
-  $('start').hidden=true; $('end').hidden=true;
+  $('start').hidden=true; $('end').hidden=true; $('title').hidden=true; $('help').hidden=true; $('settings').hidden=true;
   toast('Tippe auf den linken Turm – dann schießt Brokkoli! Unten in der Leiste baust du aus.');
 }
 $('modeCancel').addEventListener('click',()=>{ if(G) setMode(null); });
@@ -1626,6 +1724,73 @@ $('btnFull').addEventListener('click',()=>{ const el=document.documentElement; c
 addEventListener('fullscreenchange',()=>setTimeout(resize,100)); addEventListener('webkitfullscreenchange',()=>setTimeout(resize,100));
 $('btnStart').addEventListener('click',()=>start());
 $('btnAgain').addEventListener('click',()=>{ newRound(); $('end').hidden=true; $('start').hidden=false; });
+$('btnMenu').addEventListener('click',()=>{ newRound(); $('end').hidden=true; $('title').hidden=false; });
+let seenHelp=false; try{ seenHelp=localStorage.getItem('md_help')==='1'; }catch(e){}
+let helpThen=null;
+function openHelp(then){ helpThen=then||null; $('help').hidden=false; }
+$('helpClose').addEventListener('click',()=>{ $('help').hidden=true; seenHelp=true; try{ localStorage.setItem('md_help','1'); }catch(e){} if(helpThen){ const f=helpThen; helpThen=null; f(); } });
+$('btnPlay').addEventListener('click',()=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  const go=()=>{ $('title').hidden=true; renderStart(); $('start').hidden=false; };
+  if(!seenHelp) openHelp(go); else go(); });
+$('btnBack').addEventListener('click',()=>{ $('start').hidden=true; $('title').hidden=false; });
+$('btnHelp').addEventListener('click',()=>openHelp());
+$('pHelp').addEventListener('click',()=>openHelp());
+function openSettings(){ renderSettings(); $('settings').hidden=false; }
+$('btnSettings').addEventListener('click',openSettings);
+$('pSettings').addEventListener('click',openSettings);
+$('setClose').addEventListener('click',()=>{ $('settings').hidden=true; });
+$('installHint').addEventListener('click',openSettings);
+$('pQuit').addEventListener('click',()=>{ $('pause').hidden=true; G.paused=false; setMode(null); newRound(); $('title').hidden=false; });
+function segSet(id,val,fn){ const box=$(id); for(const b of box.querySelectorAll('button')){ b.classList.toggle('on',b.dataset.v===String(val)); b.onclick=()=>{ fn(b.dataset.v); renderSettings(); }; } }
+function renderSettings(){
+  segSet('setMusic',MUSIC.level,v=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); musicInit(); setMusicLevel(+v); });
+  segSet('setSfx',muted?0:1,v=>{ muted=v==='0'; try{ localStorage.setItem('md_sfx',v); }catch(e){} });
+  segSet('setMon',MON_MODE,v=>{ MON_MODE=v; try{ localStorage.setItem('md_mon',v); }catch(e){} if(!G.running) newRound(); });
+  updateInstall();
+}
+$('setFull').addEventListener('click',()=>$('btnFull').click());
+try{ if(localStorage.getItem('md_sfx')==='0') muted=true; }catch(e){}
+// App-Installation
+let deferredPrompt=null, hintOff=false;
+const isStandalone=()=>matchMedia('(display-mode: fullscreen)').matches||matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+addEventListener('beforeinstallprompt',e=>{ e.preventDefault(); deferredPrompt=e; updateInstall(); });
+addEventListener('appinstalled',()=>{ deferredPrompt=null; updateInstall(); });
+function updateInstall(){
+  const box=$('installBox'); let h;
+  if(isStandalone()) h='<p>✓ Micro Defense läuft schon als App.</p>';
+  else if(deferredPrompt) h='<p>Mit einem Tipp als App installieren – mit eigenem Symbol und im Vollbild:</p><p style="margin-top:8px"><button class="big" id="doInstall">📲 Jetzt installieren</button></p>';
+  else if(isIOS()) h='<p>Auf dem iPad/iPhone in <b>Safari</b>: oben bzw. unten auf <b>Teilen</b> (Quadrat mit Pfeil ⬆️) tippen, dann <b>„Zum Home-Bildschirm“</b>. Danach startet das Spiel wie eine App im Vollbild.</p>';
+  else h='<p>Im Browser-Menü (<b>⋮</b>) auf <b>„App installieren“</b> oder <b>„Zum Startbildschirm hinzufügen“</b> tippen.</p>';
+  box.innerHTML=h;
+  const b=$('doInstall'); if(b) b.onclick=async()=>{ try{ deferredPrompt.prompt(); await deferredPrompt.userChoice; }catch(e){} deferredPrompt=null; updateInstall(); };
+  $('installHint').hidden = isStandalone() || !(deferredPrompt || isIOS() || matchMedia('(pointer:coarse)').matches);
+}
+updateInstall();
+// Titelbild malen
+(function drawTitleArt(){ const c=$('titleArt'); const g=c.getContext('2d'); const k=c.width/100; g.scale(k,k);
+  const sky=g.createLinearGradient(0,0,0,100); sky.addColorStop(0,'#7cc8f7'); sky.addColorStop(0.64,'#d3efff'); sky.addColorStop(0.64,'#7cc45c'); sky.addColorStop(1,'#5aa844'); g.fillStyle=sky; g.fillRect(0,0,100,100);
+  g.lineJoin='round'; g.lineCap='round'; g.strokeStyle=INK; g.lineWidth=1.6;
+  puffs(g,[[18,16,6],[25,13,7],[32,16,5]],'#ffffff',0.8,null);
+  // Burg
+  g.fillStyle='#e3dacb'; g.lineWidth=2; g.beginPath(); g.rect(8,44,24,40); g.fill(); g.stroke();
+  for(let x=8;x<32;x+=8){ g.beginPath(); g.rect(x,38,5,7); g.fill(); g.stroke(); }
+  g.beginPath(); g.moveTo(5,44); g.quadraticCurveTo(20,35,20,20); g.quadraticCurveTo(20,35,35,44); g.closePath(); g.fillStyle='#e0584a'; g.fill(); g.stroke();
+  g.fillStyle='#3a2a1a'; g.beginPath(); g.roundRect(16,58,8,11,3); g.fill();
+  // Monster am Horizont
+  for(const [id,x,y,m] of [['misti',86,70,0.55],['ritter',72,66,0.45],['stampfi',94,64,0.4],['flatter',80,52,0.45]]){ const sp=SPR[id][0]; g.drawImage(sp.f,x-sp.ax*m,y-sp.ay*m,sp.w*m,sp.h*m); }
+  // Brokkoli
+  const x=52,y=90; g.lineWidth=2;
+  g.fillStyle='#c8443c'; g.beginPath(); g.moveTo(x-3,y-27); g.lineTo(x-14,y-3); g.lineTo(x+4,y-7); g.closePath(); g.fill(); g.stroke();
+  g.lineWidth=2.6; g.beginPath(); g.moveTo(x,y-13); g.lineTo(x-4,y); g.moveTo(x,y-13); g.lineTo(x+4,y); g.stroke();
+  g.lineWidth=2; g.fillStyle='#3b6fd1'; g.beginPath(); g.roundRect(x-7,y-29,14,18,2); g.fill(); g.stroke();
+  g.strokeStyle='#dfe6ee'; g.lineWidth=3; g.beginPath(); g.moveTo(x+8,y-22); g.lineTo(x+18,y-36); g.stroke(); g.strokeStyle=INK; g.lineWidth=1.2; g.stroke();
+  g.lineWidth=2; g.fillStyle='#a6d86f'; g.beginPath(); g.roundRect(x-10,y-49,20,20,3); g.fill(); g.stroke();
+  for(const [fx,fy,w] of [[x-15,y-57,12],[x-7,y-62,13],[x+3,y-61,12],[x+6,y-56,11],[x-4,y-55,12]]){ g.fillStyle='#4c9a3a'; g.beginPath(); g.roundRect(fx,fy,w,w*0.8,3); g.fill(); g.stroke(); }
+  for(const s of [-1,1]){ g.fillStyle='#fff'; g.beginPath(); g.arc(x+s*4,y-40,3.2,0,7); g.fill(); g.lineWidth=1; g.stroke(); g.fillStyle='#2a6fb0'; g.beginPath(); g.arc(x+s*4+0.5,y-39.7,1.5,0,7); g.fill(); }
+  g.lineWidth=1.2; g.beginPath(); g.arc(x,y-36,3,0.2,Math.PI-0.2); g.stroke();
+  g.fillStyle='#ffc93c'; g.lineWidth=1.4; g.beginPath(); g.moveTo(x-5,y-61); g.lineTo(x-5,y-68); g.lineTo(x-2.5,y-64.5); g.lineTo(x,y-70); g.lineTo(x+2.5,y-64.5); g.lineTo(x+5,y-68); g.lineTo(x+5,y-61); g.closePath(); g.fill(); g.stroke();
+})();
 $('btnPause').addEventListener('click',()=>{ if(!G.running||G.over) return; G.paused=true; $('pause').hidden=false; });
 $('resume').addEventListener('click',()=>{ G.paused=false; $('pause').hidden=true; });
 $('btnSpeed').addEventListener('click',e=>{ G.speed=G.speed===1?2:1; e.currentTarget.classList.toggle('on',G.speed===2); });
@@ -1635,7 +1800,12 @@ $('btnSound').addEventListener('click',e=>{ muted=!muted; e.currentTarget.textCo
 // Startbild: heutige Monster (Reihenfolge wie sie kommen) und Helfer-Auswahl
 function renderStart(){
   const firstWave={}; WAVES.forEach((w,i)=>w.forEach(([id])=>{ if(firstWave[id]===undefined) firstWave[id]=i; }));
-  $('monsterList').innerHTML=TYPES.filter(t=>TODAY.includes(t.id)).sort((a,b)=>(a.boss?1:0)-(b.boss?1:0) || (firstWave[a.id]??99)-(firstWave[b.id]??99) || a.hp-b.hp).map(t=>`<div class="mon"><img src="${ICONS[t.id]}" alt=""><b>${t.name}</b><small>ab Welle ${(firstWave[t.id]??0)+1} · ${t.desc}</small><small class="wk">${weakLine(t)}</small></div>`).join('');
+  $('monsterList').innerHTML='';
+  for(const t of TYPES.filter(t=>TODAY.includes(t.id)).sort((a,b)=>(a.boss?1:0)-(b.boss?1:0) || (firstWave[a.id]??99)-(firstWave[b.id]??99) || a.hp-b.hp)){
+    const b=document.createElement('button'); b.type='button'; b.className='mchip'+(t.boss?' boss':'');
+    b.innerHTML=`<img src="${ICONS[t.id]}" alt=""><span><b>${t.name}</b><small>ab Welle ${(firstWave[t.id]??0)+1} · ${weakText(t)||(t.boss?'Endboss':'–')}</small></span>`;
+    b.addEventListener('click',()=>toast(`${t.name}: ${t.desc}. ${weakLine(t).replace(/^./,c=>c.toUpperCase())}.`));
+    $('monsterList').appendChild(b); }
   $('stufen').innerHTML='';
   for(const [k,v] of Object.entries(STUFEN)){ const b=document.createElement('button'); b.type='button'; b.className='stufe'+(k===STUFE_WAHL?' on':''); b.textContent=v.name;
     b.addEventListener('click',()=>{ STUFE_WAHL=k; try{ localStorage.setItem('md_stufe',k); }catch(e){} renderStart(); }); $('stufen').appendChild(b); }
@@ -1663,6 +1833,7 @@ function loop(now){
     G.shake=Math.max(0,G.shake-dt*30); G.flash=Math.max(0,G.flash-dt*2.5);
     updateHud(dt);
   }
+  const inMenu=!(G&&G.running); if(document.body.classList.contains('inmenu')!==inMenu){ document.body.classList.toggle('inmenu',inMenu); resize(); }
   render(now); musicTick();
   requestAnimationFrame(loop);
 }
