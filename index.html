@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791739515">
+<meta name="md-build" content="1791739807">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -399,11 +399,11 @@ const TYPES = [
   { id:'paula',    name:'Pflaster-Paula',  hp:18,   speed:40, coin:10,   dps:0.5, anim:1.8, heal:true, weak:{pfeil:2}, desc:'heilt alle – tipp sie an!' },
   { id:'kalle',    name:'Kanonen-Kalle',   hp:30,   speed:34, coin:13,   dps:0,   anim:1.4, cannon:true, weak:{stein:2.2, blitz:1.5}, desc:'schießt aus der Ferne' },
   { id:'zuendi',   name:'Zündi',           hp:14,   speed:66, coin:7,    dps:1.5, anim:3,   fly:true, weak:{pfeil:2, blitz:1.5, feuer:0}, desc:'Feuer macht ihm nichts' },
-  { id:'spuk',     name:'Spukolino',       hp:20,   speed:40, coin:13,   dps:1.5, anim:1.5, fly:true, ghost:true, weak:{messer:0, schwert:0, pfeil:0, stein:0, feuer:0, blitz:0, zauber:2}, desc:'nur Zauber hilft!' },
+  { id:'spuk',     name:'Spukolino',       hp:20,   speed:40, coin:13,   dps:1.5, anim:1.5, fly:true, ghost:true, weak:{messer:0, schwert:0.5, pfeil:0, stein:0, feuer:0, blitz:0, zauber:2}, desc:'Zauber hilft am besten – Brokkoli schafft ein bisschen' },
 ];
 const T_ = {}; TYPES.forEach((t,i)=>T_[t.id]=i);
 const COLS={"misti": "#3b6fd1", "ritter": "#a8703f", "stampfi": "#6fbf4a", "flatter": "#8a55c9", "blech": "#c8443c", "gromp": "#9b59d0", "schleimi": "#36c9d6", "mini": "#36c9d6", "buddel": "#8a6a52", "schorsch": "#5aa03a", "quaxi": "#6cc04f", "puste": "#bfe6f7", "paula": "#ff9ec4", "kalle": "#c8443c", "zuendi": "#e8502a", "spuk": "#f4f8ff"}; TYPES.forEach(t=>t.col=COLS[t.id]);
-const EL_ICON = { messer:'🔪', schwert:'⚔️', pfeil:'🏹', stein:'🪨', feuer:'🔥', blitz:'⚡', zauber:'✨' };
+const EL_ICON = { messer:'🔪', schwert:'⚔️', pfeil:'🏹', brok:'🥦', stein:'🪨', feuer:'🔥', blitz:'⚡', zauber:'✨' };
 
 // ---------- WELLEN (jedes Spiel anders!) ----------
 // Stufe: wann ein Monster frühestens kommen darf (1 = früh, 3 = spät). Misti und Gromp sind immer dabei.
@@ -455,7 +455,7 @@ const PLAETZE = 5;   // so viele Helfer darf man pro Spiel mitnehmen
 const WAHL = { // aktiv = selbst auslösen, passiv = arbeitet allein
   bogen:{art:'passiv', gut:'gut gegen Flieger, schwach gegen Rüstung'},
   messer:{art:'passiv', gut:'kämpfen vorm Tor'},
-  zauber:{art:'passiv', gut:'Zauber springt von Monster zu Monster – einziger, der Spukolino besiegt'},
+  zauber:{art:'passiv', gut:'Zauber springt von Monster zu Monster – der Gespenster-Experte'},
   raeuber:{art:'passiv', gut:'klaut Münzen'},
   oel:{art:'aktiv', gut:'gegen Monster am Tor'},
   katapult:{art:'passiv', gut:'wirft von selbst auf die größte Gruppe – antippen zum Selberzielen'},
@@ -917,20 +917,22 @@ function fireCannon(i){
   sfx('throw');
 }
 function removeEnemy(i){ eAlive[i]=0; freeList[freeTop++]=i; G.alive--; }
+// Brokkolis Turm-Pfeile ('brok') wirken wie Pfeile – aber der Chef trifft auch Gespenster (halber Schaden)
+function weakOf(ty,el){ if(el==='brok') return ty.ghost?0.5:ty.weak.pfeil; return ty.weak[el]; }
 function targetable(i,el){
   const ty=TYPES[eType[i]];
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
-  const m=ty.weak[el]; return m!==0;
+  const m=weakOf(ty,el); return m!==0;
 }
 // Wer hat den Schaden gemacht? (für die Bilanz am Spielende)
 let HSRC=null;
-const EL_SRC={pfeil:'bogen', messer:'messer', schwert:'brok', zauber:'zauber', stein:'katapult', blitz:'gewitter', tnt:'tnt', feuer:'vulkan'};
+const EL_SRC={brok:'brok', pfeil:'bogen', messer:'messer', schwert:'brok', zauber:'zauber', stein:'katapult', blitz:'gewitter', tnt:'tnt', feuer:'vulkan'};
 function hurt(i,dmg,el){
   if(!eAlive[i]) return false;
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
-  const ty=TYPES[eType[i]]; const m=ty.weak[el]; let mult=(m===undefined)?1:m;
+  const ty=TYPES[eType[i]]; const m=weakOf(ty,el); let mult=(m===undefined)?1:m;
   if(mult===0) return false;
-  if(el==='pfeil' && eShield[i]) mult*=0.2;
+  if((el==='pfeil'||el==='brok') && eShield[i]) mult*=0.2;
   const real=Math.min(Math.max(0,eHp[i]), dmg*mult), src=HSRC||EL_SRC[el]||el;
   const db=G.dmgBy||(G.dmgBy={}); db[src]=(db[src]||0)+real;
   eHp[i]-=dmg*mult;
@@ -954,7 +956,7 @@ function dropCoin(x,y,v,s){
 }
 function addCoins(v){ G.coins+=v; G.earned+=v; G.mbBounce=1; }
 // Wie gut passt Waffe el auf Gegner i? (Schwäche-Faktor, Schild zählt bei Pfeilen mit)
-function wmult(i,el){ const m=TYPES[eType[i]].weak[el]; let v=(m===undefined)?1:m; if(el==='pfeil' && eShield[i]) v*=0.2; return v; }
+function wmult(i,el){ const m=weakOf(TYPES[eType[i]],el); let v=(m===undefined)?1:m; if((el==='pfeil'||el==='brok') && eShield[i]) v*=0.2; return v; }
 // Stufe: 2 = Lieblingsgegner, 1 = normal, 0 = macht kaum Schaden
 function tierOf(i,el){ const v=wmult(i,el); return v>=1.5?2:(v>=0.9?1:0); }
 function nearestEnemy(x,y,maxR,ground,minDist,el){
@@ -1008,9 +1010,9 @@ function updateHero(dt){
   if(d>1.5){ const s=Math.min(d,(where==='draussen'?170:210)*dt); h.x+=dx/d*s; h.y+=dy/d*s; h.walk+=dt*12; }
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
   if(where==='turm' && h.cd<=0){
-    const minD=reihen(B.reihen); const best=pickFront(minD,'pfeil');
-    if(best>=0){ h.cd=1/B.rate; shoot(BTOWER.x,BTOWER.y-30,best,B.dmg,'#3f9b45',false,'pfeil','brok');
-      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'pfeil'); if(j>=0) shoot(BTOWER.x,BTOWER.y-30,j,B.dmg,'#3f9b45',false,'pfeil','brok'); }
+    const minD=reihen(B.reihen); const best=pickFront(minD,'brok');
+    if(best>=0){ h.cd=1/B.rate; shoot(BTOWER.x,BTOWER.y-30,best,B.dmg,'#3f9b45',false,'brok','brok');
+      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(BTOWER.x,BTOWER.y-30,j,B.dmg,'#3f9b45',false,'brok','brok'); }
       sfx('twang'); }
   }
 }
@@ -1242,7 +1244,7 @@ function update(dt){
   G.catAnim=Math.max(0,G.catAnim-dt);
   if(!G.over && G.qi>=G.queue.length && G.alive<=0) endGame(true);
   if(!G.tips.kat && G.kat.lvl<0 && G.t>G.t0+150){ G.tips.kat=1; toast('Tipp: Mit Schleuder-Susi erwischst du die Horden weiter hinten!'); }
-  if(!G.tips.spuk && G.wiz<0){ for(let i=0;i<eHi;i+=7){ if(eAlive[i] && TYPES[eType[i]].ghost && eDist[i]>LS[2]){ G.tips.spuk=1; toast('Spukolino kommt! Gegen Gespenster hilft nur Zauberer Zappelbart!'); break; } } }
+  if(!G.tips.spuk && G.wiz<0){ for(let i=0;i<eHi;i+=7){ if(eAlive[i] && TYPES[eType[i]].ghost && eDist[i]>LS[2]){ G.tips.spuk=1; toast('Spukolino kommt! Gegen Gespenster hilft Zauberer Zappelbart am besten – Brokkoli schafft nur ein bisschen.'); break; } } }
 }
 
 /* ============================ ZEICHNEN ============================ */
@@ -1737,7 +1739,7 @@ const ITEMS = [
     lvl:()=>`${G.fighters.length}/14`, done:()=>G.fighters.length>=14, price:()=>Math.round(20+G.fighters.length*15+Math.max(0,G.fighters.length-7)**2*40), buy:()=>addFighter()},
   {id:'raeuber', ic:'💰', name:'Langfinger-Lutz', info:'Ein Räuber auf eurer Seite: Er schleicht sich sogar hinter die Reichweite-Grenze und klaut den Monstern ihre Münzen!',
     lvl:()=>G.rob<0?'neu':lv(G.rob+1,ROB.length), done:()=>G.rob>=ROB.length-1, price:()=>ROB_PREIS[G.rob+1], buy:()=>{G.rob++; while(G.robbers.length<ROB[G.rob].n) addRobber(); if(G.rob===0) toast('Langfinger-Lutz schleicht los und klaut den Monstern die Münzen! 💰');}},
-  {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Sein Zauber springt auf weitere Monster über. Nur er kann Spukolino besiegen!',
+  {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Sein Zauber springt auf weitere Monster über. Der Beste gegen Spukolino!',
     lvl:()=>G.wiz<0?'neu':lv(G.wiz+1,ZAUBER.length), done:()=>G.wiz>=ZAUBER.length-1, price:()=>ZAUBER_PREIS[G.wiz+1], buy:()=>{G.wiz++; G.wizCd=0;}},
   {id:'oel', ic:'🫕', name:'Brutzel-Kessel', info:'Kessel über dem Tor. Antippen: heißes Öl auf alle Monster am Tor!',
     lvl:()=>G.oil.lvl<0?'neu':lv(G.oil.lvl+1,OEL.length), done:()=>G.oil.lvl>=OEL.length-1, price:()=>OEL_PREIS[G.oil.lvl+1], buy:()=>{G.oil.lvl++; if(G.oil.lvl===0) toast('Tippe auf den Kessel über dem Tor!');}},
@@ -2096,12 +2098,16 @@ function renderStart(){
     $('monsterList').appendChild(b); }
   $('choiceChip').textContent=`${MAPS[MAP_ID].name} · ${STUFEN[STUFE_WAHL].name}  ✏️`;
   $('slotsTxt').textContent=PLAETZE;
-  $('pickList').innerHTML=''; 
+  $('pickList').innerHTML='';
+  // Kommt Spukolino, muss Zappelbart mit
+  const pflicht = TODAY.includes('spuk') ? 'zauber' : null;
+  if(pflicht && !LOADOUT.includes(pflicht)) LOADOUT=[pflicht,...LOADOUT].slice(0,PLAETZE);
   for(const id of Object.keys(WAHL)){ const it=ITEMS.find(x=>x.id===id), w=WAHL[id];
-    const warn = id==='zauber' && TODAY.includes('spuk') ? '<small class="warn">Spukolino kommt heute!</small>' : '';
+    const warn = id===pflicht ? '<small class="warn">🔒 Muss heute mit – Spukolino kommt!</small>' : '';
     const b=document.createElement('button'); b.className='pick'+(LOADOUT.includes(id)?' on':''); b.type='button';
     b.innerHTML=`<span class="ic">${it.ic}</span><b>${it.name}</b><span class="art">${w.art==='aktiv'?'👆 selbst auslösen':'⚙️ arbeitet allein'}</span><small>${w.gut}</small>${warn}`;
-    b.addEventListener('click',()=>{ if(LOADOUT.includes(id)) LOADOUT=LOADOUT.filter(x=>x!==id); else if(LOADOUT.length<PLAETZE) LOADOUT=[...LOADOUT,id]; else { toast(`Nur ${PLAETZE} Helfer! Tippe erst einen anderen ab.`); return; } renderStart(); });
+    b.addEventListener('click',()=>{ if(id===pflicht){ toast('Heute kommt Spukolino – Zappelbart muss mit!'); return; }
+      if(LOADOUT.includes(id)) LOADOUT=LOADOUT.filter(x=>x!==id); else if(LOADOUT.length<PLAETZE) LOADOUT=[...LOADOUT,id]; else { toast(`Nur ${PLAETZE} Helfer! Tippe erst einen anderen ab.`); return; } renderStart(); });
     $('pickList').appendChild(b); }
   $('slotsCount').textContent=`(${LOADOUT.length}/${PLAETZE})`;
   $('btnStart').disabled=LOADOUT.length!==PLAETZE;
