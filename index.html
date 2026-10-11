@@ -1777,7 +1777,8 @@ function endGame(won){
     $('endEntry').hidden=false; $('hsSave').disabled=false;
     $('hsName').value=(()=>{ try{ return localStorage.getItem('md_name')||''; }catch(e){ return ''; } })();
     renderScores($('endList'), null, 5);
-    track('spiel-ende',{ergebnis:won?'gewonnen':'verloren', karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
+    const erg=won?'gewonnen':'verloren';
+    track('spiel-ende',{ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
 }
 /* ---------- Anonyme Statistik (Umami, nur auf der Webseite) ---------- */
