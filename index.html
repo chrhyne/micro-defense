@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791738425">
+<meta name="md-build" content="1791738484">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -1034,6 +1034,7 @@ function drawRobber(r,T){
   const x=PX[d]+NX[d]*r.lat*30*s, y=PY[d]+NY[d]*r.lat*30*s;
   const right=(PX[Math.max(0,Math.min(L,d+r.dir*4))]-PX[d])>=0;
   ell(ctx,x,y+1,8*m,2.6*m,'rgba(0,0,0,0.18)');
+  friendRing(x,y,m);
   ctx.save(); ctx.translate(x,y); ctx.scale(right?m:-m,m);
   const w=Math.sin(r.walk)*4, R=ROB[Math.max(0,G.rob)], full=Math.min(1,r.sack/R.cap);
   // Sack auf dem Rücken
@@ -1492,12 +1493,24 @@ function drawStick(x,y,walk,body){
   circ(ctx,x,y-23,4.6,SKIN,INK,1.4);
   circ(ctx,x-1.4,y-23.4,0.8,INK); circ(ctx,x+1.6,y-23.4,0.8,INK);
 }
+// Erkennungszeichen für unsere Leute: grün leuchtender Ring am Boden
+function friendRing(x,y,s){
+  const p=0.75+0.25*Math.sin(performance.now()/260);
+  ctx.save(); ctx.globalAlpha=0.55*p; ell(ctx,x,y+1,11*s,3.6*s,'rgba(140,240,90,0.45)');
+  ctx.globalAlpha=0.9*p; ctx.strokeStyle='#7ee05a'; ctx.lineWidth=Math.max(1,1.6*s); ctx.beginPath(); ctx.ellipse(x,y+1,11*s,3.6*s,0,0,TAU); ctx.stroke(); ctx.restore();
+}
 function drawFighter(f){
-  const ax=f.stab>0?11:6;
-  drawStick(f.x,f.y,f.walk,'#2f6fdb');
-  ctx.strokeStyle=INK; ctx.lineWidth=1.6; ln(ctx,f.x,f.y-16,f.x+ax,f.y-17);
-  ctx.strokeStyle='#d9dfe6'; ctx.lineWidth=2; ln(ctx,f.x+ax,f.y-17,f.x+ax+5,f.y-19);
-  ctx.beginPath(); ctx.arc(f.x,f.y-25,5,Math.PI,0); ctx.fillStyle='#8d99a6'; ctx.fill(); ctx.strokeStyle=INK; ctx.lineWidth=1.2; ctx.stroke();
+  const ax=f.stab>0?11:6, x=f.x, y=f.y;
+  friendRing(x,y,1);
+  drawStick(x,y,f.walk,'#3f9b45');
+  // Schild mit Brokkoli-Stern (vorne links)
+  circ(ctx,x-5,y-14,4.2,'#3f9b45',INK,1.2); ctx.fillStyle='#ffc93c'; ctx.font='6px sans-serif'; ctx.textAlign='center'; ctx.fillText('★',x-5,y-12);
+  // Speer
+  ctx.strokeStyle=INK; ctx.lineWidth=1.6; ln(ctx,x,y-16,x+ax,y-17);
+  ctx.strokeStyle='#d9dfe6'; ctx.lineWidth=2; ln(ctx,x+ax,y-17,x+ax+5,y-19);
+  // goldener Helm mit roter Feder
+  ctx.beginPath(); ctx.arc(x,y-25,5.2,Math.PI,0); ctx.fillStyle='#ffc93c'; ctx.fill(); ctx.strokeStyle=INK; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.strokeStyle='#e0453f'; ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(x,y-30); ctx.quadraticCurveTo(x-2,y-35,x-6,y-34); ctx.stroke();
 }
 function drawHero(T){
   const h=G.hero, x=h.x, y=h.y, sw=Math.sin(h.walk)*3, where=heroWhere();
