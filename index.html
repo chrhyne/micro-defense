@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791788185">
+<meta name="md-build" content="1791788561">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -501,7 +501,7 @@ function genWaves(){
 // ---------- SCHWIERIGKEIT ----------
 // horden = Anzahl Monster, hp = Monster-Leben, tempo = Monster-Tempo, muenzen = Münzen pro Monster, start = Start-Münzen, burg = Burg-Leben
 const STUFEN = {
-  leicht: {name:'🐣 Leicht', horden:0.55, hp:0.85, tempo:0.85, muenzen:1.3, start:250, burg:1.6},
+  leicht: {name:'🐣 Leicht', horden:0.55, hordenVon:0.75, hordenBis:0.38, verteilt:true, hp:0.85, tempo:0.85, muenzen:1.3, start:250, burg:1.6},
   normal: {name:'⚔️ Normal', horden:1,    hp:1.25, tempo:1,    muenzen:1,   start:150, burg:1},
   schwer: {name:'🔥 Schwer', horden:1.3,  hp:1.55, tempo:1.1,  muenzen:0.9, start:120, burg:1},
 };
@@ -940,10 +940,11 @@ function buildQueue(){
   WAVES.forEach((wave,w)=>{
     const start=w*CFG.wellenAbstand;
     // die letzten 3 Wellen sind auf Leicht und Normal etwas kleiner
-    const mul=CFG.horden*G.diff.horden*(w>=WAVES.length-3 && STUFE_WAHL!=='schwer' ? 0.85 : 1);
+    // Leicht: am Anfang mehr, am Ende deutlich weniger Monster (gleichmäßigere Schwierigkeit)
+    const D=G.diff, mul=CFG.horden*(D.hordenVon!==undefined ? D.hordenVon+(D.hordenBis-D.hordenVon)*w/Math.max(1,WAVES.length-1) : D.horden*(w>=WAVES.length-3 && STUFE_WAHL!=='schwer' ? 0.85 : 1));
     let total=0; for(const g of wave) total+=g[1]*mul;
-    const dur=Math.min(CFG.wellenAbstand-6, 16+total*0.028);
-    const clumps=Math.max(3,Math.round(total/45));
+    const dur=G.diff.verteilt ? Math.min(CFG.wellenAbstand-3, 20+total*0.045) : Math.min(CFG.wellenAbstand-6, 16+total*0.028);   // Leicht: Monster kommen verteilter
+    const clumps=Math.max(3,Math.round(total/(G.diff.verteilt?28:45)));
     for(const [id,cnt] of wave){ const type=T_[id]; let count=TYPES[type].boss?cnt:Math.max(1,Math.round(cnt*mul));
       if(TYPES[type].ghost) count=Math.min(count, Math.round(10*G.diff.horden));   // nicht zu viele Gespenster auf einmal
       for(let i=0;i<count;i++){
