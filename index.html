@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791788093">
+<meta name="md-build" content="1791788185">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -1075,7 +1075,8 @@ function wmult(i,el){ const m=weakOf(TYPES[eType[i]],el); let v=(m===undefined)?
 // Stufe: 2 = Lieblingsgegner, 1 = normal, 0 = macht kaum Schaden
 function tierOf(i,el){ const v=wmult(i,el); return v>=1.5?2:(v>=0.9?1:0); }
 // Schützen nehmen bei gleicher Stärke zuerst Flieger – die erwischt am Boden ja keiner
-function aimTier(i,el){ const t=tierOf(i,el); return (el==='pfeil'||el==='brok') && TYPES[eType[i]].fly && t>0 ? t+0.5 : t; }
+// Reihenfolge für Schützen: 1. Flieger (die trifft sonst kaum einer)  2. alles direkt am Tor  3. wogegen Pfeile stark sind  4. wer am weitesten vorne ist
+function aimTier(i,el){ const t=tierOf(i,el); if(t<=0 || (el!=='pfeil'&&el!=='brok')) return t; if(TYPES[eType[i]].fly) return t+3; return eDist[i]>L-480 ? t+1.5 : t; }
 function nearestEnemy(x,y,maxR,ground,minDist,el){
   let best=1e18, bi=-1; const R2=maxR*maxR;
   for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; if(ground && TYPES[eType[i]].fly) continue; if(minDist && eDist[i]<minDist) continue;
@@ -1256,7 +1257,8 @@ function updateArcher(dt){
   shoot(ATOWER.x,ATOWER.y-22,best,A.dmg);
   if(A.n>1){ cand.length=0; let top=0;
     for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<minD||!targetable(i,'pfeil')) continue; const t=aimTier(i,'pfeil'); if(t>top){ top=t; cand.length=0; } if(t===top) cand.push(i); }
-    for(let k=1;k<A.n && cand.length;k++) shoot(ATOWER.x,ATOWER.y-22,cand[(Math.random()*cand.length)|0],A.dmg); }
+    cand.sort((a,b)=>eDist[b]-eDist[a]);   // weitere Pfeile auf die Vordersten derselben Gruppe – nicht irgendwo ins Feld
+    for(let k=1;k<A.n && cand.length;k++) shoot(ATOWER.x,ATOWER.y-22,cand[k%Math.min(cand.length,A.n+1)],A.dmg); }
   sfx('twang');
 }
 function updateWizard(dt){
