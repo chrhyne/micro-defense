@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791786046">
+<meta name="md-build" content="1791786352">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -1092,21 +1092,21 @@ function updateHero(dt){
   if(G.spin){ updateSpin(dt); return; }
   const h=G.hero; const B=BROK[G.brok];
   h.cd-=dt; h.swing=Math.max(0,h.swing-dt); h.scan-=dt;
-  // Automatik wie bei den Pieksern: kommen Monster ans Tor, rennt er hin und kämpft – sonst zurück ins Lager (oder auf den Turm)
-  h.manualT=Math.max(0,(h.manualT||0)-dt); h.autoScan=(h.autoScan||0)-dt;
-  if(h.manualT<=0 && h.wx===null && h.autoScan<=0){ h.autoScan=0.35;
-    const t=h.home==='turm'?-1:nearestEnemy(CAMP.x,CAMP.y+40,1e5,false,L-430,'schwert');   // vom Turm aus kein Nahkampf
-    if(t>=0){ const gx=Math.max(OUTSIDE.x0+6,Math.min(OUTSIDE.x1-6,eX[t])), gy=Math.max(OUTSIDE.y0-30,Math.min(OUTSIDE.y1-6,eY[t]));
-      if(Math.hypot(h.tx-gx,h.ty-gy)>30) moveHeroTo(gx,gy,true); }
-    else { const home=h.home==='turm'?BTOWER:CAMP; if(Math.hypot(h.tx-home.x,h.ty-home.y)>4) moveHeroTo(home.x,home.y,true); } }
-  let tx=h.wx!==null?h.wx:h.tx, ty=h.wy!==null?h.wy:h.ty;
   const where=heroWhere();
-  if(where==='draussen' && h.wx===null && Math.hypot(h.x-h.tx,h.y-h.ty)<130){
-    let ok=h.tgt>=0 && eAlive[h.tgt] && eUid[h.tgt]===h.uid && targetable(h.tgt,'schwert') && Math.hypot(eX[h.tgt]-h.tx,eY[h.tgt]-h.ty)<140;
-    if(!ok && h.scan<=0){ h.scan=0.2; h.tgt=nearestEnemy(h.tx,h.ty,140,false,0,'schwert'); if(h.tgt>=0) h.uid=eUid[h.tgt]; ok=h.tgt>=0; }
-    if(ok){ tx=eX[h.tgt]; ty=eY[h.tgt]+(TYPES[eType[h.tgt]].fly?20*eS[h.tgt]:0);
-      if(Math.hypot(tx-h.x,ty-h.y)<18){ if(h.cd<=0){ h.cd=0.4; h.swing=0.18; hurt(h.tgt,B.sword,'schwert'); sfx('swish'); } tx=h.x; ty=h.y; } }
+  // Am Lagerfeuer genau wie die Piekser: Kommen Monster in den Bereich vors Tor, läuft er hin und bleibt dran – danach zurück ans Feuer
+  if(h.home==='lager' && h.wx===null && (where==='draussen'||where==='lager')){
+    let valid=h.tgt>=0 && eAlive[h.tgt] && eUid[h.tgt]===h.uid && eDist[h.tgt]>L-480 && !eUnder[h.tgt] && targetable(h.tgt,'schwert');
+    if(!valid && h.scan<=0){ h.scan=0.25; h.tgt=nearestEnemy(h.x,h.y,1e5,true,L-480,'schwert'); if(h.tgt>=0) h.uid=eUid[h.tgt]; valid=h.tgt>=0; }
+    let tx=CAMP.x, ty=CAMP.y; if(valid){ tx=eX[h.tgt]; ty=eY[h.tgt]; }
+    const dx=tx-h.x, dy=ty-h.y, d=Math.hypot(dx,dy);
+    if(valid && d<18){ if(h.cd<=0){ h.cd=0.4; h.swing=0.18; hurt(h.tgt,B.sword,'schwert'); sfx('swish'); } }
+    else if(d>1.5){ const st=Math.min(d,170*dt); h.x+=dx/d*st; h.y+=dy/d*st; h.walk+=dt*12; }
+    h.tx=h.x; h.ty=h.y; return;
   }
+  // unterwegs (durchs Tor, auf den Turm oder zurück ans Feuer)
+  const home=h.home==='turm'?BTOWER:CAMP;
+  if(h.wx===null && Math.hypot(h.tx-home.x,h.ty-home.y)>4) moveHeroTo(home.x,home.y,true);
+  let tx=h.wx!==null?h.wx:h.tx, ty=h.wy!==null?h.wy:h.ty;
   const dx=tx-h.x, dy=ty-h.y, d=Math.hypot(dx,dy);
   if(d>1.5){ const s=Math.min(d,(where==='draussen'?170:210)*dt); h.x+=dx/d*s; h.y+=dy/d*s; h.walk+=dt*12; }
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
@@ -1487,7 +1487,9 @@ function drawBossDeath(T){
 /* ============================ TUTORIAL ============================ */
 // Eine kurze, feste Übungs-Partie: Brokkoli erklärt Schritt für Schritt, ein Finger zeigt wohin. Verlieren kann man hier nicht.
 function tutDone(){ try{ return localStorage.getItem('md_tut')==='1'; }catch(e){ return false; } }
-function tutSpawn(id,n,dist){ for(let k=0;k<n;k++) spawn(T_[id],0,Math.max(0,L-dist-k*28-Math.random()*20),Math.random()*1.6-0.8); }
+function tutSpawn(id,n,dist,gap){ gap=gap||28; for(let k=0;k<n;k++) spawn(T_[id],0,Math.max(0,L-dist-k*gap-Math.random()*gap*0.7),Math.random()*1.6-0.8); }
+// so viele Boden-Monster sind schon nah am Tor (kurz vor Brokkoli und den Pieksern)
+function tutCrowd(){ let n=0; for(let i=0;i<eHi;i++) if(eAlive[i] && !TYPES[eType[i]].fly && eDist[i]>L-470) n++; return n; }
 function tutTop(id){ const it=ITEMS.find(x=>x.id===id); if(G.coins<it.price()) G.coins=it.price(); }
 function tutTile(id){ const el=toolEls[id]&&toolEls[id].b; if(!el) return null; const r=el.getBoundingClientRect();
   if($('toolbar').offsetWidth<innerWidth*0.5) return {x:r.left+r.width/2, y:r.bottom, tile:id, unten:true};   // Leiste rechts: Finger zeigt von unten
@@ -1507,8 +1509,9 @@ const TUT=[
   {say:'Hol mir einen Piekser zur Hilfe!', enter(){ tutTop('messer'); }, finger:()=>tutTile('messer'), done:()=>G.fighters.length>=1},
   {say:'Los geht’s! Paule schießt die Flieger, wir kämpfen am Tor.', enter(){ tutSpawn('misti',14,900); tutSpawn('stampfi',2,1050); tutSpawn('flatter',3,1150); }, done:()=>G.alive===0 && G.tut.t>2},
   {say:'Mach mich stärker! Tippe unten auf Brokkoli.', enter(){ tutTop('brok'); }, finger:()=>tutTile('brok'), done:()=>G.brok>=1},
-  {say:'Ich werde größer und stärker! Achtung – jetzt kommt eine riesige Horde …', enter(){ tutSpawn('misti',28,1000); tutSpawn('quaxi',6,1150); }, done:()=>G.tut.t>4},
-  {say:'Meine Power-Leiste ist voll! Tippe auf POWER über mir!', enter(){ G.pow.brok=CFG.powerZeit; }, finger:()=>tutWorld({x:BUBBLES.brok.x,y:BUBBLES.brok.y-14}), done:()=>!!G.spin},
+  {say:'Ich werde größer und stärker! Achtung – jetzt kommt eine riesige Horde …', enter(){ tutSpawn('misti',34,900,7); tutSpawn('stampfi',4,880,30); tutSpawn('quaxi',6,1000,12); }, done:()=>tutCrowd()>=10 || (G.tut.t>25 && tutCrowd()>=4)},
+  {say:'Hilfe, so viele! Meine Power-Leiste ist voll – tippe auf POWER über mir!', enter(){ G.pow.brok=CFG.powerZeit; G.tut.nach=0; },
+    tick(dt){ G.tut.nach-=dt; if(tutCrowd()<8 && G.tut.nach<=0){ G.tut.nach=0.6; tutSpawn('misti',4,520,8); } },   /* bis zum Tippen bleibt die Horde groß */ finger:()=>tutWorld({x:BUBBLES.brok.x,y:BUBBLES.brok.y-14}), done:()=>!!G.spin},
   {say:'Wiiirbel! 🌀 Auf dem Turm wird meine Power übrigens zum Pfeilregen – der trifft auch Flieger.', done:()=>!G.spin && G.alive===0 && G.tut.t>1},
   {say:'Geschafft! Mit Punkten schaltest du neue Helfer, Karten und Stufen frei. Viel Spaß!', done:()=>G.tut.t>4},
 ];
@@ -1525,6 +1528,7 @@ function tutNext(){ const T=G.tut; T.step++; T.t=0; const st=TUT[T.step]; if(!st
 function updateTut(dt){
   const T=G.tut, st=TUT[T.step]; if(!st) return; T.t+=dt;
   if(G.hp<maxHp()*0.3) G.hp=maxHp()*0.3;   // im Tutorial kann man nicht verlieren
+  if(st.tick) st.tick(dt);
   if(st.done()) tutNext();
   tutUI();
 }
@@ -1983,14 +1987,15 @@ function drawHero(T){
   if(tier>=3){ circ(ctx,x,top+bh*0.45,3.2,'#4c9a3a',INK,0.9); circ(ctx,x-1,top+bh*0.45-1,1.2,'#8ad46f'); }
   // vorderer Arm + Waffe
   const hx=x+bw/2+3, hy=top+6;
-  if(where==='draussen'){ const a=h.swing>0?-1.2:0.4, sl=14+14*f, swd=2.4+2*f;
+  const bogen=where==='turm'||(where==='burg'&&h.home==='turm'), schwert=!bogen&&(where==='draussen'||where==='lager'||h.home==='lager');
+  if(schwert){ const a=h.swing>0?-1.2:0.4, sl=14+14*f, swd=2.4+2*f;
     lim(x+bw/2-1,top+3,hx,hy,armW,'#4f8f3c');
     ctx.strokeStyle=INK; ctx.lineWidth=swd+2; ln(ctx,hx,hy,hx+Math.cos(a)*sl,hy+Math.sin(a)*sl);
     ctx.strokeStyle=tier>=3?'#ffd23f':(tier>=2?'#f2f6fa':'#d8dee6'); ctx.lineWidth=swd; ln(ctx,hx,hy,hx+Math.cos(a)*sl,hy+Math.sin(a)*sl);
     ctx.strokeStyle='#8b5a2f'; ctx.lineWidth=3+f; ln(ctx,hx-2-f,hy+1,hx+2+f,hy-1); }
-  else if(where==='turm'||where==='lager'){ lim(x+bw/2-1,top+3,hx+2,top+4,armW,'#4f8f3c'); ctx.strokeStyle=tier>=3?'#d9a521':'#5a3818'; ctx.lineWidth=2+1.5*f; ctx.beginPath(); ctx.arc(hx+1,top+4,7+5*f,-1.3,1.3); ctx.stroke(); }
+  else if(bogen){ lim(x+bw/2-1,top+3,hx+2,top+4,armW,'#4f8f3c'); ctx.strokeStyle=tier>=3?'#d9a521':'#5a3818'; ctx.lineWidth=2+1.5*f; ctx.beginPath(); ctx.arc(hx+1,top+4,7+5*f,-1.3,1.3); ctx.stroke(); }
   else lim(x+bw/2-1,top+3,hx+1,top+8+Math.sin(T*3)*1.5,armW,'#4f8f3c');
-  circ(ctx,where==='draussen'?hx:hx+1,(where==='turm'||where==='lager')?top+4:hy,armW*0.75,'#6fbf4a',INK,1);
+  circ(ctx,schwert?hx:hx+1,bogen?top+4:hy,armW*0.75,'#6fbf4a',INK,1);
   // Kopf mit Brokkoli-Röschen
   const hw=14+4*f, hh=14+2*f, hyy=top-hh+2;
   rr(ctx,x-hw/2,hyy,hw,hh,2,'#a6d86f',1.2);
