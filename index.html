@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791783424">
+<meta name="md-build" content="1791783690">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -350,7 +350,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <h2>So geht's</h2>
     <p class="lead">Halte die Monster von deiner Burg fern, bis Gromp der Riese besiegt ist!</p>
     <div class="helpgrid">
-      <div><b>🥦 Brokkoli</b>Dein Held campt vor dem Tor und kämpft von selbst. Ist seine Power-Leiste voll: POWER antippen!</div>
+      <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Er kämpft mit dem Schwert am Tor. Tippe auf den Turm: Er schießt weit, auch auf Flieger. Power-Leiste voll? POWER antippen!</div>
       <div><b>🛠️ Bauen</b>Mit den Münzen aus dem Briefkasten baust du unten in der Leiste Helfer und machst sie stärker.</div>
       <div><b>👆 Wischen &amp; Tippen</b>Wisch über Münzen für einen Bonus. Tippe ein Monster an, dann zielen alle darauf.</div>
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
@@ -987,6 +987,7 @@ function removeEnemy(i){ eAlive[i]=0; freeList[freeTop++]=i; G.alive--; }
 function weakOf(ty,el){ if(el==='brok') return ty.ghost?0.5:ty.weak.pfeil; return ty.weak[el]; }
 function targetable(i,el){
   const ty=TYPES[eType[i]];
+  if(el==='schwert' && ty.fly) return false;   // Flieger erwischt man nur aus der Luft
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
   const m=weakOf(ty,el); return m!==0;
 }
@@ -1015,7 +1016,7 @@ const EL_SRC={brok:'brok', pfeil:'bogen', messer:'messer', schwert:'brok', zaube
 function hurt(i,dmg,el){
   if(!eAlive[i]) return false;
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
-  const ty=TYPES[eType[i]]; const m=weakOf(ty,el); let mult=(m===undefined)?1:m;
+  const ty=TYPES[eType[i]]; if(el==='schwert' && ty.fly) return false; const m=weakOf(ty,el); let mult=(m===undefined)?1:m;
   if(mult===0) return false;
   if((el==='pfeil'||el==='brok') && eShield[i]) mult*=0.2;
   if(ty.boss && G.boss && G.boss.stun>0) mult*=2;   // Gromp lacht: doppelter Schaden
@@ -1089,7 +1090,7 @@ function updateHero(dt){
   // Automatik wie bei den Pieksern: kommen Monster ans Tor, rennt er hin und kämpft – sonst zurück ins Lager (oder auf den Turm)
   h.manualT=Math.max(0,(h.manualT||0)-dt); h.autoScan=(h.autoScan||0)-dt;
   if(h.manualT<=0 && h.wx===null && h.autoScan<=0){ h.autoScan=0.35;
-    const t=nearestEnemy(CAMP.x,CAMP.y+40,1e5,false,L-430,'schwert');
+    const t=h.home==='turm'?-1:nearestEnemy(CAMP.x,CAMP.y+40,1e5,false,L-430,'schwert');   // vom Turm aus kein Nahkampf
     if(t>=0){ const gx=Math.max(OUTSIDE.x0+6,Math.min(OUTSIDE.x1-6,eX[t])), gy=Math.max(OUTSIDE.y0-30,Math.min(OUTSIDE.y1-6,eY[t]));
       if(Math.hypot(h.tx-gx,h.ty-gy)>30) moveHeroTo(gx,gy,true); }
     else { const home=h.home==='turm'?BTOWER:CAMP; if(Math.hypot(h.tx-home.x,h.ty-home.y)>4) moveHeroTo(home.x,home.y,true); } }
@@ -1105,12 +1106,16 @@ function updateHero(dt){
   if(d>1.5){ const s=Math.min(d,(where==='draussen'?170:210)*dt); h.x+=dx/d*s; h.y+=dy/d*s; h.walk+=dt*12; }
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
   if((where==='turm'||where==='lager') && h.cd<=0 && !(G.tut && G.tut.noShoot)){
-    const minD=reihen(B.reihen); const best=pickFront(minD,'brok'); const sx=where==='turm'?BTOWER.x:h.x, sy=(where==='turm'?BTOWER.y:h.y)-30;
+    // Turm: weit und ein Pfeil mehr · Lagerfeuer: nur kurze Reichweite
+    const minD=reihen(where==='turm'?B.reihen+0.8:Math.max(0.8,B.reihen-0.5)), extra=where==='turm'?1:0; const best=pickFront(minD,'brok'); const sx=where==='turm'?BTOWER.x:h.x, sy=(where==='turm'?BTOWER.y:h.y)-30;
     if(best>=0){ h.cd=1/B.rate; shoot(sx,sy,best,B.dmg,'#3f9b45',false,'brok','brok');
-      for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(sx,sy,j,B.dmg,'#3f9b45',false,'brok','brok'); }
+      for(let k=1;k<B.n+extra;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(sx,sy,j,B.dmg,'#3f9b45',false,'brok','brok'); }
       sfx('twang'); }
   }
 }
+function heroGoHome(w){ const h=G.hero; h.home=w; h.manualT=0; h.autoScan=0;
+  if(w==='turm'){ moveHeroTo(BTOWER.x,BTOWER.y,true); toast('Brokkoli klettert auf den Turm: Er schießt weit – kämpft aber nicht am Tor.'); }
+  else { moveHeroTo(CAMP.x,CAMP.y,true); toast('Brokkoli geht ans Lagerfeuer: Er kämpft mit dem Schwert am Tor.'); } }
 function moveHeroTo(x,y,auto){
   const h=G.hero, inNow=h.x<=GATE.x+4, inThen=x<=GATE.x+4;
   if(!auto) h.manualT=10;   // nach einem Befehl macht Brokkoli kurz, was du sagst – danach wieder von selbst
@@ -1469,16 +1474,20 @@ function tutTile(id){ const el=toolEls[id]&&toolEls[id].b; if(!el) return null; 
   return {x:r.left+r.width/2, y:r.top, tile:id}; }
 function tutWorld(p){ return {x:ox+p.x*scale, y:oy+p.y*scale}; }
 function tutCoin(){ for(let i=0;i<kN;i++) if(ks[i]===0) return tutWorld({x:kx[i],y:ky[i]-10}); return null; }
+function tutAt(w){ const h=G.hero; return h.home===w && heroWhere()===w; }
 const TUT=[
-  {say:'Hallo! Ich bin Brokkoli. Die Monster wollen in unsere Burg – wenn sie ans Tor kommen, gibt’s was mit dem Schwert!', enter(){ G.tut.noAuto=true; G.tut.noShoot=true; tutSpawn('misti',6,750); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Hallo! Ich bin Brokkoli. Kleine Monster wollen in die Burg – wenn sie ans Tor kommen, gibt’s was mit dem Schwert!', enter(){ G.tut.noAuto=true; G.tut.noShoot=true; tutSpawn('misti',6,750); }, done:()=>G.alive===0 && G.tut.t>2},
   {say:'Die Monster lassen Münzen fallen. Wisch mit dem Finger darüber – das gibt einen Bonus!', enter(){ G.tut.noShoot=false; let n=0; for(let i=0;i<kN;i++) if(ks[i]===0) n++; for(;n<4;n++) dropCoin(GATE.x+120+n*30,GATE.y+10,3,1); },
     finger:tutCoin, done:()=>G.tut.swiped},
-  {say:'Mit Münzen baust du Helfer. Tippe unten auf Pfeil-Paule!', enter(){ G.tut.noAuto=false; tutTop('bogen'); }, finger:()=>tutTile('bogen'), done:()=>G.archer>=0},
-  {say:'Pfeil-Paule schießt vom Turm – besonders gut auf Flieger. Da kommen welche!', enter(){ tutSpawn('flatter',4,1100); tutSpawn('misti',6,1200); }, done:()=>G.alive===0 && G.tut.t>3},
-  {say:'Jetzt hüpfen Quaxis an! Hol dir einen Piekser – die kämpfen vor dem Tor.', enter(){ tutTop('messer'); }, finger:()=>tutTile('messer'), done:()=>G.fighters.length>=1},
-  {say:'Prima! Der Piekser und ich halten das Tor.', enter(){ tutSpawn('quaxi',5,900); tutSpawn('misti',6,1100); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Achtung, Flieger! Die erwischt man nur aus der Luft. Tippe auf den Turm links – dann klettere ich hoch!', enter(){ G.tut.noAuto=false; }, finger:()=>tutWorld({x:BTOWER.x,y:BTOWER.y-20}), done:()=>tutAt('turm')},
+  {say:'Von hier oben schieße ich weit! Da kommen sie …', enter(){ tutSpawn('flatter',4,1000); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Allein schaffe ich nicht alle Flieger. Bau dir Pfeil-Paule als Helfer!', enter(){ tutTop('bogen'); }, finger:()=>tutTile('bogen'), done:()=>G.archer>=0},
+  {say:'Pfeil-Paule erwischt einzelne Flieger ganz von allein!', enter(){ for(let k=0;k<4;k++) spawn(T_.flatter,0,Math.max(0,L-1100-k*220),Math.random()-0.5); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Jetzt kommt eine ganze Horde mit dem starken Stampfi! Tippe aufs Lagerfeuer – ich kämpfe am Tor!', finger:()=>tutWorld({x:CAMP.x+20,y:CAMP.y-6}), done:()=>tutAt('lager')},
+  {say:'Hol mir einen Piekser zur Hilfe!', enter(){ tutTop('messer'); }, finger:()=>tutTile('messer'), done:()=>G.fighters.length>=1},
+  {say:'Los geht’s! Paule schießt die Flieger, wir kämpfen am Tor.', enter(){ tutSpawn('misti',14,900); tutSpawn('stampfi',2,1050); tutSpawn('flatter',3,1150); }, done:()=>G.alive===0 && G.tut.t>2},
   {say:'Mach mich stärker! Tippe unten auf Brokkoli.', enter(){ tutTop('brok'); }, finger:()=>tutTile('brok'), done:()=>G.brok>=1},
-  {say:'Ich werde größer und stärker! Achtung – jetzt kommt eine große Horde …', enter(){ tutSpawn('misti',28,1000); tutSpawn('quaxi',6,1150); }, done:()=>G.tut.t>4},
+  {say:'Ich werde größer und stärker! Achtung – jetzt kommt eine riesige Horde …', enter(){ tutSpawn('misti',28,1000); tutSpawn('quaxi',6,1150); }, done:()=>G.tut.t>4},
   {say:'Meine Power-Leiste ist voll! Tippe auf POWER über mir!', enter(){ G.pow.brok=CFG.powerZeit; }, finger:()=>tutWorld({x:BUBBLES.brok.x,y:BUBBLES.brok.y-14}), done:()=>!!G.spin},
   {say:'Wiiirbel! 🌀', done:()=>!G.spin && G.alive===0 && G.tut.t>1},
   {say:'Geschafft! Mit Punkten schaltest du neue Helfer, Karten und Stufen frei. Viel Spaß!', done:()=>G.tut.t>4},
@@ -1486,12 +1495,13 @@ const TUT=[
 function startTutorial(){
   applyMap('wiese'); STUFE_WAHL='leicht'; TODAY=['misti','quaxi','flatter','gromp']; WAVES=[];
   start(['bogen','messer']);
-  G.tut={step:-1,t:0}; G.coins=0; G.fighters=[];   // im Tutorial fängt Brokkoli allein an buildToolbar(); refreshToolbar(); resize(); $('toast').classList.add('hide');
+  G.tut={step:-1,t:0}; G.coins=0; G.fighters=[];   // im Tutorial fängt Brokkoli allein an
+  buildToolbar(); refreshToolbar(); resize(); $('toast').classList.add('hide');
   track('tutorial',{schritt:'start'});
   tutNext();
 }
 function tutNext(){ const T=G.tut; T.step++; T.t=0; const st=TUT[T.step]; if(!st){ finishTutorial('geschafft'); return; }
-  if(st.enter) st.enter(); $('tutText').textContent=($('toolbar').offsetWidth<innerWidth*0.5)?st.say.replace('unten','rechts'):st.say; const b=$('tutBubble'); b.hidden=true; void b.offsetWidth; b.hidden=false; }
+  if(st.enter) st.enter(); $('tutText').textContent=($('toolbar').offsetWidth<innerWidth*0.5)?st.say.replace('Tippe unten','Tippe rechts'):st.say; const b=$('tutBubble'); b.hidden=true; void b.offsetWidth; b.hidden=false; }
 function updateTut(dt){
   const T=G.tut, st=TUT[T.step]; if(!st) return; T.t+=dt;
   if(G.hp<maxHp()*0.3) G.hp=maxHp()*0.3;   // im Tutorial kann man nicht verlieren
@@ -2149,11 +2159,10 @@ function tap(p){
   if(G.kat.lvl<0 && near(p,CATAPULT,40) && LOADOUT.includes('katapult')){ notHere('katapult','Schleuder-Susi'); return; }
   if(G.gew.lvl<0 && near(p,CLOUD,70)){ notHere('gewitter','Donner-Doris'); return; }
   if(G.vul.lvl<0 && near(p,{x:VOLC.x,y:VOLC.y+80},110)){ notHere('vulkan','Vulkan Volker'); return; }
-  if(near(p,{x:BTOWER.x,y:BTOWER.y+20},50)){ G.hero.home='turm'; moveHeroTo(BTOWER.x,BTOWER.y); toast('Brokkoli wohnt jetzt auf dem Turm. Tippe aufs Lagerfeuer, dann wohnt er wieder vor dem Tor.'); return; }
-  if(near(p,{x:CAMP.x+18,y:CAMP.y},40)){ G.hero.home='lager'; moveHeroTo(CAMP.x,CAMP.y); toast('Brokkoli campt vor dem Tor!'); return; }
-  if(p.x>cX(YARD.x0,p.y)-20 && p.x<cX(YARD.x1,p.y)+16 && p.y>YARD.y0-30 && p.y<YARD.y1+20){ const y=Math.max(YARD.y0,Math.min(YARD.y1,p.y)); moveHeroTo(Math.max(cX(YARD.x0,y),Math.min(cX(YARD.x1,y),p.x)),y); return; }
-  if(p.x>=OUTSIDE.x1 && p.x<OUTSIDE.x1+260 && p.y>OUTSIDE.y0 && p.y<OUTSIDE.y1 && !G.tips.revier){ G.tips.revier=1; toast('Weiter darf Brokkoli nicht – die Burg braucht ihren König in der Nähe!'); }
-  if(p.x>OUTSIDE.x0 && p.x<OUTSIDE.x1 && p.y>OUTSIDE.y0 && p.y<OUTSIDE.y1){ moveHeroTo(p.x,p.y); if(!G.tips.sword){G.tips.sword=1; toast('Brokkoli kämpft mit dem Schwert vor dem Tor!');} return; }
+  if(near(p,{x:BTOWER.x,y:BTOWER.y+20},55)){ heroGoHome('turm'); return; }
+  if(near(p,{x:CAMP.x+18,y:CAMP.y},55)){ heroGoHome('lager'); return; }
+  // vors Tor getippt: Brokkoli geht ans Lagerfeuer
+  if(p.x>OUTSIDE.x0 && p.x<OUTSIDE.x1 && p.y>OUTSIDE.y0-40 && p.y<OUTSIDE.y1 && G.hero.home!=='lager'){ heroGoHome('lager'); return; }
   // Monster markieren
   let best=-1, bd=1e9;
   for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<0) continue; const s=eS[i]; const dx=eX[i]-p.x, dy=(eY[i]-14*s)-p.y, q=dx*dx+dy*dy, r=24*s+10; if(q<r*r && q<bd){bd=q;best=i;} }
