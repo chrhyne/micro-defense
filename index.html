@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791789529">
+<meta name="md-build" content="1791789581">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -2353,14 +2353,12 @@ function drawVolcSmoke(T){
     ctx.globalAlpha=Math.min(1,p*6)*(1-p)*0.75; circ(ctx,x,y,r,'#8d8a86'); circ(ctx,x-r*0.3,y-r*0.3,r*0.55,'#b3b0aa'); }
   ctx.globalAlpha=1;
 }
-// dunkle Rauchwolke, aus der die Monster kommen
+// helle Wolke, aus der die Monster kommen
 function drawSpawnSmoke(T){
   const x=PX[0], y=PY[0]-6, s=0.75+0.5*PS[0];
   const list=[]; for(let n=0;n<9;n++){ const a=n/9*TAU+T*0.15, rr2=(26+8*Math.sin(T*0.8+n*1.7))*s; list.push([x+Math.cos(a)*30*s,y+Math.sin(a)*12*s-4*s,rr2]); }
   list.push([x,y-10*s,34*s]);
-  ctx.globalAlpha=0.95; softCloud(ctx,list,1.4,'#6d6a68','#57524f','#8f8b87'); ctx.globalAlpha=1;
-  for(let n=0;n<5;n++){ const p=(T*0.12+n/5)%1, r=(10+p*22)*s; ctx.globalAlpha=(1-p)*0.5; circ(ctx,x-20*s+n*10*s+p*30*s,y-30*s-p*60*s,r,'#7a7673'); }
-  ctx.globalAlpha=1;
+  softCloud(ctx,list,1.4,'#e9eaee','#c9ccd6','#ffffff');
 }
 function drawCloud(T){
   const own=G.gew.lvl>=0; if(!own && !LOADOUT.includes('gewitter')) return;   // Doris' Wolke nur, wenn sie mitspielt
@@ -2963,7 +2961,7 @@ function makeThumbs(){
     const vx=VOLC.x, vy=VOLC.y, vs=VOLC.s; const rg=g.createRadialGradient(vx,vy,2,vx,vy,60*vs); rg.addColorStop(0,'rgba(255,170,60,0.7)'); rg.addColorStop(1,'rgba(255,120,40,0)'); g.fillStyle=rg; g.fillRect(vx-60*vs,vy-60*vs,120*vs,120*vs);
     for(let n=0;n<7;n++){ const p=n/7, r=(10+p*28)*vs; g.globalAlpha=(1-p)*0.7; circ(g,vx+p*70*vs,vy-(8+p*150)*vs,r,'#8d8a86'); circ(g,vx+p*70*vs-r*0.3,vy-(8+p*150)*vs-r*0.3,r*0.5,'#b3b0aa'); } g.globalAlpha=1;
     // Rauchwolke am Start
-    const sx=PX[0], sy=PY[0]-6, ss=1.1; const cl=[]; for(let n=0;n<9;n++){ const a2=n/9*TAU; cl.push([sx+Math.cos(a2)*30*ss,sy+Math.sin(a2)*12*ss-4*ss,26*ss]); } cl.push([sx,sy-10*ss,34*ss]); softCloud(g,cl,1.4,'#6d6a68','#57524f','#8f8b87');
+    const sx=PX[0], sy=PY[0]-6, ss=1.1; const cl=[]; for(let n=0;n<9;n++){ const a2=n/9*TAU; cl.push([sx+Math.cos(a2)*30*ss,sy+Math.sin(a2)*12*ss-4*ss,26*ss]); } cl.push([sx,sy-10*ss,34*ss]); softCloud(g,cl,1.4,'#e9eaee','#c9ccd6','#ffffff');
     // Monster auf dem Weg
     const list=MON[id]||MON.wiese; list.forEach((m,n)=>{ const t=T_[m]; if(t===undefined||!SPR[m]) return; const d=Math.round(L*(0.40+n*0.09)), sc=PS[d]*(1+0.75*PS[d])*2.4, sp=SPR[m][n%NF], fly=TYPES[t].fly?22*PS[d]:0;
       g.drawImage(sp.c, PX[d]-sp.ax*sc+(n%2?10:-10)*PS[d], PY[d]-fly-sp.ay*sc, sp.w*sc, sp.h*sc); });
