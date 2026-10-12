@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791744301">
+<meta name="md-build" content="1791782409">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -80,6 +80,15 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 body.inmenu #bossBar{display:none}
 .version{position:absolute;right:calc(env(safe-area-inset-right,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 4px);font-size:11px;font-weight:700;color:rgba(255,248,230,.6);cursor:pointer;padding:6px;background:none;border:0;font-family:inherit}
 .version:hover{color:rgba(255,248,230,.9)}
+/* Tutorial */
+#tutBubble{position:fixed;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;max-width:min(92vw,620px);background:var(--parch);border:3px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);padding:8px 14px;font-family:var(--display);font-size:clamp(16px,2.3vw,22px);color:var(--ink);line-height:1.2;animation:tbIn .35s ease-out}
+#tutBubble .tb-ic{font-size:34px}
+@keyframes tbIn{0%{transform:translateX(-50%) scale(.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}
+#tutFinger{position:fixed;z-index:6;font-size:46px;pointer-events:none;animation:fing .7s ease-in-out infinite;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
+@keyframes fing{50%{transform:translateY(10px)}}
+#tutSkip{position:fixed;right:calc(env(safe-area-inset-right,0px) + 12px);top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;border:2px solid var(--ink);border-radius:12px;background:var(--parch);font-family:var(--display);font-size:14px;padding:4px 10px;cursor:pointer;opacity:.85}
+.tool.tutglow{animation:tglow .8s ease-in-out infinite;background:var(--gold);color:var(--ink)}
+@keyframes tglow{50%{box-shadow:0 0 0 5px #fff27a,0 3px 0 var(--ink)}}
 /* Handy quer: Leiste an den rechten Rand, alles kompakter */
 @media (orientation:landscape) and (max-height:520px){
   #toolbar{left:auto;top:0;right:0;bottom:0;width:calc(150px + env(safe-area-inset-right,0px));box-sizing:border-box;border-top:0;border-left:3px solid var(--ink);padding:6px calc(env(safe-area-inset-right,0px) + 6px) calc(env(safe-area-inset-bottom,0px) + 6px) 6px;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:min-content;align-content:start;gap:5px;overflow-x:hidden;overflow-y:auto;touch-action:pan-y}
@@ -169,6 +178,18 @@ body.inmenu #bossBar{display:none}
 .brow{display:grid;grid-template-columns:215px 1fr 64px;align-items:center;gap:8px;font-weight:800;font-size:14px}
 .brow .bn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
 .brow .bn small{font-weight:700;color:var(--ink-soft);font-size:.85em}
+.pick.locked{opacity:.55;filter:grayscale(.7)}
+.mapcard.locked,.stufcard.locked{opacity:.55;filter:grayscale(.8)}
+.unlock{margin:4px auto;padding:8px 14px;border:3px solid var(--ink);border-radius:14px;background:var(--gold);box-shadow:0 3px 0 var(--ink);display:flex;flex-direction:column;align-items:center;gap:2px;animation:unl .6s ease-out}
+.unlock b{font-family:var(--display);font-weight:400;font-size:22px}
+.unlock span{font-weight:800;font-size:15px}
+@keyframes unl{0%{transform:scale(.4)}70%{transform:scale(1.08)}100%{transform:scale(1)}}
+.progress{display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;font-size:14px;color:var(--ink-soft)}
+.progress:empty{display:none}
+.progbar{width:min(280px,70vw);height:10px;border:2px solid var(--ink);border-radius:6px;background:var(--parch-edge);overflow:hidden}
+.progbar i{display:block;height:100%;background:var(--gold)}
+.title-ov .progress{color:var(--parch);margin-top:6px}
+.devgear{position:absolute;right:calc(env(safe-area-inset-right,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 30px);font-size:20px;background:none;border:0;cursor:pointer;opacity:.7;padding:4px}
 .lutz{margin-top:4px;text-align:center;font-weight:800;font-size:14px;background:var(--parch-hi);border:2px dashed var(--parch-edge);border-radius:10px;padding:4px 8px}
 .brow .bb{height:14px;border-radius:7px;background:var(--parch-edge);overflow:hidden;border:2px solid var(--ink)}
 .brow .bb i{display:block;height:100%;background:var(--gold);border-radius:5px}
@@ -255,6 +276,9 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
 <div id="bossBar" hidden><span class="bn">👹 GROMP DER RIESE</span><div class="bbar"><i id="bossFill"></i><b style="left:25%"></b><b style="left:50%"></b><b style="left:75%"></b></div></div>
 <div id="toolbar"></div>
 <div id="toast" class="hide"></div>
+<div id="tutBubble" hidden><span class="tb-ic">🥦</span><span id="tutText"></span></div>
+<div id="tutFinger" hidden>👇</div>
+<button id="tutSkip" hidden>Überspringen ⏭</button>
 <div id="modeHint" hidden><span id="modeText"></span><button id="modeCancel">✖ Abbrechen</button></div>
 
 <div class="overlay" id="pause" hidden>
@@ -276,13 +300,16 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
       <button class="big huge" id="btnPlay">▶ Spiel starten</button>
       <div class="row">
         <button class="small" id="btnHelp">❓ So geht's</button>
+        <button class="small" id="btnTut">🎓 Übung</button>
         <button class="small" id="btnSettings">⚙️ Einstellungen</button>
         <button class="small" id="btnScores">🏆 Bestenliste</button>
       </div>
+      <div class="progress" id="titleProg"></div>
       <button class="installhint" id="installHint" hidden>📲 Als App auf den Homescreen holen</button>
     </div>
   </div>
   <button class="version" id="versionTxt" title="Nach Update suchen"></button>
+  <button class="devgear" id="devGear" hidden aria-label="Test"></button>
 </div>
 
 <div class="overlay" id="setup" hidden>
@@ -309,8 +336,8 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
         <div class="mons" id="monsterList"></div>
       </section>
       <section>
-        <h2 class="sub">Wähle <span id="slotsTxt">5</span> Helfer <small id="slotsCount"></small></h2>
-        <p class="hint">Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.</p>
+        <h2 class="sub" id="pickHead">Deine Helfer</h2>
+        <p class="hint" id="pickHint"></p>
         <div class="picks" id="pickList"></div>
       </section>
     </div>
@@ -321,16 +348,12 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
 <div class="overlay" id="help" hidden>
   <div class="sheet helpsheet">
     <h2>So geht's</h2>
-    <p class="lead">Die Monster laufen den Schlangenweg hinunter zur Burg. Ganz hinten siehst du schon, wer als Nächstes kommt. Halte durch, bis Gromp der Riese besiegt ist!</p>
+    <p class="lead">Halte die Monster von deiner Burg fern, bis Gromp der Riese besiegt ist!</p>
     <div class="helpgrid">
-      <div><b>🥦 Brokkoli</b>Er campt am Lagerfeuer vor dem Tor, schießt von dort und kämpft von selbst, wenn Monster ans Tor kommen. Tippe auf den linken Turm, wenn er lieber von dort schießen soll. Ist seine Power-Leiste voll: POWER antippen für den Brokkoli-Wirbel!</div>
-      <div><b>🛠️ Ausbauen</b>Unten in der Leiste kaufst und verbesserst du deine Helfer mit Münzen aus dem Briefkasten.</div>
-      <div><b>⚡ Power-Attacken</b>Katapult, Wolke und Vulkan arbeiten von selbst. Ist ihre goldene Leiste voll, steht POWER darüber – antippen für den Super-Angriff! Den Ölkessel löst du selbst aus.</div>
-      <div><b>🎯 Zielen</b>Tippe ein Monster an: Alle Schützen nehmen es zuerst ins Visier, zum Beispiel Pflaster-Paula.</div>
-      <div><b>💥 Power-Attacke</b>Eine goldene Blase über einer Waffe heißt: Super-Angriff bereit! Antippen.</div>
-      <div><b>👆 Münzen</b>Wisch mit dem Finger über liegende Münzen, dann gibt es einen kleinen Bonus.</div>
-      <div><b>🌫️ Nebel</b>Hinten im Nebel trifft nur Donner-Doris. Dort kannst du schauen, was kommt, und dich vorbereiten.</div>
-      <div><b>🏰 Burg</b>Monster am Tor knabbern an der Burg. Mit Brutzel-Kessel, Pieksern und Brokkoli wirst du sie wieder los.</div>
+      <div><b>🥦 Brokkoli</b>Dein Held campt vor dem Tor und kämpft von selbst. Ist seine Power-Leiste voll: POWER antippen!</div>
+      <div><b>🛠️ Bauen</b>Mit den Münzen aus dem Briefkasten baust du unten in der Leiste Helfer und machst sie stärker.</div>
+      <div><b>👆 Wischen &amp; Tippen</b>Wisch über Münzen für einen Bonus. Tippe ein Monster an, dann zielen alle darauf.</div>
+      <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
   </div>
@@ -355,6 +378,8 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <div class="stats" id="endStats"></div>
     <div class="bilanz" id="endBilanz"></div>
     <div class="scorebig" id="endScore"></div>
+    <div id="endUnlock"></div>
+    <div class="progress" id="endProg"></div>
     <div class="entry" id="endEntry"><input id="hsName" maxlength="14" placeholder="Dein Name" autocomplete="off"><button class="small" id="hsSave">🏆 Eintragen</button></div>
     <div class="hswrap" id="endList"></div>
     <div class="row"><button class="big" id="btnAgain">Nochmal spielen</button><button class="small" id="btnMenu">🏠 Hauptmenü</button></div>
@@ -430,7 +455,7 @@ let MON_MODE='zufall';  // 'alle' = alle 15 Monster in jedem Spiel
 function pickToday(){
   if(MON_MODE==='alle'){ TODAY=['misti',...Object.keys(STUFE),'gromp']; return; }
   TODAY=['misti'];
-  for(const st of [1,2,3]) TODAY.push(...shuffle(Object.keys(STUFE).filter(id=>STUFE[id]===st)).slice(0,HEUTE_ANZAHL[st]));
+  for(const st of [1,2,3]) TODAY.push(...shuffle(Object.keys(STUFE).filter(id=>STUFE[id]===st && monsterAllowed(id))).slice(0,HEUTE_ANZAHL[st]));
   TODAY.push('gromp');
 }
 function genWaves(){
@@ -478,7 +503,31 @@ const WAHL = { // aktiv = selbst auslösen, passiv = arbeitet allein
 };
 const IMMER = ['brok','burg','heilen'];
 let LOADOUT = ['bogen','messer','katapult','oel','vulkan'];
-try{ const l=JSON.parse(localStorage.getItem('md_loadout')||'null'); if(Array.isArray(l) && l.length===PLAETZE && l.every(x=>WAHL[x])) LOADOUT=l; }catch(e){}
+try{ const l=JSON.parse(localStorage.getItem('md_loadout')||'null'); if(Array.isArray(l) && l.length && l.length<=PLAETZE && l.every(x=>WAHL[x])) LOADOUT=l; }catch(e){}
+/* ---------- Fortschritt: Helfer, Monster, Karten und Stufen freispielen ---------- */
+const PROG_V='2';   // Version des Fortschritts – bei Wechsel fangen alle einmal von vorne an
+try{ if(localStorage.getItem('md_prog_v')!==PROG_V){ ['md_stars','md_pts','md_tut','md_loadout'].forEach(k=>localStorage.removeItem(k)); localStorage.setItem('md_prog_v',PROG_V); LOADOUT=['bogen','messer']; } }catch(e){}
+const BASIS=['brok','bogen','messer','burg','heilen'];
+const FREI=[{id:'zauber',pts:10000},{id:'oel',pts:30000},{id:'katapult',pts:60000},{id:'raeuber',pts:100000},{id:'gewitter',pts:150000},{id:'vulkan',pts:220000},{id:'tnt',pts:1000000}];
+let DEV=false; try{ DEV=localStorage.getItem('md_dev')==='1'; }catch(e){}
+function totalPts(){ try{ return +localStorage.getItem('md_pts')||0; }catch(e){ return 0; } }
+function addPts(n){ try{ localStorage.setItem('md_pts',String(totalPts()+Math.max(0,Math.round(n)))); }catch(e){} }
+function isUnlocked(id){ if(DEV||BASIS.includes(id)) return true; const u=FREI.find(x=>x.id===id); return !u || totalPts()>=u.pts; }
+function nextUnlock(){ if(DEV) return null; const p=totalPts(); return FREI.find(x=>p<x.pts)||null; }
+function availHelpers(){ return Object.keys(WAHL).filter(isUnlocked); }
+// Monster, gegen die man ohne bestimmte Helfer keine Chance hätte, kommen erst später
+const MON_NEEDS={spuk:['zauber'], blech:['katapult','gewitter'], buddel:['katapult'], kalle:['katapult','gewitter'], schorsch:['katapult','gewitter']};
+function monsterAllowed(id){ const n=MON_NEEDS[id]; return !n || n.some(isUnlocked); }
+const MAP_ORDER=['wiese','wueste','eis'];
+function mapUnlocked(k){ if(DEV) return true; const i=MAP_ORDER.indexOf(k); return i<=0 || (loadStars()[MAP_ORDER[i-1]]||0)>=1; }
+function stufeUnlocked(map,k){ if(DEV) return true; const st=loadStars()[map]||0; return k==='leicht' || (k==='normal'&&st>=1) || (k==='schwer'&&st>=2); }
+function progSnap(){ return { helfer:[...Object.keys(WAHL),'tnt'].filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:MAP_ORDER.flatMap(m=>['normal','schwer'].filter(k=>stufeUnlocked(m,k)).map(k=>m+':'+k)) }; }
+function progressHtml(){
+  const n=nextUnlock(); if(!n) return DEV?'🔓 Test-Modus: alles frei':'🏆 Alle Helfer freigespielt!';
+  const it=ITEMS.find(x=>x.id===n.id), prev=[0,...FREI.map(x=>x.pts)].filter(v=>v<n.pts).pop()||0, p=totalPts();
+  const w=Math.max(2,Math.min(100,100*(p-prev)/(n.pts-prev)));
+  return `<span>Noch <b>${(n.pts-p).toLocaleString('de-DE')}</b> Punkte bis ${it.ic} <b>${it.name}</b></span><span class="progbar"><i style="width:${w}%"></i></span>`;
+}
 
 // ---------- WAFFEN ----------
 // reihen = Reichweite: 1 = nur der vorderste Weg, 2 = die vorderen zwei Wege, 2.5 = bis zur Mitte des dritten Weges (weiter geht nichts!)
@@ -1342,7 +1391,7 @@ function updateTimers(dt){ for(let k=timers.length-1;k>=0;k--){ const tm=timers[
 function updateCoins(dt){
   for(let i=kN-1;i>=0;i--){
     kt[i]+=dt;
-    if(ks[i]===0){ if(kt[i]>CFG.muenzenAutoFlug) startCoinFly(i,1); }
+    if(ks[i]===0){ if(kt[i]>CFG.muenzenAutoFlug && !(G.tut&&G.tut.noAuto)) startCoinFly(i,1); }
     else if(kt[i]>=0.7){ addCoins(kv[i]); sfx('coin'); kN--; kx[i]=kx[kN];ky[i]=ky[kN];kv[i]=kv[kN];kt[i]=kt[kN];ks[i]=ks[kN];kfx[i]=kfx[kN];kfy[i]=kfy[kN];ksc[i]=ksc[kN]; }
   }
 }
@@ -1367,7 +1416,8 @@ function update(dt){
   G.pow.brok+=dt; if(G.archer>=0) G.pow.bogen+=dt; if(G.kat.lvl>=0) G.pow.kat+=dt; if(G.gew.lvl>=0) G.pow.gew+=dt; if(G.vul.lvl>=0) G.pow.vul+=dt;
   G.catAnim=Math.max(0,G.catAnim-dt);
   updateBossDeath(dt);
-  if(!G.over && G.qi>=G.queue.length && G.alive<=0 && !(G.bossDeath && G.bossDeath.t<8.5)) endGame(true);   // erst das Feuerwerk zu Ende schauen
+  if(G.tut) updateTut(dt);
+  else if(!G.over && G.qi>=G.queue.length && G.alive<=0 && !(G.bossDeath && G.bossDeath.t<8.5)) endGame(true);   // erst das Feuerwerk zu Ende schauen
   if(!G.tips.kat && G.kat.lvl<0 && G.t>G.t0+150){ G.tips.kat=1; toast('Tipp: Mit Schleuder-Susi erwischst du die Horden weiter hinten!'); }
   if(!G.tips.spuk && G.wiz<0){ for(let i=0;i<eHi;i+=7){ if(eAlive[i] && TYPES[eType[i]].ghost && eDist[i]>LS[2]){ G.tips.spuk=1; toast('Spukolino kommt! Gegen Gespenster hilft Zauberer Zappelbart am besten – Brokkoli schafft nur ein bisschen.'); break; } } }
   flushHitNumbers(dt);
@@ -1408,6 +1458,58 @@ function drawBossDeath(T){
   for(const f of G.fw){ const a=Math.max(0,1-f.t/f.life); ctx.globalAlpha=a; ctx.strokeStyle=f.col; ctx.lineWidth=6; ctx.beginPath(); ctx.moveTo(f.px-(f.x-f.px)*3,f.py-(f.y-f.py)*3); ctx.lineTo(f.x,f.y); ctx.stroke();
     circ(ctx,f.x,f.y,3.2,Math.random()<0.4?'#ffffff':f.col); }
   ctx.globalAlpha=1;
+}
+/* ============================ TUTORIAL ============================ */
+// Eine kurze, feste Übungs-Partie: Brokkoli erklärt Schritt für Schritt, ein Finger zeigt wohin. Verlieren kann man hier nicht.
+function tutDone(){ try{ return localStorage.getItem('md_tut')==='1'; }catch(e){ return false; } }
+function tutSpawn(id,n,dist){ for(let k=0;k<n;k++) spawn(T_[id],0,Math.max(0,L-dist-k*28-Math.random()*20),Math.random()*1.6-0.8); }
+function tutTop(id){ const it=ITEMS.find(x=>x.id===id); if(G.coins<it.price()) G.coins=it.price(); }
+function tutTile(id){ const el=toolEls[id]&&toolEls[id].b; if(!el) return null; const r=el.getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top, tile:id}; }
+function tutWorld(p){ return {x:ox+p.x*scale, y:oy+p.y*scale}; }
+function tutCoin(){ for(let i=0;i<kN;i++) if(ks[i]===0) return tutWorld({x:kx[i],y:ky[i]-10}); return null; }
+const TUT=[
+  {say:'Hallo! Ich bin Brokkoli. Die Monster wollen in unsere Burg – ich halte sie auf!', enter(){ G.tut.noAuto=true; tutSpawn('misti',6,1000); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Die Monster lassen Münzen fallen. Wisch mit dem Finger darüber – das gibt einen Bonus!', enter(){ let n=0; for(let i=0;i<kN;i++) if(ks[i]===0) n++; for(;n<4;n++) dropCoin(GATE.x+120+n*30,GATE.y+10,3,1); },
+    finger:tutCoin, done:()=>G.tut.swiped},
+  {say:'Mit Münzen baust du Helfer. Tippe unten auf Pfeil-Paule!', enter(){ G.tut.noAuto=false; tutTop('bogen'); }, finger:()=>tutTile('bogen'), done:()=>G.archer>=0},
+  {say:'Pfeil-Paule schießt vom Turm – besonders gut auf Flieger. Da kommen welche!', enter(){ tutSpawn('flatter',4,1100); tutSpawn('misti',6,1200); }, done:()=>G.alive===0 && G.tut.t>3},
+  {say:'Jetzt hüpfen Quaxis an! Hol dir einen Piekser – die kämpfen vor dem Tor.', enter(){ tutTop('messer'); }, finger:()=>tutTile('messer'), done:()=>G.fighters.length>=1},
+  {say:'Prima! Der Piekser und ich halten das Tor.', enter(){ tutSpawn('quaxi',5,900); tutSpawn('misti',6,1100); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Mach mich stärker! Tippe unten auf Brokkoli.', enter(){ tutTop('brok'); }, finger:()=>tutTile('brok'), done:()=>G.brok>=1},
+  {say:'Ich werde größer und stärker! Achtung – jetzt kommt eine große Horde …', enter(){ tutSpawn('misti',28,1000); tutSpawn('quaxi',6,1150); }, done:()=>G.tut.t>4},
+  {say:'Meine Power-Leiste ist voll! Tippe auf POWER über mir!', enter(){ G.pow.brok=CFG.powerZeit; }, finger:()=>tutWorld({x:BUBBLES.brok.x,y:BUBBLES.brok.y-14}), done:()=>!!G.spin},
+  {say:'Wiiirbel! 🌀', done:()=>!G.spin && G.alive===0 && G.tut.t>1},
+  {say:'Geschafft! Mit Punkten schaltest du neue Helfer, Karten und Stufen frei. Viel Spaß!', done:()=>G.tut.t>4},
+];
+function startTutorial(){
+  applyMap('wiese'); STUFE_WAHL='leicht'; TODAY=['misti','quaxi','flatter','gromp']; WAVES=[];
+  start(['bogen','messer']);
+  G.tut={step:-1,t:0}; G.coins=0; buildToolbar(); refreshToolbar(); resize(); $('toast').classList.add('hide');
+  $('tutSkip').hidden=false; track('tutorial',{schritt:'start'});
+  tutNext();
+}
+function tutNext(){ const T=G.tut; T.step++; T.t=0; const st=TUT[T.step]; if(!st){ finishTutorial('geschafft'); return; }
+  if(st.enter) st.enter(); $('tutText').textContent=st.say; const b=$('tutBubble'); b.hidden=true; void b.offsetWidth; b.hidden=false; }
+function updateTut(dt){
+  const T=G.tut, st=TUT[T.step]; if(!st) return; T.t+=dt;
+  if(G.hp<maxHp()*0.3) G.hp=maxHp()*0.3;   // im Tutorial kann man nicht verlieren
+  if(st.done()) tutNext();
+  tutUI();
+}
+function tutUI(){
+  const T=G&&G.tut; if(!T) return; const st=TUT[T.step]; if(!st) return;
+  const side=$('toolbar').offsetWidth<innerWidth*0.5, b=$('tutBubble');
+  b.style.bottom=(side?10:$('toolbar').offsetHeight+14)+'px'; b.style.left=side?`calc(50% - ${$('toolbar').offsetWidth/2}px)`:'50%';
+  for(const k in toolEls) toolEls[k].b.classList.remove('tutglow');
+  const f=$('tutFinger'), p=st.finger?st.finger():null;
+  if(p){ f.hidden=false; f.style.left=(p.x-23)+'px'; f.style.top=(p.y-58)+'px'; if(p.tile&&toolEls[p.tile]) toolEls[p.tile].b.classList.add('tutglow'); } else f.hidden=true;
+}
+function tutHideUI(){ $('tutBubble').hidden=true; $('tutFinger').hidden=true; $('tutSkip').hidden=true; for(const k in toolEls) toolEls[k].b.classList.remove('tutglow'); }
+function finishTutorial(how){
+  try{ localStorage.setItem('md_tut','1'); }catch(e){}
+  track('tutorial',{schritt:how}); tutHideUI();
+  if(G){ G.tut=null; G.running=false; }
+  newRound(); openSetup();
 }
 /* ============================ GROMP DER RIESE ============================ */
 // Phasen: 0 = marschiert, 1 (75 %) = wirft Felsbrocken + Kitzel-Bauch, 2 (50 %) = ruft Verstärkung, 3 (25 %) = wütend & schneller
@@ -2016,7 +2118,7 @@ function swipe(p){
       if(near){ near.base+=base; near.bonus+=bonus; near.txt=near.base+'+'+near.bonus; near.t=Math.min(near.t,0.05); }
       else G.pops.push({x:px,y:py,t:0,life:1.1,coin:true,base,bonus,txt:base+'+'+bonus,sc:Math.max(0.75,ksc[i])}); }
     startCoinFly(i,CFG.wischBonus); got++; } }
-  if(got) sfx('swipe');
+  if(got){ sfx('swipe'); if(G.tut) G.tut.swiped=true; }
 }
 const near=(p,o,r)=>Math.hypot(p.x-o.x,p.y-o.y)<r;
 function tap(p){
@@ -2099,7 +2201,7 @@ const ITEMS = [
     lvl:()=>`${Math.ceil(G.hp)} Leben`, done:()=>G.hp>=maxHp(), price:()=>60, buy:()=>{G.hp=Math.min(maxHp(),G.hp+100);}},
 ];
 const toolEls={};
-function toolbarItems(){ return ITEMS.filter(it=>IMMER.includes(it.id)||LOADOUT.includes(it.id)||(it.id==='tnt'&&LOADOUT.includes('katapult'))).sort((a,b)=>(a.id==='brok'?-1:0)-(b.id==='brok'?-1:0)||(IMMER.includes(a.id)?1:0)-(IMMER.includes(b.id)?1:0)); }
+function toolbarItems(){ return ITEMS.filter(it=>(G&&G.tut)?['brok','bogen','messer'].includes(it.id):(IMMER.includes(it.id)||LOADOUT.includes(it.id)||(it.id==='tnt'&&LOADOUT.includes('katapult')&&isUnlocked('tnt')))).sort((a,b)=>(a.id==='brok'?-1:0)-(b.id==='brok'?-1:0)||(IMMER.includes(a.id)?1:0)-(IMMER.includes(b.id)?1:0)); }
 function buildToolbar(){
   const bar=document.getElementById('toolbar'); bar.innerHTML=''; for(const k in toolEls) delete toolEls[k];
   for(const it of toolbarItems()){
@@ -2162,7 +2264,7 @@ function drawBuilds(T){
 /* ============================ HUD ============================ */
 const $=id=>document.getElementById(id);
 let toastTimer=0;
-function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.remove('hide'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hide'),3400); }
+function toast(msg){ if(G&&G.tut&&!G.tutToast) return; const t=$('toast'); t.textContent=msg; t.classList.remove('hide'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hide'),3400); }
 const ICONS={}; for(const t of TYPES) ICONS[t.id]=spriteURL(t.id);
 function weakText(t){ const s=[]; for(const [k,v] of Object.entries(t.weak)) if(v>=2) s.push(EL_ICON[k]); return s.join(''); }
 function weakLine(t){ const w=weakText(t); if(w) return 'schwach gegen '+w; return t.boss?'keine Schwäche!':'nichts Besonderes'; }
@@ -2174,7 +2276,8 @@ function updateHud(dt){
   $('hpFill').style.width=(p*100)+'%'; $('hpFill').classList.toggle('low',p<0.35); $('hpTxt').textContent=Math.ceil(G.hp);
   $('hpPlate').classList.toggle('alarm',G.gateDps>0);
   const started=Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1);
-  if(started<WAVES.length){
+  if(G.tut){ $('waveTxt').textContent='🎓 Übung'; $('nextList').textContent=''; }
+  else if(started<WAVES.length){
     const secs=Math.ceil(started*CFG.wellenAbstand-G.t);
     $('waveTxt').textContent=`Welle ${started}/${WAVES.length} · nächste in ${secs}s:`;
     if(G.lastWaveShown!==started){ G.lastWaveShown=started;
@@ -2280,6 +2383,7 @@ function endGame(won){
     $('endText').textContent= won ? 'Alle Wellen sind besiegt, sogar Gromp der Riese. Deine Burg steht!' : 'Die Monster haben die Burg überrannt. Versuch es nochmal – vielleicht mit Schleuder-Susi gegen die Horden weiter hinten?';
     const sec=Math.max(0,G.t-G.t0), m=Math.floor(sec/60), s=Math.floor(sec%60);
     $('endStats').innerHTML=`<div class="plate">👼 <b>${G.kills.toLocaleString('de-DE')}</b> Monster</div><div class="plate">🪙 <b>${Math.floor(G.earned).toLocaleString('de-DE')}</b> gesammelt</div><div class="plate">⏱ <b>${m}:${String(s).padStart(2,'0')}</b></div>`;
+    const vorher=progSnap();
     renderBilanz();
     const wv=Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1);
     const pts=Math.round((G.kills*10 + wv*300 + (won ? 5000+5000*Math.max(0,G.hp/maxHp()) : 0)) * SCORE_MULT[STUFE_WAHL]);
@@ -2291,24 +2395,35 @@ function endGame(won){
     if(won){ const neu=STERN_WERT[STUFE_WAHL]||0, st=loadStars(), alt=st[MAP_ID]||0;
       if(neu>alt){ st[MAP_ID]=neu; try{ localStorage.setItem('md_stars',JSON.stringify(st)); }catch(e){}
         $('endText').textContent+=` Neu: ${sternText(neu)} für ${MAPS[MAP_ID].name}!`; } }
+    addPts(pts); showUnlocks(vorher,progSnap());
     const erg=won?'gewonnen':'verloren';
     const top=Object.entries(G.dmgBy||{}).sort((a,b)=>b[1]-a[1])[0];
     track('spiel-ende',{bester_helfer:top?top[0]:'-', ergebnis:erg, stufe_ergebnis:STUFE_WAHL+' · '+erg, karte_ergebnis:MAP_ID+' · '+erg, stufe_welle:STUFE_WAHL+' · Welle '+String(wv).padStart(2,'0'), karte:MAP_ID, stufe:STUFE_WAHL, welle:wv, minuten:Math.round(sec/60), punkte:pts, monster:G.kills});
   }, 900);
 }
+/* ---------- geheimes Test-Zahnrad: alles frei ---------- */
+function devLook(){ $('devGear').textContent=DEV?'🔓':'⚙️'; $('devGear').hidden=!DEV && $('devGear').hidden; $('titleProg').innerHTML=progressHtml(); }
+$('devGear').addEventListener('click',()=>{ DEV=!DEV; try{ localStorage.setItem('md_dev',DEV?'1':'0'); }catch(e){} devLook(); toast(DEV?'Test-Modus: alles frei 🔓':'Test-Modus aus'); newRound(); });
+if(DEV) $('devGear').hidden=false; devLook();
+setInterval(()=>{ if(!$('title').hidden) $('titleProg').innerHTML=progressHtml(); },1000);
 /* ---------- Versionsanzeige auf dem Startbild ---------- */
 (function(){ const m=document.querySelector('meta[name="md-build"]'); let t='Vorschau';
   if(m){ const d=new Date(+m.content*1000); const z=n=>String(n).padStart(2,'0'); t=`Version ${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} · ${z(d.getHours())}:${z(d.getMinutes())}`; }
   $('versionTxt').textContent=t;
   // Antippen: sofort nach einer neuen Version suchen
-  $('versionTxt').addEventListener('click',async()=>{ const el=$('versionTxt');
+  // 1× tippen: Update suchen · 5× schnell tippen: geheimes Test-Zahnrad
+  let taps=0, tapT=null;
+  $('versionTxt').addEventListener('click',()=>{ taps++; clearTimeout(tapT);
+    if(taps>=5){ taps=0; $('devGear').hidden=false; return; }
+    tapT=setTimeout(()=>{ taps=0; doUpdate(); },450); });
+  async function doUpdate(){ const el=$('versionTxt');
     if(!m){ location.reload(); return; }
     el.textContent='🔄 Suche Update …';
     try{ const r=await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'}); const txt=await r.text(); const mm=txt.match(/name="md-build" content="(\d+)"/);
       if(mm && mm[1]!==m.content){ el.textContent='⬇️ Neue Version wird geladen …'; location.replace(location.pathname+'?v='+mm[1]); return; }
       el.textContent='✓ Das ist die neueste Version'; }
     catch(e){ el.textContent='Kein Internet – später nochmal'; }
-    setTimeout(()=>{ el.textContent=t; },2500); });
+    setTimeout(()=>{ el.textContent=t; },2500); }
 })();
 /* ---------- Auto-Update (wichtig für die Homescreen-App) ---------- */
 (function(){
@@ -2358,6 +2473,16 @@ function lutzZeile(el){
   d.textContent=`${it.ic} Langfinger-Lutz (${it.lvl()}) hat ${Math.round(G.robLoot||0).toLocaleString('de-DE')} Münzen geklaut!`;
   el.appendChild(d);
 }
+/* ---------- Neu freigeschaltet! ---------- */
+function showUnlocks(a,b){
+  const el=$('endUnlock'); el.innerHTML=''; const neu=[];
+  for(const id of b.helfer) if(!a.helfer.includes(id)){ const it=ITEMS.find(x=>x.id===id); neu.push(`${it.ic} ${it.name}`); }
+  for(const k of b.karten) if(!a.karten.includes(k)) neu.push(`🗺️ Karte ${MAPS[k].name}`);
+  for(const x of b.stufen) if(!a.stufen.includes(x)){ const [m,k]=x.split(':'); neu.push(`${STUFEN[k].name} auf ${MAPS[m].name}`); }
+  if(neu.length){ el.className='unlock'; el.innerHTML=`<b>🎉 Neu freigeschaltet!</b><span>${neu.join(' · ')}</span>`; sfx('buy'); track('freigeschaltet',{was:neu.join(', ')}); }
+  else el.className='';
+  $('endProg').innerHTML=progressHtml();
+}
 /* ---------- Bestenliste (auf diesem Gerät) ---------- */
 const SCORE_MULT={leicht:0.5, normal:1, schwer:1.6};
 let HS_PENDING=null;
@@ -2392,7 +2517,7 @@ $('btnScores').addEventListener('click',()=>{ renderScores($('scoreList'),null,2
 $('scoresClose').addEventListener('click',()=>{ $('scores').hidden=true; $('title').hidden=false; });
 function start(lo){
   if(lo) LOADOUT=lo;
-  if(LOADOUT.length!==PLAETZE) return;
+  LOADOUT=LOADOUT.filter(isUnlocked); if(!LOADOUT.length) return;
   try{ localStorage.setItem('md_loadout',JSON.stringify(LOADOUT)); }catch(e){}
   buildToolbar();
   if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
@@ -2416,8 +2541,9 @@ let helpThen=null;
 function openHelp(then){ helpThen=then||null; $('help').hidden=false; }
 $('helpClose').addEventListener('click',()=>{ $('help').hidden=true; seenHelp=true; try{ localStorage.setItem('md_help','1'); }catch(e){} if(helpThen){ const f=helpThen; helpThen=null; f(); } });
 $('btnPlay').addEventListener('click',()=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
-  const go=()=>openSetup();
-  if(!seenHelp) openHelp(go); else go(); });
+  if(!tutDone() && !DEV) startTutorial(); else openSetup(); });
+$('tutSkip').addEventListener('click',()=>finishTutorial('übersprungen'));
+$('btnTut').addEventListener('click',()=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } startTutorial(); });
 $('btnBack').addEventListener('click',()=>openSetup());
 $('btnHelp').addEventListener('click',()=>openHelp());
 $('pHelp').addEventListener('click',()=>openHelp());
@@ -2492,21 +2618,29 @@ function renderStart(){
     b.addEventListener('click',()=>toast(`${t.name}: ${t.desc}. ${weakLine(t).replace(/^./,c=>c.toUpperCase())}.`));
     $('monsterList').appendChild(b); }
   $('choiceChip').textContent=`${MAPS[MAP_ID].name} · ${STUFEN[STUFE_WAHL].name}  ✏️`;
-  $('slotsTxt').textContent=PLAETZE;
+  // Solange man höchstens 5 Helfer hat, sind einfach alle dabei – Auswahl erst, wenn es mehr gibt
+  const avail=availHelpers(), alle=avail.length<=PLAETZE, need=Math.min(PLAETZE,avail.length);
+  LOADOUT=LOADOUT.filter(x=>avail.includes(x)); if(alle) LOADOUT=avail.slice();
+  $('pickHead').innerHTML=alle?'Deine Helfer':`Wähle ${PLAETZE} Helfer <small>(${LOADOUT.length}/${PLAETZE})</small>`;
+  $('pickHint').textContent=alle?'Mit Punkten schaltest du neue Helfer frei.':'Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.';
   $('pickList').innerHTML='';
-  // Kommt Spukolino, muss Zappelbart mit
-  const pflicht = TODAY.includes('spuk') ? 'zauber' : null;
+  const pflicht = TODAY.includes('spuk') && avail.includes('zauber') ? 'zauber' : null;
   if(pflicht && !LOADOUT.includes(pflicht)) LOADOUT=[pflicht,...LOADOUT].slice(0,PLAETZE);
-  for(const id of Object.keys(WAHL)){ const it=ITEMS.find(x=>x.id===id), w=WAHL[id];
+  for(const id of Object.keys(WAHL)){ const it=ITEMS.find(x=>x.id===id), w=WAHL[id], frei=avail.includes(id);
+    const b=document.createElement('button'); b.type='button';
+    if(!frei){ const u=FREI.find(x=>x.id===id); b.className='pick locked';
+      b.innerHTML=`<span class="ic">🔒</span><b>${it.name}</b><small>ab ${u.pts.toLocaleString('de-DE')} Punkten</small>`;
+      b.addEventListener('click',()=>toast(`${it.name} schaltest du mit ${u.pts.toLocaleString('de-DE')} Punkten frei. Du hast ${totalPts().toLocaleString('de-DE')}.`));
+      $('pickList').appendChild(b); continue; }
     const warn = id===pflicht ? '<small class="warn">🔒 Muss heute mit – Spukolino kommt!</small>' : '';
-    const b=document.createElement('button'); b.className='pick'+(LOADOUT.includes(id)?' on':''); b.type='button';
+    b.className='pick'+(LOADOUT.includes(id)?' on':'');
     b.innerHTML=`<span class="ic">${it.ic}</span><b>${it.name}</b><span class="art">${w.art==='aktiv'?'👆 selbst auslösen':'⚙️ arbeitet allein'}</span><small>${w.gut}</small>${warn}`;
-    b.addEventListener('click',()=>{ if(id===pflicht){ toast('Heute kommt Spukolino – Zappelbart muss mit!'); return; }
+    b.addEventListener('click',()=>{ if(alle){ toast('Alle deine Helfer sind dabei!'); return; }
+      if(id===pflicht){ toast('Heute kommt Spukolino – Zappelbart muss mit!'); return; }
       if(LOADOUT.includes(id)) LOADOUT=LOADOUT.filter(x=>x!==id); else if(LOADOUT.length<PLAETZE) LOADOUT=[...LOADOUT,id]; else { toast(`Nur ${PLAETZE} Helfer! Tippe erst einen anderen ab.`); return; } renderStart(); });
     $('pickList').appendChild(b); }
-  $('slotsCount').textContent=`(${LOADOUT.length}/${PLAETZE})`;
-  $('btnStart').disabled=LOADOUT.length!==PLAETZE;
-  $('btnStart').textContent=LOADOUT.length===PLAETZE?"Los geht's!":`Noch ${PLAETZE-LOADOUT.length} Helfer wählen`;
+  $('btnStart').disabled=LOADOUT.length!==need;
+  $('btnStart').textContent=LOADOUT.length===need?"Los geht's!":`Noch ${need-LOADOUT.length} Helfer wählen`;
 }
 /* Karte & Schwierigkeit – eigener Bildschirm vor der Helfer-Wahl */
 const STERN_WERT={leicht:1, normal:2, schwer:3};
@@ -2535,20 +2669,26 @@ function makeThumbs(){
 function renderSetup(){
   if(!MAP_THUMBS){ try{ MAP_THUMBS=makeThumbs(); }catch(e){ MAP_THUMBS={}; } }
   $('karten').innerHTML=''; const stars=loadStars();
-  for(const [k,m] of Object.entries(MAPS)){ const b=document.createElement('button'); b.type='button'; b.className='mapcard'+(k===MAP_ID?' on':'');
-    const n=Math.max(0,Math.min(3,stars[k]|0));
-    b.innerHTML=`${MAP_THUMBS[k]?`<img src="${MAP_THUMBS[k]}" alt="">`:''}<b>${m.name}</b><span class="stars" aria-label="${n} von 3 Sternen">${sternHtml(n)}</span><small>${m.info}</small>`;
-    b.addEventListener('click',()=>{ if(k!==MAP_ID){ applyMap(k); try{ localStorage.setItem('md_map',k); }catch(e){} newGame(); G.bgDirty=true; } renderSetup(); }); $('karten').appendChild(b); }
+  if(!mapUnlocked(MAP_ID)){ applyMap('wiese'); newGame(); G.bgDirty=true; }
+  if(!stufeUnlocked(MAP_ID,STUFE_WAHL)) STUFE_WAHL='leicht';
+  for(const [k,m] of Object.entries(MAPS)){ const b=document.createElement('button'); b.type='button'; const frei=mapUnlocked(k);
+    b.className='mapcard'+(k===MAP_ID?' on':'')+(frei?'':' locked');
+    const n=Math.max(0,Math.min(3,stars[k]|0)), vor=MAPS[MAP_ORDER[MAP_ORDER.indexOf(k)-1]];
+    b.innerHTML=`${MAP_THUMBS[k]?`<img src="${MAP_THUMBS[k]}" alt="">`:''}<b>${frei?'':'🔒 '}${m.name}</b>${frei?`<span class="stars" aria-label="${n} von 3 Sternen">${sternHtml(n)}</span><small>${m.info}</small>`:`<small>Gewinne erst ${vor?vor.name:''} auf Leicht</small>`}`;
+    b.addEventListener('click',()=>{ if(!frei){ toast(`Gewinne erst ${vor?vor.name:''} auf Leicht – dann ist ${m.name} frei!`); return; }
+      if(k!==MAP_ID){ applyMap(k); try{ localStorage.setItem('md_map',k); }catch(e){} newGame(); G.bgDirty=true; } renderSetup(); }); $('karten').appendChild(b); }
   $('stufen').innerHTML='';
-  for(const [k,v] of Object.entries(STUFEN)){ const b=document.createElement('button'); b.type='button'; b.className='stufcard'+(k===STUFE_WAHL?' on':'');
-    b.innerHTML=`<b>${v.name}</b><span class="stars mini" aria-label="gibt ${STERN_WERT[k]} Sterne">${sternHtml(STERN_WERT[k])}</span><small>${STUFEN_INFO[k]||''}</small>`;
-    b.addEventListener('click',()=>{ STUFE_WAHL=k; try{ localStorage.setItem('md_stufe',k); }catch(e){} renderSetup(); }); $('stufen').appendChild(b); }
+  for(const [k,v] of Object.entries(STUFEN)){ const b=document.createElement('button'); b.type='button'; const frei=stufeUnlocked(MAP_ID,k);
+    b.className='stufcard'+(k===STUFE_WAHL?' on':'')+(frei?'':' locked');
+    const bed=k==='normal'?'Gewinne erst Leicht auf dieser Karte':'Gewinne erst Normal auf dieser Karte';
+    b.innerHTML=`<b>${frei?'':'🔒 '}${v.name}</b><span class="stars mini" aria-label="gibt ${STERN_WERT[k]} Sterne">${sternHtml(STERN_WERT[k])}</span><small>${frei?(STUFEN_INFO[k]||''):bed}</small>`;
+    b.addEventListener('click',()=>{ if(!frei){ toast(bed+'!'); return; } STUFE_WAHL=k; try{ localStorage.setItem('md_stufe',k); }catch(e){} renderSetup(); }); $('stufen').appendChild(b); }
 }
 function openSetup(){ renderSetup(); $('title').hidden=true; $('start').hidden=true; $('end').hidden=true; $('setup').hidden=false; }
 $('setupNext').addEventListener('click',()=>{ $('setup').hidden=true; renderStart(); $('start').hidden=false; });
 $('setupBack').addEventListener('click',()=>{ $('setup').hidden=true; $('title').hidden=false; });
 $('choiceChip').addEventListener('click',openSetup);
-function newRound(){ pickToday(); genWaves(); if(G) G.running=false; buildToolbar(); newGame(); G.bgDirty=true; renderStart(); }
+function newRound(){ tutHideUI(); pickToday(); genWaves(); if(G) G.running=false; buildToolbar(); newGame(); G.bgDirty=true; renderStart(); }
 
 let last=performance.now(), frameAvg=1/60;
 function loop(now){
