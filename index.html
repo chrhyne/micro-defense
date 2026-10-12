@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791784100">
+<meta name="md-build" content="1791784359">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -350,7 +350,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <h2>So geht's</h2>
     <p class="lead">Halte die Monster von deiner Burg fern, bis Gromp der Riese besiegt ist!</p>
     <div class="helpgrid">
-      <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Dort kämpft er nur mit dem Schwert am Tor. Tippe auf den Turm: Dort schießt er nur Pfeile – weit und auch auf Flieger. Power-Leiste voll? POWER antippen!</div>
+      <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Dort kämpft er nur mit dem Schwert am Tor. Tippe auf den Turm: Dort schießt er nur Pfeile – weit und auch auf Flieger. Power-Leiste voll? POWER antippen: am Lagerfeuer gibt’s den Wirbel, auf dem Turm einen Pfeilregen!</div>
       <div><b>🛠️ Bauen</b>Mit den Münzen aus dem Briefkasten baust du unten in der Leiste Helfer und machst sie stärker.</div>
       <div><b>👆 Wischen &amp; Tippen</b>Wisch über Münzen für einen Bonus. Tippe ein Monster an, dann zielen alle darauf.</div>
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
@@ -1387,7 +1387,22 @@ function usePower(k){
     for(let n=0;n<16 && cand.length;n++){ const i=cand[(Math.random()*cand.length)|0]; const x=eX[i], y=eY[i]; later(n*0.09,()=>strikeAt(x,y,GEWITTER[G.gew.lvl].dmg*1.5)); }
     G.flash=0.5; banner('⚡ SUPER-GEWITTER!','#fff27a'); sfx('zap');
   } else if(k==='vul'){ erupt(true); banner('🌋 LAVA-WELLE!','#ff6a2a'); }
-  else if(k==='brok'){ startSpin(); }
+  else if(k==='brok'){ if(G.hero.home==='turm') arrowRain(); else startSpin(); }
+}
+// ----- Brokkoli-Pfeilregen (Power vom Turm): Pfeile fallen vom Himmel – trifft auch Flieger -----
+function arrowRain(){
+  const B=BROK[G.brok], n=30+5*G.brok, dmg=B.dmg*2.5, maxD=reihen(B.reihen+1.5);
+  cand.length=0; for(let i=0;i<eHi;i++) if(eAlive[i] && eDist[i]>=maxD && targetable(i,'brok')) cand.push(i);
+  if(!cand.length) for(let i=0;i<eHi;i++) if(eAlive[i] && targetable(i,'brok')) cand.push(i);
+  // Flieger zuerst, dann die Dicken – und kein Monster bekommt mehr Pfeile, als es braucht
+  cand.sort((a,b)=>(TYPES[eType[b]].fly?1:0)-(TYPES[eType[a]].fly?1:0) || eHp[b]-eHp[a]);
+  const list=cand.map(i=>({i,uid:eUid[i],left:eHp[i]})); let pos=0;
+  for(let k=0;k<n && list.length;k++){ let q=null;
+    for(let s=0;s<list.length;s++){ const c=list[(pos+s)%list.length]; if(c.left>0){ q=c; pos=(pos+s+1)%list.length; break; } }
+    if(!q){ q=list[k%list.length]; } q.left-=dmg*Math.max(0.3,wmult(q.i,'brok'));
+    later(k*(2.5/n)+Math.random()*0.08,()=>{ const i=q.i; if(!eAlive[i]||eUid[i]!==q.uid) return;
+      const a=shoot(eX[i]-60+Math.random()*120,eY[i]-520,i,dmg,'#ffd23f',false,'brok','brok'); a.rain=true; }); }
+  banner('🏹 PFEILREGEN!','#ffd23f'); sfx('twang');
 }
 let timers=[];
 function later(sec,fn){ timers.push({t:sec,fn}); }
@@ -1489,7 +1504,7 @@ const TUT=[
   {say:'Mach mich stärker! Tippe unten auf Brokkoli.', enter(){ tutTop('brok'); }, finger:()=>tutTile('brok'), done:()=>G.brok>=1},
   {say:'Ich werde größer und stärker! Achtung – jetzt kommt eine riesige Horde …', enter(){ tutSpawn('misti',28,1000); tutSpawn('quaxi',6,1150); }, done:()=>G.tut.t>4},
   {say:'Meine Power-Leiste ist voll! Tippe auf POWER über mir!', enter(){ G.pow.brok=CFG.powerZeit; }, finger:()=>tutWorld({x:BUBBLES.brok.x,y:BUBBLES.brok.y-14}), done:()=>!!G.spin},
-  {say:'Wiiirbel! 🌀', done:()=>!G.spin && G.alive===0 && G.tut.t>1},
+  {say:'Wiiirbel! 🌀 Auf dem Turm wird meine Power übrigens zum Pfeilregen – der trifft auch Flieger.', done:()=>!G.spin && G.alive===0 && G.tut.t>1},
   {say:'Geschafft! Mit Punkten schaltest du neue Helfer, Karten und Stufen frei. Viel Spaß!', done:()=>G.tut.t>4},
 ];
 function startTutorial(){
@@ -1847,7 +1862,10 @@ function render(time){
   // Geschosse
   for(const a of G.arrows){ const p=Math.max(0,a.t/a.dur); const x=a.x0+(a.tx-a.x0)*p, y=a.y0+(a.ty-a.y0)*p-Math.sin(p*Math.PI)*40;
     if(a.el==='zauber'){ circ(ctx,x,y,5,'#d9b3ff',INK,1.5); circ(ctx,x-1.5,y-1.5,1.6,'#fff'); continue; }
-    const ang=Math.atan2(a.ty-a.y0, a.tx-a.x0); ctx.strokeStyle=a.color; ctx.lineWidth=a.fire?3:2; ln(ctx,x-Math.cos(ang)*10,y-Math.sin(ang)*10,x,y);
+    const ang=Math.atan2(a.ty-a.y0, a.tx-a.x0);
+    if(a.rain){ const cx=Math.cos(ang), sy=Math.sin(ang); ctx.strokeStyle=INK; ctx.lineWidth=5; ln(ctx,x-cx*22,y-sy*22,x,y); ctx.strokeStyle='#ffd23f'; ctx.lineWidth=3; ln(ctx,x-cx*22,y-sy*22,x,y);
+      ctx.strokeStyle='#fff'; ctx.lineWidth=2; ln(ctx,x-cx*22-sy*5,y-sy*22+cx*5,x-cx*16,y-sy*16); ln(ctx,x-cx*22+sy*5,y-sy*22-cx*5,x-cx*16,y-sy*16); circ(ctx,x,y,2.5,'#fff3b0'); continue; }
+    ctx.strokeStyle=a.color; ctx.lineWidth=a.fire?3:2; ln(ctx,x-Math.cos(ang)*10,y-Math.sin(ang)*10,x,y);
     if(a.fire) circ(ctx,x,y,3,'#ffd04a'); }
   for(const b of G.boulders){ if(b.t<b.delay) continue; const p=Math.min(1,(b.t-b.delay)/(b.dur-b.delay)); const x=b.x0+(b.x1-b.x0)*p, y=b.y0+(b.y1-b.y0)*p, hh=Math.sin(p*Math.PI)*b.h, s=1-p*(1-b.s)*0.6;
     ell(ctx,x,y,7*s,2.5*s,'rgba(0,0,0,0.2)');
