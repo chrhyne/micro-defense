@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791788958">
+<meta name="md-build" content="1791789529">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -528,12 +528,16 @@ try{ const l=JSON.parse(localStorage.getItem('md_loadout')||'null'); if(Array.is
 const PROG_V='2';   // Version des Fortschritts – bei Wechsel fangen alle einmal von vorne an
 try{ if(localStorage.getItem('md_prog_v')!==PROG_V){ ['md_stars','md_pts','md_tut','md_loadout'].forEach(k=>localStorage.removeItem(k)); localStorage.setItem('md_prog_v',PROG_V); LOADOUT=['bogen','messer']; } }catch(e){}
 const BASIS=['brok','bogen','messer','burg','heilen'];
-const FREI=[{id:'zauber',pts:10000},{id:'oel',pts:30000},{id:'katapult',pts:60000},{id:'raeuber',pts:100000},{id:'gewitter',pts:150000},{id:'vulkan',pts:220000},{id:'tnt',pts:1000000}];
+const FREI=[{id:'zauber',pts:20000},{id:'oel',pts:120000},{id:'katapult',pts:200000},{id:'raeuber',pts:420000},{id:'gewitter',pts:560000},{id:'vulkan',pts:1000000},{id:'tnt',pts:1500000}];
+// Helfer-Plätze: am Anfang 2, weitere mit Punkten
+const SLOTS=[{n:3,pts:60000},{n:4,pts:300000},{n:5,pts:750000}];
+function plaetze(){ if(DEV) return PLAETZE; let n=2; const p=totalPts(); for(const s2 of SLOTS) if(p>=s2.pts) n=s2.n; return n; }
 let DEV=false; try{ DEV=localStorage.getItem('md_dev')==='1'; }catch(e){}
 function totalPts(){ try{ return +localStorage.getItem('md_pts')||0; }catch(e){ return 0; } }
 function addPts(n){ try{ localStorage.setItem('md_pts',String(totalPts()+Math.max(0,Math.round(n)))); }catch(e){} }
 function isUnlocked(id){ if(DEV||BASIS.includes(id)) return true; const u=FREI.find(x=>x.id===id); return !u || totalPts()>=u.pts; }
-function nextUnlock(){ if(DEV) return null; const p=totalPts(); return FREI.find(x=>p<x.pts)||null; }
+function unlockList(){ return [...FREI,...SLOTS.map(x=>({slot:x.n,pts:x.pts}))].sort((a,b)=>a.pts-b.pts); }
+function nextUnlock(){ if(DEV) return null; const p=totalPts(); return unlockList().find(x=>p<x.pts)||null; }
 function availHelpers(){ return Object.keys(WAHL).filter(isUnlocked); }
 // Monster, gegen die man ohne bestimmte Helfer keine Chance hätte, kommen erst später
 const MON_NEEDS={spuk:['zauber'], blech:['katapult','gewitter'], buddel:['katapult'], kalle:['katapult','gewitter'], schorsch:['katapult','gewitter']};
@@ -541,12 +545,13 @@ function monsterAllowed(id){ const n=MON_NEEDS[id]; return !n || n.some(isUnlock
 const MAP_ORDER=['wiese','wueste','eis'];
 function mapUnlocked(k){ if(DEV) return true; const i=MAP_ORDER.indexOf(k); return i<=0 || (loadStars()[MAP_ORDER[i-1]]||0)>=1; }
 function stufeUnlocked(map,k){ if(DEV) return true; const st=loadStars()[map]||0; return k==='leicht' || (k==='normal'&&st>=1) || (k==='schwer'&&st>=2); }
-function progSnap(){ return { helfer:[...Object.keys(WAHL),'tnt'].filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:MAP_ORDER.flatMap(m=>['normal','schwer'].filter(k=>stufeUnlocked(m,k)).map(k=>m+':'+k)) }; }
+function progSnap(){ return { plaetze:plaetze(), helfer:[...Object.keys(WAHL),'tnt'].filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:MAP_ORDER.flatMap(m=>['normal','schwer'].filter(k=>stufeUnlocked(m,k)).map(k=>m+':'+k)) }; }
 function progressHtml(){
   const n=nextUnlock(); if(!n) return DEV?'🔓 Test-Modus: alles frei':'🏆 Alle Helfer freigespielt!';
-  const it=ITEMS.find(x=>x.id===n.id), prev=[0,...FREI.map(x=>x.pts)].filter(v=>v<n.pts).pop()||0, p=totalPts();
+  const prev=[0,...unlockList().map(x=>x.pts)].filter(v=>v<n.pts).pop()||0, p=totalPts();
   const w=Math.max(2,Math.min(100,100*(p-prev)/(n.pts-prev)));
-  return `<span>Noch <b>${(n.pts-p).toLocaleString('de-DE')}</b> Punkte bis ${it.ic} <b>${it.name}</b></span><span class="progbar"><i style="width:${w}%"></i></span>`;
+  const was=n.slot?`🎒 <b>${n.slot}. Helfer-Platz</b>`:(it=>`${it.ic} <b>${it.name}</b>`)(ITEMS.find(x=>x.id===n.id));
+  return `<span>Noch <b>${(n.pts-p).toLocaleString('de-DE')}</b> Punkte bis ${was}</span><span class="progbar"><i style="width:${w}%"></i></span>`;
 }
 
 // ---------- WAFFEN ----------
@@ -2766,6 +2771,7 @@ function lutzZeile(el){
 /* ---------- Neu freigeschaltet! ---------- */
 function showUnlocks(a,b){
   const el=$('endUnlock'); el.innerHTML=''; const neu=[];
+  if(b.plaetze>a.plaetze) neu.push(`🎒 ${b.plaetze}. Helfer-Platz`);
   for(const id of b.helfer) if(!a.helfer.includes(id)){ const it=ITEMS.find(x=>x.id===id); neu.push(`${it.ic} ${it.name}`); }
   for(const k of b.karten) if(!a.karten.includes(k)) neu.push(`🗺️ Karte ${MAPS[k].name}`);
   for(const x of b.stufen) if(!a.stufen.includes(x)){ const [m,k]=x.split(':'); neu.push(`${STUFEN[k].name} auf ${MAPS[m].name}`); }
@@ -2807,7 +2813,7 @@ $('btnScores').addEventListener('click',()=>{ renderScores($('scoreList'),null,2
 $('scoresClose').addEventListener('click',()=>{ $('scores').hidden=true; $('title').hidden=false; });
 function start(lo){
   if(lo) LOADOUT=lo;
-  LOADOUT=LOADOUT.filter(isUnlocked); if(!LOADOUT.length) return;
+  LOADOUT=LOADOUT.filter(isUnlocked); if(!lo) LOADOUT=LOADOUT.slice(0,plaetze()); if(!LOADOUT.length) return;
   try{ localStorage.setItem('md_loadout',JSON.stringify(LOADOUT)); }catch(e){}
   buildToolbar();
   if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
@@ -2913,14 +2919,15 @@ function renderStart(){
     $('monsterList').appendChild(b); }
   $('choiceChip').textContent=`${MAPS[MAP_ID].name} · ${STUFEN[STUFE_WAHL].name}  ✏️`;
   // Solange man höchstens 5 Helfer hat, sind einfach alle dabei – Auswahl erst, wenn es mehr gibt
-  const avail=availHelpers(), alle=avail.length<=PLAETZE, need=Math.min(PLAETZE,avail.length);
-  LOADOUT=LOADOUT.filter(x=>avail.includes(x)); if(alle) LOADOUT=avail.slice();
-  $('pickHead').innerHTML=alle?'Deine Helfer':`Wähle ${PLAETZE} Helfer <small>(${LOADOUT.length}/${PLAETZE})</small>`;
-  $('pickHint').textContent=alle?'Mit Punkten schaltest du neue Helfer frei.':'Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.';
+  const PL=plaetze(), avail=availHelpers(), alle=avail.length<=PL, need=Math.min(PL,avail.length);
+  LOADOUT=LOADOUT.filter(x=>avail.includes(x)).slice(0,PL); if(alle) LOADOUT=avail.slice();
+  const nsl=SLOTS.find(x=>x.n===PL+1);
+  $('pickHead').innerHTML=alle?'Deine Helfer':`Wähle ${PL} Helfer <small>(${LOADOUT.length}/${PL})</small>`;
+  $('pickHint').textContent=(alle?'Mit Punkten schaltest du neue Helfer frei.':'Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.')+(nsl&&!DEV?` 🎒 ${nsl.n}. Platz ab ${nsl.pts.toLocaleString('de-DE')} Punkten.`:'');
   $('pickProg').innerHTML=nextUnlock()?progressHtml():'';
   $('pickList').innerHTML='';
   const pflicht = TODAY.includes('spuk') && avail.includes('zauber') ? 'zauber' : null;
-  if(pflicht && !LOADOUT.includes(pflicht)) LOADOUT=[pflicht,...LOADOUT].slice(0,PLAETZE);
+  if(pflicht && !LOADOUT.includes(pflicht)) LOADOUT=[pflicht,...LOADOUT].slice(0,PL);
   for(const id of Object.keys(WAHL)){ const it=ITEMS.find(x=>x.id===id), w=WAHL[id], frei=avail.includes(id);
     const b=document.createElement('button'); b.type='button';
     if(!frei){ const u=FREI.find(x=>x.id===id); b.className='pick locked';
@@ -2932,7 +2939,7 @@ function renderStart(){
     b.innerHTML=`<span class="ic">${it.ic}</span><b>${it.name}</b><span class="art">${w.art==='aktiv'?'👆 selbst auslösen':'⚙️ arbeitet allein'}</span><small>${w.gut}</small>${warn}`;
     b.addEventListener('click',()=>{ if(alle){ toast('Alle deine Helfer sind dabei!'); return; }
       if(id===pflicht){ toast('Heute kommt Spukolino – Zappelbart muss mit!'); return; }
-      if(LOADOUT.includes(id)) LOADOUT=LOADOUT.filter(x=>x!==id); else if(LOADOUT.length<PLAETZE) LOADOUT=[...LOADOUT,id]; else { toast(`Nur ${PLAETZE} Helfer! Tippe erst einen anderen ab.`); return; } renderStart(); });
+      if(LOADOUT.includes(id)) LOADOUT=LOADOUT.filter(x=>x!==id); else if(LOADOUT.length<PL) LOADOUT=[...LOADOUT,id]; else { toast(`Nur ${PL} Plätze! Tippe erst einen anderen ab.`+(nsl?` Der ${nsl.n}. Platz kommt ab ${nsl.pts.toLocaleString('de-DE')} Punkten.`:'')); return; } renderStart(); });
     $('pickList').appendChild(b); }
   $('btnStart').disabled=LOADOUT.length!==need;
   $('btnStart').textContent=LOADOUT.length===need?"Los geht's!":`Noch ${need-LOADOUT.length} Helfer wählen`;
