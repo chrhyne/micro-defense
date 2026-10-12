@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791783186">
+<meta name="md-build" content="1791783424">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -1104,7 +1104,7 @@ function updateHero(dt){
   const dx=tx-h.x, dy=ty-h.y, d=Math.hypot(dx,dy);
   if(d>1.5){ const s=Math.min(d,(where==='draussen'?170:210)*dt); h.x+=dx/d*s; h.y+=dy/d*s; h.walk+=dt*12; }
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
-  if((where==='turm'||where==='lager') && h.cd<=0){
+  if((where==='turm'||where==='lager') && h.cd<=0 && !(G.tut && G.tut.noShoot)){
     const minD=reihen(B.reihen); const best=pickFront(minD,'brok'); const sx=where==='turm'?BTOWER.x:h.x, sy=(where==='turm'?BTOWER.y:h.y)-30;
     if(best>=0){ h.cd=1/B.rate; shoot(sx,sy,best,B.dmg,'#3f9b45',false,'brok','brok');
       for(let k=1;k<B.n;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(sx,sy,j,B.dmg,'#3f9b45',false,'brok','brok'); }
@@ -1470,8 +1470,8 @@ function tutTile(id){ const el=toolEls[id]&&toolEls[id].b; if(!el) return null; 
 function tutWorld(p){ return {x:ox+p.x*scale, y:oy+p.y*scale}; }
 function tutCoin(){ for(let i=0;i<kN;i++) if(ks[i]===0) return tutWorld({x:kx[i],y:ky[i]-10}); return null; }
 const TUT=[
-  {say:'Hallo! Ich bin Brokkoli. Die Monster wollen in unsere Burg – ich halte sie auf!', enter(){ G.tut.noAuto=true; tutSpawn('misti',6,1000); }, done:()=>G.alive===0 && G.tut.t>2},
-  {say:'Die Monster lassen Münzen fallen. Wisch mit dem Finger darüber – das gibt einen Bonus!', enter(){ let n=0; for(let i=0;i<kN;i++) if(ks[i]===0) n++; for(;n<4;n++) dropCoin(GATE.x+120+n*30,GATE.y+10,3,1); },
+  {say:'Hallo! Ich bin Brokkoli. Die Monster wollen in unsere Burg – wenn sie ans Tor kommen, gibt’s was mit dem Schwert!', enter(){ G.tut.noAuto=true; G.tut.noShoot=true; tutSpawn('misti',6,750); }, done:()=>G.alive===0 && G.tut.t>2},
+  {say:'Die Monster lassen Münzen fallen. Wisch mit dem Finger darüber – das gibt einen Bonus!', enter(){ G.tut.noShoot=false; let n=0; for(let i=0;i<kN;i++) if(ks[i]===0) n++; for(;n<4;n++) dropCoin(GATE.x+120+n*30,GATE.y+10,3,1); },
     finger:tutCoin, done:()=>G.tut.swiped},
   {say:'Mit Münzen baust du Helfer. Tippe unten auf Pfeil-Paule!', enter(){ G.tut.noAuto=false; tutTop('bogen'); }, finger:()=>tutTile('bogen'), done:()=>G.archer>=0},
   {say:'Pfeil-Paule schießt vom Turm – besonders gut auf Flieger. Da kommen welche!', enter(){ tutSpawn('flatter',4,1100); tutSpawn('misti',6,1200); }, done:()=>G.alive===0 && G.tut.t>3},
@@ -1486,7 +1486,7 @@ const TUT=[
 function startTutorial(){
   applyMap('wiese'); STUFE_WAHL='leicht'; TODAY=['misti','quaxi','flatter','gromp']; WAVES=[];
   start(['bogen','messer']);
-  G.tut={step:-1,t:0}; G.coins=0; buildToolbar(); refreshToolbar(); resize(); $('toast').classList.add('hide');
+  G.tut={step:-1,t:0}; G.coins=0; G.fighters=[];   // im Tutorial fängt Brokkoli allein an buildToolbar(); refreshToolbar(); resize(); $('toast').classList.add('hide');
   track('tutorial',{schritt:'start'});
   tutNext();
 }
