@@ -11,14 +11,13 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791784359">
+<meta name="md-build" content="1791784872">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
+<style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
+<link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
 </head>
 <body>
 <title>Micro Defense</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap">
 <style>
 /* Layout: Comic-Spielfeld mit Tiefe (Horizont oben, Burg vorne unten links); Holzschilder oben; schmale Bau-Kacheln unten, seitlich wischbar */
 :root{
@@ -243,6 +242,8 @@ body.inmenu #bossBar{display:none}
 .mchip small{font-size:11px;font-weight:700;color:var(--ink-soft)}
 .mchip.boss{border-color:#9b59d0}
 .helpsheet{display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.privacy{margin:0;font-size:12px;line-height:1.4;color:var(--ink-soft);max-width:560px}
+.privacy a{color:inherit}
 .helpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;width:100%;text-align:left}
 .helpgrid div{background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:12px;padding:8px 10px;font-size:14px;font-weight:600;line-height:1.35}
 .helpgrid b{display:block;font-family:var(--display);font-weight:400;font-size:17px;margin-bottom:2px}
@@ -356,6 +357,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
+    <p class="privacy"><b>Datenschutz:</b> Spielstand, Punkte und Bestenliste bleiben nur auf diesem Gerät. Damit wir sehen, wie oft und wie lange gespielt wird, zählen wir anonym mit <a href="https://umami.is" target="_blank" rel="noopener">Umami</a> (ohne Cookies, ohne Namen, ohne gespeicherte IP-Adresse). Schriften und Bilder kommen von dieser Seite selbst.</p>
   </div>
 </div>
 
