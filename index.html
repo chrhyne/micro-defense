@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791783690">
+<meta name="md-build" content="1791784100">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -350,7 +350,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <h2>So geht's</h2>
     <p class="lead">Halte die Monster von deiner Burg fern, bis Gromp der Riese besiegt ist!</p>
     <div class="helpgrid">
-      <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Er kämpft mit dem Schwert am Tor. Tippe auf den Turm: Er schießt weit, auch auf Flieger. Power-Leiste voll? POWER antippen!</div>
+      <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Dort kämpft er nur mit dem Schwert am Tor. Tippe auf den Turm: Dort schießt er nur Pfeile – weit und auch auf Flieger. Power-Leiste voll? POWER antippen!</div>
       <div><b>🛠️ Bauen</b>Mit den Münzen aus dem Briefkasten baust du unten in der Leiste Helfer und machst sie stärker.</div>
       <div><b>👆 Wischen &amp; Tippen</b>Wisch über Münzen für einen Bonus. Tippe ein Monster an, dann zielen alle darauf.</div>
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
@@ -571,7 +571,7 @@ const CLOUD = {x:105, y:428};
 const VOLC = {x:1290, y:722, s:1};
 const YARD = {x0:40, x1:222, y0:770, y1:932};
 const OUTSIDE = {x0:262, x1:640, y0:826, y1:950};
-// Brokkolis Lager direkt vor dem Tor: von hier schießt er und springt sofort in den Kampf
+// Brokkolis Lager direkt vor dem Tor: von hier springt er mit dem Schwert in den Kampf
 const CAMP = {x:GATE.x+105, y:GATE.y-60};
 // ---------- KARTEN ----------
 // lanes = waagerechte Wege (wie die Wiese) · pts = Wegpunkte, durch die der Weg in weichen Kurven läuft
@@ -1105,17 +1105,17 @@ function updateHero(dt){
   const dx=tx-h.x, dy=ty-h.y, d=Math.hypot(dx,dy);
   if(d>1.5){ const s=Math.min(d,(where==='draussen'?170:210)*dt); h.x+=dx/d*s; h.y+=dy/d*s; h.walk+=dt*12; }
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
-  if((where==='turm'||where==='lager') && h.cd<=0 && !(G.tut && G.tut.noShoot)){
-    // Turm: weit und ein Pfeil mehr · Lagerfeuer: nur kurze Reichweite
-    const minD=reihen(where==='turm'?B.reihen+0.8:Math.max(0.8,B.reihen-0.5)), extra=where==='turm'?1:0; const best=pickFront(minD,'brok'); const sx=where==='turm'?BTOWER.x:h.x, sy=(where==='turm'?BTOWER.y:h.y)-30;
+  if(where==='turm' && h.cd<=0 && !(G.tut && G.tut.noShoot)){
+    // Nur auf dem Turm Pfeile (weit, ein Pfeil mehr) – am Lagerfeuer nur das Schwert
+    const minD=reihen(B.reihen+0.8), extra=1; const best=pickFront(minD,'brok'); const sx=BTOWER.x, sy=BTOWER.y-30;
     if(best>=0){ h.cd=1/B.rate; shoot(sx,sy,best,B.dmg,'#3f9b45',false,'brok','brok');
       for(let k=1;k<B.n+extra;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(sx,sy,j,B.dmg,'#3f9b45',false,'brok','brok'); }
       sfx('twang'); }
   }
 }
 function heroGoHome(w){ const h=G.hero; h.home=w; h.manualT=0; h.autoScan=0;
-  if(w==='turm'){ moveHeroTo(BTOWER.x,BTOWER.y,true); toast('Brokkoli klettert auf den Turm: Er schießt weit – kämpft aber nicht am Tor.'); }
-  else { moveHeroTo(CAMP.x,CAMP.y,true); toast('Brokkoli geht ans Lagerfeuer: Er kämpft mit dem Schwert am Tor.'); } }
+  if(w==='turm'){ moveHeroTo(BTOWER.x,BTOWER.y,true); toast('Brokkoli klettert auf den Turm: Dort schießt er nur Pfeile – weit und auch auf Flieger.'); }
+  else { moveHeroTo(CAMP.x,CAMP.y,true); toast('Brokkoli geht ans Lagerfeuer: Dort kämpft er nur mit dem Schwert am Tor.'); } }
 function moveHeroTo(x,y,auto){
   const h=G.hero, inNow=h.x<=GATE.x+4, inThen=x<=GATE.x+4;
   if(!auto) h.manualT=10;   // nach einem Befehl macht Brokkoli kurz, was du sagst – danach wieder von selbst
