@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791782409">
+<meta name="md-build" content="1791783186">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 </head>
 <body>
@@ -81,12 +81,13 @@ body.inmenu #bossBar{display:none}
 .version{position:absolute;right:calc(env(safe-area-inset-right,0px) + 8px);bottom:calc(env(safe-area-inset-bottom,0px) + 4px);font-size:11px;font-weight:700;color:rgba(255,248,230,.6);cursor:pointer;padding:6px;background:none;border:0;font-family:inherit}
 .version:hover{color:rgba(255,248,230,.9)}
 /* Tutorial */
-#tutBubble{position:fixed;left:50%;transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;max-width:min(92vw,620px);background:var(--parch);border:3px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);padding:8px 14px;font-family:var(--display);font-size:clamp(16px,2.3vw,22px);color:var(--ink);line-height:1.2;animation:tbIn .35s ease-out}
+#tutBubble{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 60px);transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;max-width:min(92vw,620px);background:var(--parch);border:3px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);padding:8px 14px;font-family:var(--display);font-size:clamp(16px,2.3vw,22px);color:var(--ink);line-height:1.2;animation:tbIn .35s ease-out}
 #tutBubble .tb-ic{font-size:34px}
 @keyframes tbIn{0%{transform:translateX(-50%) scale(.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:1}}
 #tutFinger{position:fixed;z-index:6;font-size:46px;pointer-events:none;animation:fing .7s ease-in-out infinite;filter:drop-shadow(0 3px 0 rgba(0,0,0,.35))}
 @keyframes fing{50%{transform:translateY(10px)}}
-#tutSkip{position:fixed;right:calc(env(safe-area-inset-right,0px) + 12px);top:calc(env(safe-area-inset-top,0px) + 62px);z-index:4;border:2px solid var(--ink);border-radius:12px;background:var(--parch);font-family:var(--display);font-size:14px;padding:4px 10px;cursor:pointer;opacity:.85}
+#tutSkip{align-self:flex-end;flex:0 0 auto;border:2px solid var(--ink);border-radius:10px;background:var(--parch-hi);font-family:var(--display);font-size:12px;padding:2px 8px;cursor:pointer;opacity:.75;white-space:nowrap}
+.iconrow .icon{font-size:22px;width:52px;height:46px;padding:0}
 .tool.tutglow{animation:tglow .8s ease-in-out infinite;background:var(--gold);color:var(--ink)}
 @keyframes tglow{50%{box-shadow:0 0 0 5px #fff27a,0 3px 0 var(--ink)}}
 /* Handy quer: Leiste an den rechten Rand, alles kompakter */
@@ -107,6 +108,7 @@ body.inmenu #bossBar{display:none}
   #nextList{gap:5px}
   #nextList img{height:16px}
   #bossBar{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;left:calc(50% - 75px);width:min(320px,50vw)} #bossBar .bbar{height:11px;border-width:2px}
+  #tutBubble{top:calc(env(safe-area-inset-top,0px) + 40px);font-size:14px;padding:4px 10px;gap:6px;max-width:calc(100vw - 190px)} #tutBubble .tb-ic{font-size:22px}
   #toast,#modeHint{left:calc(50% - 75px);top:calc(env(safe-area-inset-top,0px) + 40px);font-size:14px;padding:5px 10px;max-width:calc(100vw - 180px)}
   #modeHint button{font-size:12px;padding:2px 7px}
 }
@@ -276,9 +278,8 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
 <div id="bossBar" hidden><span class="bn">👹 GROMP DER RIESE</span><div class="bbar"><i id="bossFill"></i><b style="left:25%"></b><b style="left:50%"></b><b style="left:75%"></b></div></div>
 <div id="toolbar"></div>
 <div id="toast" class="hide"></div>
-<div id="tutBubble" hidden><span class="tb-ic">🥦</span><span id="tutText"></span></div>
+<div id="tutBubble" hidden><span class="tb-ic">🥦</span><span id="tutText"></span><button id="tutSkip">Überspringen ⏭</button></div>
 <div id="tutFinger" hidden>👇</div>
-<button id="tutSkip" hidden>Überspringen ⏭</button>
 <div id="modeHint" hidden><span id="modeText"></span><button id="modeCancel">✖ Abbrechen</button></div>
 
 <div class="overlay" id="pause" hidden>
@@ -296,15 +297,13 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <canvas id="titleArt" width="300" height="300" aria-hidden="true"></canvas>
     <div class="titletext">
       <h1 class="title">Micro Defense</h1>
-      <p class="tag">Riesige Monster-Horden ziehen zur Burg. Brokkoli und seine Helfer halten sie auf!</p>
-      <button class="big huge" id="btnPlay">▶ Spiel starten</button>
-      <div class="row">
-        <button class="small" id="btnHelp">❓ So geht's</button>
-        <button class="small" id="btnTut">🎓 Übung</button>
-        <button class="small" id="btnSettings">⚙️ Einstellungen</button>
-        <button class="small" id="btnScores">🏆 Bestenliste</button>
+      <button class="big huge" id="btnPlay">▶ Spielen</button>
+      <div class="row iconrow">
+        <button class="small icon" id="btnHelp" title="So geht's" aria-label="So geht's">❓</button>
+        <button class="small icon" id="btnTut" title="Übung" aria-label="Übung">🎓</button>
+        <button class="small icon" id="btnScores" title="Bestenliste" aria-label="Bestenliste">🏆</button>
+        <button class="small icon" id="btnSettings" title="Einstellungen" aria-label="Einstellungen">⚙️</button>
       </div>
-      <div class="progress" id="titleProg"></div>
       <button class="installhint" id="installHint" hidden>📲 Als App auf den Homescreen holen</button>
     </div>
   </div>
@@ -338,6 +337,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
       <section>
         <h2 class="sub" id="pickHead">Deine Helfer</h2>
         <p class="hint" id="pickHint"></p>
+        <div class="progress" id="pickProg"></div>
         <div class="picks" id="pickList"></div>
       </section>
     </div>
@@ -1464,7 +1464,9 @@ function drawBossDeath(T){
 function tutDone(){ try{ return localStorage.getItem('md_tut')==='1'; }catch(e){ return false; } }
 function tutSpawn(id,n,dist){ for(let k=0;k<n;k++) spawn(T_[id],0,Math.max(0,L-dist-k*28-Math.random()*20),Math.random()*1.6-0.8); }
 function tutTop(id){ const it=ITEMS.find(x=>x.id===id); if(G.coins<it.price()) G.coins=it.price(); }
-function tutTile(id){ const el=toolEls[id]&&toolEls[id].b; if(!el) return null; const r=el.getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top, tile:id}; }
+function tutTile(id){ const el=toolEls[id]&&toolEls[id].b; if(!el) return null; const r=el.getBoundingClientRect();
+  if($('toolbar').offsetWidth<innerWidth*0.5) return {x:r.left+r.width/2, y:r.bottom, tile:id, unten:true};   // Leiste rechts: Finger zeigt von unten
+  return {x:r.left+r.width/2, y:r.top, tile:id}; }
 function tutWorld(p){ return {x:ox+p.x*scale, y:oy+p.y*scale}; }
 function tutCoin(){ for(let i=0;i<kN;i++) if(ks[i]===0) return tutWorld({x:kx[i],y:ky[i]-10}); return null; }
 const TUT=[
@@ -1485,11 +1487,11 @@ function startTutorial(){
   applyMap('wiese'); STUFE_WAHL='leicht'; TODAY=['misti','quaxi','flatter','gromp']; WAVES=[];
   start(['bogen','messer']);
   G.tut={step:-1,t:0}; G.coins=0; buildToolbar(); refreshToolbar(); resize(); $('toast').classList.add('hide');
-  $('tutSkip').hidden=false; track('tutorial',{schritt:'start'});
+  track('tutorial',{schritt:'start'});
   tutNext();
 }
 function tutNext(){ const T=G.tut; T.step++; T.t=0; const st=TUT[T.step]; if(!st){ finishTutorial('geschafft'); return; }
-  if(st.enter) st.enter(); $('tutText').textContent=st.say; const b=$('tutBubble'); b.hidden=true; void b.offsetWidth; b.hidden=false; }
+  if(st.enter) st.enter(); $('tutText').textContent=($('toolbar').offsetWidth<innerWidth*0.5)?st.say.replace('unten','rechts'):st.say; const b=$('tutBubble'); b.hidden=true; void b.offsetWidth; b.hidden=false; }
 function updateTut(dt){
   const T=G.tut, st=TUT[T.step]; if(!st) return; T.t+=dt;
   if(G.hp<maxHp()*0.3) G.hp=maxHp()*0.3;   // im Tutorial kann man nicht verlieren
@@ -1499,12 +1501,12 @@ function updateTut(dt){
 function tutUI(){
   const T=G&&G.tut; if(!T) return; const st=TUT[T.step]; if(!st) return;
   const side=$('toolbar').offsetWidth<innerWidth*0.5, b=$('tutBubble');
-  b.style.bottom=(side?10:$('toolbar').offsetHeight+14)+'px'; b.style.left=side?`calc(50% - ${$('toolbar').offsetWidth/2}px)`:'50%';
+  b.style.left=side?`calc(50% - ${$('toolbar').offsetWidth/2}px)`:'50%';
   for(const k in toolEls) toolEls[k].b.classList.remove('tutglow');
   const f=$('tutFinger'), p=st.finger?st.finger():null;
-  if(p){ f.hidden=false; f.style.left=(p.x-23)+'px'; f.style.top=(p.y-58)+'px'; if(p.tile&&toolEls[p.tile]) toolEls[p.tile].b.classList.add('tutglow'); } else f.hidden=true;
+  if(p){ f.hidden=false; f.textContent=p.unten?'👆':'👇'; f.style.left=(p.x-23)+'px'; f.style.top=(p.unten?p.y-8:p.y-58)+'px'; if(p.tile&&toolEls[p.tile]) toolEls[p.tile].b.classList.add('tutglow'); } else f.hidden=true;
 }
-function tutHideUI(){ $('tutBubble').hidden=true; $('tutFinger').hidden=true; $('tutSkip').hidden=true; for(const k in toolEls) toolEls[k].b.classList.remove('tutglow'); }
+function tutHideUI(){ $('tutBubble').hidden=true; $('tutFinger').hidden=true; for(const k in toolEls) toolEls[k].b.classList.remove('tutglow'); }
 function finishTutorial(how){
   try{ localStorage.setItem('md_tut','1'); }catch(e){}
   track('tutorial',{schritt:how}); tutHideUI();
@@ -2402,10 +2404,9 @@ function endGame(won){
   }, 900);
 }
 /* ---------- geheimes Test-Zahnrad: alles frei ---------- */
-function devLook(){ $('devGear').textContent=DEV?'🔓':'⚙️'; $('devGear').hidden=!DEV && $('devGear').hidden; $('titleProg').innerHTML=progressHtml(); }
+function devLook(){ $('devGear').textContent=DEV?'🔓':'⚙️'; $('devGear').hidden=!DEV && $('devGear').hidden; }
 $('devGear').addEventListener('click',()=>{ DEV=!DEV; try{ localStorage.setItem('md_dev',DEV?'1':'0'); }catch(e){} devLook(); toast(DEV?'Test-Modus: alles frei 🔓':'Test-Modus aus'); newRound(); });
 if(DEV) $('devGear').hidden=false; devLook();
-setInterval(()=>{ if(!$('title').hidden) $('titleProg').innerHTML=progressHtml(); },1000);
 /* ---------- Versionsanzeige auf dem Startbild ---------- */
 (function(){ const m=document.querySelector('meta[name="md-build"]'); let t='Vorschau';
   if(m){ const d=new Date(+m.content*1000); const z=n=>String(n).padStart(2,'0'); t=`Version ${z(d.getDate())}.${z(d.getMonth()+1)}.${d.getFullYear()} · ${z(d.getHours())}:${z(d.getMinutes())}`; }
@@ -2623,6 +2624,7 @@ function renderStart(){
   LOADOUT=LOADOUT.filter(x=>avail.includes(x)); if(alle) LOADOUT=avail.slice();
   $('pickHead').innerHTML=alle?'Deine Helfer':`Wähle ${PLAETZE} Helfer <small>(${LOADOUT.length}/${PLAETZE})</small>`;
   $('pickHint').textContent=alle?'Mit Punkten schaltest du neue Helfer frei.':'Brokkoli, Burg-Ausbau und Flickzeug sind immer dabei.';
+  $('pickProg').innerHTML=nextUnlock()?progressHtml():'';
   $('pickList').innerHTML='';
   const pflicht = TODAY.includes('spuk') && avail.includes('zauber') ? 'zauber' : null;
   if(pflicht && !LOADOUT.includes(pflicht)) LOADOUT=[pflicht,...LOADOUT].slice(0,PLAETZE);
@@ -2705,6 +2707,9 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 pickToday(); genWaves(); buildToolbar(); newGame(); resize(); refreshToolbar(); renderStart(); requestAnimationFrame(loop);
+// Wer noch nie gespielt hat, landet direkt in der Übung (Ton startet beim ersten Antippen)
+if(!tutDone() && !DEV){ try{ startTutorial(); }catch(e){} }
+addEventListener('pointerdown',()=>{ try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); musicInit(); }catch(e){} },{once:true});
 </script>
 
 </body>
