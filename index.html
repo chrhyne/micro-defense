@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791784872">
+<meta name="md-build" content="1791786046">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -210,7 +210,10 @@ body.inmenu #bossBar{display:none}
 .privacy{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.35;margin:4px 0 10px;text-align:left}
 .hsempty{text-align:center;color:var(--ink-soft);font-weight:700;padding:10px}
 #rotate{z-index:9;background:var(--field-deep);color:var(--parch);font-family:var(--display);font-size:26px;text-align:center;flex-direction:column;gap:10px}
-#rotate div{font-size:60px}
+#rotate .rphone{font-size:64px;display:inline-block;animation:rdreh 2.4s ease-in-out infinite}
+@keyframes rdreh{0%,25%{transform:rotate(0)}55%,85%{transform:rotate(-90deg)}100%{transform:rotate(0)}}
+#rotate .rhelp{font-family:var(--body);font-weight:800;font-size:15px;line-height:1.4;max-width:320px;margin-top:14px;padding:10px 14px;border-radius:14px;background:rgba(0,0,0,.25)}
+#rotate .rpaused{font-family:var(--body);font-weight:800;font-size:14px;opacity:.8}
 @media (orientation:landscape){#rotate{display:none}}
 @media (prefers-reduced-motion:reduce){#hpPlate.alarm,#modeHint{animation:none}}
 
@@ -242,8 +245,8 @@ body.inmenu #bossBar{display:none}
 .mchip small{font-size:11px;font-weight:700;color:var(--ink-soft)}
 .mchip.boss{border-color:#9b59d0}
 .helpsheet{display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
-.privacy{margin:0;font-size:12px;line-height:1.4;color:var(--ink-soft);max-width:560px}
-.privacy a{color:inherit}
+.helpPrivacy{margin:0;font-size:12px;line-height:1.4;color:var(--ink-soft);max-width:560px}
+.helpPrivacy a{color:inherit}
 .helpgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px;width:100%;text-align:left}
 .helpgrid div{background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:12px;padding:8px 10px;font-size:14px;font-weight:600;line-height:1.35}
 .helpgrid b{display:block;font-family:var(--display);font-weight:400;font-size:17px;margin-bottom:2px}
@@ -357,7 +360,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
-    <p class="privacy"><b>Datenschutz:</b> Spielstand, Punkte und Bestenliste bleiben nur auf diesem Gerät. Damit wir sehen, wie oft und wie lange gespielt wird, zählen wir anonym mit <a href="https://umami.is" target="_blank" rel="noopener">Umami</a> (ohne Cookies, ohne Namen, ohne gespeicherte IP-Adresse). Schriften und Bilder kommen von dieser Seite selbst.</p>
+    <p class="helpPrivacy"><b>Datenschutz:</b> Spielstand, Punkte und Bestenliste bleiben nur auf diesem Gerät. Damit wir sehen, wie oft und wie lange gespielt wird, zählen wir anonym mit <a href="https://umami.is" target="_blank" rel="noopener">Umami</a> (ohne Cookies, ohne Namen, ohne gespeicherte IP-Adresse). Schriften und Bilder kommen von dieser Seite selbst.</p>
   </div>
 </div>
 
@@ -396,7 +399,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
   </div>
 </div>
 
-<div class="overlay" id="rotate"><div>📱↻</div>Bitte dreh dein Gerät quer!</div>
+<div class="overlay" id="rotate"><span class="rphone">📱</span>Bitte dreh dein Handy quer!<span class="rpaused" id="rotPaused" hidden>⏸ Das Spiel wartet auf dich.</span><div class="rhelp" id="rotHelp">Dreht sich nichts? Dann ist die Drehsperre an. Schalte die automatische Drehung ein – oder tippe nach dem Drehen auf das kleine Dreh-Symbol am Rand.</div></div>
 
 <script>
 'use strict';
@@ -2722,10 +2725,16 @@ $('choiceChip').addEventListener('click',openSetup);
 function newRound(){ tutHideUI(); pickToday(); genWaves(); if(G) G.running=false; buildToolbar(); newGame(); G.bgDirty=true; renderStart(); }
 
 let last=performance.now(), frameAvg=1/60;
+const HOCH=matchMedia('(orientation:portrait)'); let wasHoch=null;
+(function(){ const ua=navigator.userAgent, ios=/iPad|iPhone|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1), andr=/Android/i.test(ua);
+  const t=ios?'Dreht sich nichts? Dann ist die Drehsperre an: Öffne das Kontrollzentrum und tippe auf das Schloss mit dem Pfeil drumherum.'
+    :andr?'Dreht sich nichts? Dann ist die Drehsperre an: Tippe nach dem Drehen unten am Rand auf das kleine Dreh-Symbol – oder schalte „Automatisch drehen“ ein.':null;
+  if(t) document.getElementById('rotHelp').textContent=t; })();
 function loop(now){
   let dt=Math.min(0.05,(now-last)/1000); last=now;
   frameAvg=frameAvg*0.97+dt*0.03; if(frameAvg>0.024) FAR=Math.min(0.55,FAR+0.002); else if(frameAvg<0.018) FAR=Math.max(0.32,FAR-0.001);
-  if(G && G.running && !G.paused && !(G.over && !$('end').hidden)){   // nach Spielende steht alles still
+  const hoch=HOCH.matches; if(hoch!==wasHoch){ wasHoch=hoch; $('rotPaused').hidden=!(G&&G.running); }
+  if(G && G.running && !G.paused && !hoch && !(G.over && !$('end').hidden)){   // hochkant: Spiel wartet   // nach Spielende steht alles still
     const f=G.over?0.4:G.speed; const sdt=dt*f;
     if(f>1){ update(sdt/2); update(sdt/2); } else update(sdt);
     G.shake=Math.max(0,G.shake-dt*30); G.flash=Math.max(0,G.flash-dt*2.5); G.hurtFlash=Math.max(0,(G.hurtFlash||0)-dt*1.2);
