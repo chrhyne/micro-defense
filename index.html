@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791792061">
+<meta name="md-build" content="1791804741">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -350,8 +350,12 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
   #scores .sheet{gap:5px}
   #scoreList{max-height:none;overflow:visible}
   #scores .title{font-size:28px;text-align:center}
-  #scoreList .hs{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(5,auto);grid-auto-flow:column;column-gap:22px;width:100%}
-  #scoreList .hs tr{display:grid;grid-template-columns:34px 1fr auto;align-items:center}
+  #scoreList{width:100%}
+  #scoreList .hs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(var(--rows,5),auto);grid-auto-flow:column;gap:5px 14px;width:min(720px,100%);margin:0 auto;border:0}
+  #scoreList .hs.one{grid-template-columns:minmax(0,1fr);width:min(400px,100%)}
+  #scoreList .hs tr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;align-items:center;background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:12px;padding:2px 8px}
+  #scoreList .hs tr td{border:0;padding:2px 2px}
+  #scoreList .hs tr:nth-child(1){background:#fff1b8;border-color:var(--gold)}
   #scoreList .hs tr:nth-child(n+11){display:none}
   #scoreList .hs td.i{display:none}
 }
@@ -2871,7 +2875,7 @@ function saveScore(name){
 function renderScores(el, me, limit){
   const a=loadScores().slice(0,limit||20); el.innerHTML='';
   if(!a.length){ const d=document.createElement('div'); d.className='hsempty'; d.textContent='Noch keine Einträge – sei der Erste!'; el.appendChild(d); return; }
-  const t=document.createElement('table'); t.className='hs';
+  const t=document.createElement('table'); t.className='hs'+(a.length<=5?' one':''); t.style.setProperty('--rows',a.length<=5?a.length:Math.ceil(Math.min(a.length,10)/2));
   a.forEach((e,i)=>{
     const tr=document.createElement('tr'); if(me && e.d===me.d && e.name===me.name) tr.className='me';
     const medal=['🥇','🥈','🥉'][i]||(i+1)+'.';
