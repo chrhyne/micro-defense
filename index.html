@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791804741">
+<meta name="md-build" content="1791805233">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -277,6 +277,51 @@ body.inmenu #bossBar{display:none}
 body.inmenu #hud, body.inmenu #toolbar{display:none}
 
 #endList .hs tr:nth-child(n+4){display:none}   /* am Spielende nur die Top 3 – die ganze Liste gibt's im Hauptmenü */
+/* ===== Das Handy im Spiel ===== */
+#phone{background:rgba(20,12,4,.55);z-index:8}
+.ph-frame{position:relative;height:min(600px,94vh);aspect-ratio:9/17.5;background:linear-gradient(145deg,#3a3f4a,#15171c);border:3px solid var(--ink);border-radius:clamp(22px,6vh,40px);padding:clamp(8px,2.2vh,14px) clamp(6px,1.6vh,10px);box-shadow:0 8px 0 var(--ink),0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;animation:phIn .35s cubic-bezier(.2,1.4,.4,1)}
+@keyframes phIn{from{transform:translateY(60px) scale(.8);opacity:0}}
+.ph-notch{position:absolute;top:clamp(8px,2.2vh,14px);left:50%;transform:translateX(-50%);width:34%;height:clamp(10px,2.6vh,16px);background:#15171c;border-radius:0 0 10px 10px;z-index:2}
+.ph-screen{position:relative;flex:1;border-radius:clamp(14px,4vh,28px);overflow:hidden;background:#1d2b44;display:flex;flex-direction:column}
+.ph-status{display:flex;justify-content:space-between;padding:4px 14px 2px;font:800 clamp(9px,2.2vh,12px)/1 var(--body);color:#fff;background:rgba(0,0,0,.25);z-index:1}
+.ph-app{flex:1;min-height:0;position:relative;display:flex;flex-direction:column}
+.ph-app[hidden]{display:none}
+#phHome{background:radial-gradient(circle at 30% 20%,#7fd0ff,#3b6fd1 55%,#2a3f8f)}
+.ph-wall{text-align:center;color:#fff;font:400 clamp(16px,4.4vh,26px) var(--display);text-shadow:0 2px 0 rgba(0,0,0,.35);margin:clamp(8px,3vh,20px) 0}
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(6px,2vh,14px) 4px;padding:0 8px}
+.ph-grid button{background:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:#fff;font:800 clamp(8px,1.9vh,11px)/1.1 var(--body);text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.ph-grid i{font-style:normal;font-size:clamp(20px,5vh,30px);width:clamp(36px,8.5vh,54px);height:clamp(36px,8.5vh,54px);display:grid;place-items:center;border-radius:28%;background:linear-gradient(160deg,#fff7d6,#ffc93c);border:2px solid var(--ink);box-shadow:0 3px 0 var(--ink)}
+.ph-grid button:nth-child(2) i{background:linear-gradient(160deg,#ffe0f0,#ff8ac0)}
+.ph-grid button:nth-child(3) i{background:linear-gradient(160deg,#e6ffe0,#6fbf4a)}
+.ph-grid button:nth-child(4) i{background:linear-gradient(160deg,#e0f4ff,#4aa6dd)}
+.ph-grid button:nth-child(5) i{background:linear-gradient(160deg,#eee,#9a948a)}
+.ph-pad{background:var(--paper);padding:6px 8px;color:var(--ink)}
+.ph-scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.ph-title{font:400 clamp(14px,3.6vh,20px) var(--display);text-align:center;color:var(--wood-dark);margin:2px 0 4px}
+.ph-sub{text-align:center;font:800 clamp(9px,2.2vh,12px) var(--body);color:var(--ink-soft);margin-bottom:4px}
+#hoppCv{width:100%;height:100%;object-fit:cover;display:block;touch-action:none;background:#8fd2f5}
+.memo{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;flex:1;min-height:0}
+.memo button{border:2px solid var(--ink);border-radius:10px;background:linear-gradient(160deg,#c28a52,#7a4a24);cursor:pointer;display:grid;place-items:center;padding:2px;box-shadow:0 2px 0 var(--ink);min-height:0}
+.memo button::before{content:'❓';font-size:clamp(14px,3.5vh,22px)}
+.memo button.open,.memo button.done{background:#fffaf0}
+.memo button.open::before,.memo button.done::before{content:none}
+.memo button img{display:none;max-width:90%;max-height:clamp(26px,7vh,48px)}
+.memo button.open img,.memo button.done img{display:block}
+.memo button.done{opacity:.55;border-color:var(--ok)}
+.lex{display:grid;grid-template-columns:40px 1fr;gap:6px;align-items:center;background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:10px;padding:4px 6px;margin-bottom:4px;font-size:11px;font-weight:700;line-height:1.25}
+.lex img{width:40px;height:34px;object-fit:contain}
+.lex b{font:400 13px var(--display);display:block}
+.msg{display:flex;gap:5px;align-items:flex-end;margin:5px 0;font-size:12px;font-weight:700;line-height:1.3}
+.msg .av{font-size:20px}
+.msg .bub{background:#fff;border:2px solid var(--parch-edge);border-radius:12px 12px 12px 3px;padding:4px 8px}
+.msg .bub b{display:block;font:400 11px var(--display);color:var(--wood-dark)}
+#camImg{width:100%;border:2px solid var(--ink);border-radius:8px;margin:4px 0;background:#000}
+.ph-btn{display:block;text-align:center;margin:4px 0;padding:5px;border:2px solid var(--ink);border-radius:10px;background:var(--gold);font:400 clamp(12px,2.8vh,15px) var(--display);color:var(--ink);text-decoration:none;cursor:pointer;box-shadow:0 2px 0 var(--ink);width:100%;box-sizing:border-box}
+.ph-bar{height:clamp(18px,4.5vh,28px);display:grid;place-items:center}
+.ph-bar button{width:clamp(22px,5vh,32px);height:clamp(22px,5vh,32px);border-radius:50%;border:2px solid #5a5f6a;background:#22252b;cursor:pointer}
+.ph-close{position:absolute;top:-10px;right:-14px;width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);background:#e0453f;color:#fff;font:800 15px/1 var(--body);cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.cam-flash{position:fixed;inset:0;background:#fff;z-index:9;pointer-events:none;animation:camf .5s ease-out forwards}
+@keyframes camf{to{opacity:0}}
 /* ===== Handy quer: alle Fenster passen ohne Scrollen auf den Bildschirm ===== */
 @media (orientation:landscape) and (max-height:520px){
   .overlay{padding:6px 8px}
@@ -374,6 +419,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <button class="plate hbtn" id="btnMusic" aria-label="Musik: laut, leise oder aus">🎵</button>
     <button class="plate hbtn" id="btnSound" aria-label="Geräusche an oder aus" hidden>🔊</button>
     <button class="plate hbtn" id="btnFull" aria-label="Vollbild" hidden>⛶</button>
+    <button class="plate hbtn" id="btnPhone" aria-label="Handy">📱</button>
     <button class="plate hbtn" id="btnPause" aria-label="Menü und Pause">⏸</button>
   </div>
 </div>
@@ -495,6 +541,32 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <h1 class="title">🏆 Bestenliste</h1>
     <div class="hswrap" id="scoreList"></div>
     <div class="row"><button class="big" id="scoresClose">Zurück</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="phone" hidden>
+  <div class="ph-frame">
+    <div class="ph-notch"></div>
+    <div class="ph-screen">
+      <div class="ph-status"><span id="phTime">12:00</span><span>📶 🔋</span></div>
+      <div class="ph-app" id="phHome">
+        <div class="ph-wall">Micro Phone</div>
+        <div class="ph-grid">
+          <button data-app="hopp"><i>🥦</i><span>Brokkoli-Hüpf</span></button>
+          <button data-app="memo"><i>🃏</i><span>Memory</span></button>
+          <button data-app="lex"><i>📖</i><span>Lexikon</span></button>
+          <button data-app="chat"><i>💬</i><span>Nachrichten</span></button>
+          <button data-app="cam"><i>📸</i><span>Kamera</span></button>
+        </div>
+      </div>
+      <div class="ph-app" id="phHopp" hidden><canvas id="hoppCv" width="270" height="480"></canvas></div>
+      <div class="ph-app ph-pad" id="phMemo" hidden><div class="ph-title">🃏 Monster-Memory</div><div class="ph-sub" id="memoInfo"></div><div class="memo" id="memoGrid"></div></div>
+      <div class="ph-app ph-pad ph-scroll" id="phLex" hidden><div class="ph-title">📖 Monster-Lexikon</div><div id="lexList"></div></div>
+      <div class="ph-app ph-pad ph-scroll" id="phChat" hidden><div class="ph-title">💬 Nachrichten</div><div id="chatList"></div></div>
+      <div class="ph-app ph-pad" id="phCam" hidden><div class="ph-title">📸 Kamera</div><img id="camImg" alt="Foto vom Spielfeld"><a id="camSave" class="ph-btn" download="micro-defense-foto.png">💾 Foto speichern</a><button class="ph-btn" id="camAgain">📸 Nochmal knipsen</button></div>
+    </div>
+    <div class="ph-bar"><button id="phHomeBtn" aria-label="Zum Startbildschirm"></button></div>
+    <button class="ph-close" id="phClose" aria-label="Handy weglegen">✖</button>
   </div>
 </div>
 
@@ -2981,6 +3053,98 @@ updateInstall();
   g.fillStyle='#ffc93c'; g.lineWidth=1.4; g.beginPath(); g.moveTo(x-5,y-61); g.lineTo(x-5,y-68); g.lineTo(x-2.5,y-64.5); g.lineTo(x,y-70); g.lineTo(x+2.5,y-64.5); g.lineTo(x+5,y-68); g.lineTo(x+5,y-61); g.closePath(); g.fill(); g.stroke();
 })();
 $('btnPause').addEventListener('click',()=>{ if(!G.running||G.over) return; G.paused=true; $('pause').hidden=false; });
+
+/* ---------- Das Handy im Spiel: kleine Apps zum Spaß (das Spiel macht solange Pause) ---------- */
+const PH={open:false,wasPaused:false,app:null,raf:0};
+const PH_IDS={home:'phHome',hopp:'phHopp',memo:'phMemo',lex:'phLex',chat:'phChat',cam:'phCam'};
+function phShow(app){ for(const id of Object.values(PH_IDS)) $(id).hidden=true; cancelAnimationFrame(PH.raf); PH.app=app; $(PH_IDS[app]).hidden=false;
+  if(app==='hopp') hoppStart(); else if(app==='memo') memoStart(); else if(app==='lex') lexFill(); else if(app==='chat') chatFill(); else if(app==='cam') camShot();
+  if(app!=='home') track('handy',{app}); }
+function phTime(){ const d=new Date(); $('phTime').textContent=d.getHours()+':'+String(d.getMinutes()).padStart(2,'0'); }
+function phoneOpen(){ $('toast').classList.add('hide'); PH.open=true; PH.wasPaused=G?G.paused:false; if(G&&G.running&&!G.over) G.paused=true; phTime(); $('phone').hidden=false; phShow('home'); sfx('buy'); }
+function phoneClose(){ PH.open=false; cancelAnimationFrame(PH.raf); $('phone').hidden=true; if(G&&G.running&&!G.over) G.paused=PH.wasPaused; }
+$('btnPhone').addEventListener('click',phoneOpen);
+$('phClose').addEventListener('click',phoneClose);
+$('phHomeBtn').addEventListener('click',()=>phShow('home'));
+document.querySelectorAll('.ph-grid button').forEach(b=>b.addEventListener('click',()=>phShow(b.dataset.app)));
+
+// --- App 1: Brokkoli-Hüpf (tippen = hochfliegen, zwischen den Türmen durch) ---
+const HP={};
+function hoppBest(){ try{ return +localStorage.getItem('md_hopp')||0; }catch(e){ return 0; } }
+function hoppReset(){ Object.assign(HP,{y:220,vy:0,t:0,pipes:[],score:0,state:'ready',dead:0,last:performance.now()}); }
+function hoppStart(){ hoppReset(); HP.raf=0; const loop=(now)=>{ const dt=Math.min(0.033,(now-HP.last)/1000); HP.last=now; hoppUpdate(dt); hoppDraw(); PH.raf=requestAnimationFrame(loop); }; PH.raf=requestAnimationFrame(loop); }
+function hoppTap(){ if(HP.state==='ready'){ HP.state='fly'; HP.vy=-290; sfx('swish'); return; }
+  if(HP.state==='fly'){ HP.vy=-290; sfx('swish'); return; }
+  if(HP.state==='dead' && HP.dead>0.6) hoppReset(); }
+$('hoppCv').addEventListener('pointerdown',e=>{ e.preventDefault(); hoppTap(); });
+function hoppUpdate(dt){ const W2=270, H2=480;
+  if(HP.state==='ready'){ HP.t+=dt; HP.y=220+Math.sin(HP.t*3)*8; return; }
+  if(HP.state==='dead'){ HP.dead+=dt; if(HP.y<H2-60){ HP.vy+=900*dt; HP.y+=HP.vy*dt; } return; }
+  HP.vy+=900*dt; HP.y+=HP.vy*dt; HP.t+=dt;
+  if(!HP.pipes.length || HP.pipes[HP.pipes.length-1].x<W2-170) HP.pipes.push({x:W2+30,gap:120+Math.random()*(H2-330),ok:false});
+  for(const p of HP.pipes){ p.x-=125*dt; if(!p.ok && p.x+26<70){ p.ok=true; HP.score++; sfx('coin'); } }
+  HP.pipes=HP.pipes.filter(p=>p.x>-70);
+  const hit=HP.y>H2-62 || HP.y<10 || HP.pipes.some(p=>Math.abs(p.x-70)<38 && (HP.y-15<p.gap || HP.y+15>p.gap+135));
+  if(hit){ HP.state='dead'; HP.dead=0; sfx('boom'); if(HP.score>hoppBest()) try{ localStorage.setItem('md_hopp',String(HP.score)); HP.neu=true; }catch(e){} else HP.neu=false; }
+}
+function hoppDraw(){ const c=$('hoppCv'), g=c.getContext('2d'), W2=270, H2=480;
+  const sk=g.createLinearGradient(0,0,0,H2); sk.addColorStop(0,'#6ec3f7'); sk.addColorStop(1,'#d3efff'); g.fillStyle=sk; g.fillRect(0,0,W2,H2);
+  g.lineCap='round'; g.lineJoin='round';
+  for(let k=0;k<3;k++){ const x=((k*120-(HP.t*20))%(W2+120)+W2+120)%(W2+120)-60; puffs(g,[[x,80+k*40,14],[x+16,72+k*40,18],[x+34,82+k*40,13]],'#ffffff',1.5,null); }
+  for(const p of HP.pipes){ for(const [y0,y1,top] of [[0,p.gap,true],[p.gap+135,H2-50,false]]){
+      rr(g,p.x-26,y0-4,52,y1-y0+8,4,'#c9c3b8',2.5); g.strokeStyle='rgba(60,50,40,0.3)'; g.lineWidth=1; for(let yy=y0+8;yy<y1;yy+=10) ln(g,p.x-24,yy,p.x+24,yy);
+      const cy=top?y1-12:y0; rr(g,p.x-32,cy,64,14,3,'#dcd8cf',2.5);
+      for(let k=0;k<4;k++) rr(g,p.x-30+k*16,top?cy+12:cy-8,10,9,2,'#dcd8cf',2); } }
+  g.fillStyle='#6cb84f'; g.fillRect(0,H2-50,W2,50); g.fillStyle='#4f9a3c'; g.fillRect(0,H2-50,W2,6); g.strokeStyle=INK; g.lineWidth=2.5; ln(g,0,H2-50,W2,H2-50);
+  // Brokkoli
+  const x=70, y=HP.y, ang=Math.max(-0.5,Math.min(1.1,HP.vy/500)); g.save(); g.translate(x,y); g.rotate(HP.state==='ready'?0:ang);
+  rr(g,-9,-4,18,16,4,'#a6d86f',2); puffs(g,[[-10,-8,8],[0,-13,9],[10,-8,8],[-4,-4,7],[5,-4,7]],'#4c9a3a',1.4,'#6fbf4a');
+  circ(g,-3,4,2.6,'#fff',INK,0.8); circ(g,4,4,2.6,'#fff',INK,0.8); circ(g,-2.5,4.3,1.1,INK); circ(g,4.5,4.3,1.1,INK);
+  poly(g,[-18,0,-26,-6,-24,4],'#c8443c',INK,1.2); g.restore();
+  g.textAlign='center'; g.lineJoin='round'; const big=(t,yy,sz,col)=>{ g.font=`${sz}px "Lilita One", sans-serif`; g.lineWidth=sz/5; g.strokeStyle=INK; g.strokeText(t,W2/2,yy); g.fillStyle=col; g.fillText(t,W2/2,yy); };
+  if(HP.state!=='ready') big(String(HP.score),60,44,'#ffffff');
+  if(HP.state==='ready'){ big('Brokkoli-Hüpf',140,30,'#ffc93c'); big('Tippen zum Fliegen!',300,20,'#ffffff'); big('Rekord: '+hoppBest(),340,18,'#ffffff'); }
+  if(HP.state==='dead'){ big('Autsch!',170,38,'#ff8a7a'); big((HP.neu?'Neuer Rekord: ':'Rekord: ')+hoppBest(),220,20,HP.neu?'#ffc93c':'#ffffff'); if(HP.dead>0.6) big('Tippen = nochmal',300,18,'#ffffff'); }
+}
+
+// --- App 2: Monster-Memory ---
+const MM={};
+function memoStart(){ const ids=shuffle(TYPES.filter(t=>!t.boss).map(t=>t.id)).slice(0,6), cards=shuffle([...ids,...ids]);
+  Object.assign(MM,{open:[],found:0,moves:0,lock:false}); const gEl=$('memoGrid'); gEl.innerHTML='';
+  cards.forEach(id=>{ const b=document.createElement('button'); b.type='button'; b.dataset.id=id; b.innerHTML=`<img src="${ICONS[id]}" alt="">`;
+    b.addEventListener('click',()=>memoTap(b)); gEl.appendChild(b); });
+  memoInfo(); }
+function memoBest(){ try{ return +localStorage.getItem('md_memo')||0; }catch(e){ return 0; } }
+function memoInfo(t){ $('memoInfo').textContent=t||`Züge: ${MM.moves}`+(memoBest()?` · Rekord: ${memoBest()}`:''); }
+function memoTap(b){ if(MM.lock||b.classList.contains('open')||b.classList.contains('done')) return;
+  b.classList.add('open'); MM.open.push(b); sfx('swish');
+  if(MM.open.length<2) return; MM.moves++; const [a,c]=MM.open; MM.open=[];
+  if(a.dataset.id===c.dataset.id){ a.classList.replace('open','done'); c.classList.replace('open','done'); MM.found++; sfx('coin');
+    if(MM.found===6){ const best=memoBest(); if(!best||MM.moves<best) try{ localStorage.setItem('md_memo',String(MM.moves)); }catch(e){}
+      memoInfo(`🎉 Geschafft in ${MM.moves} Zügen!`+(!best||MM.moves<best?' Neuer Rekord!':'')); setTimeout(()=>{ if(PH.app==='memo') memoStart(); },3500); return; } }
+  else { MM.lock=true; setTimeout(()=>{ a.classList.remove('open'); c.classList.remove('open'); MM.lock=false; },750); }
+  memoInfo(); }
+
+// --- App 3: Monster-Lexikon ---
+function lexFill(){ const el=$('lexList'); if(el.childElementCount) return;
+  for(const t of TYPES){ const d=document.createElement('div'); d.className='lex';
+    d.innerHTML=`<img src="${ICONS[t.id]}" alt=""><span><b>${t.name}</b>${t.desc}. ${weakLine(t).replace(/^./,c=>c.toUpperCase())}.</span>`; el.appendChild(d); } }
+
+// --- App 4: Nachrichten ---
+const CHAT=[['👹','Gromp','Ich komme gleich!!! 😡'],['👹','Gromp','Wer hat meinen Bauch gekitzelt?? 😤'],['👹','Gromp','Nächstes Mal bin ich doppelt so groß!'],
+  ['🥦','Brokkoli','Keine Sorge, ich halte das Tor! 💪'],['🥦','Brokkoli','Hat jemand mein Schwert gesehen? 🗡️'],['🥦','Brokkoli','Lagerfeuer ist gemütlich 🔥😊'],
+  ['🏹','Pfeil-Paule','Ich treff alles, was fliegt! 🦇'],['🏹','Pfeil-Paule','Mir gehen die Pfeile aus … nein, doch nicht 😅'],
+  ['🧙','Zappelbart','Mein Bart ist heute besonders zappelig ✨'],['🧙','Zappelbart','Gespenster? Hihi, die mag ich zum Frühstück 👻'],
+  ['🔪','Piekser','Pieks! Pieks! Pieks! 😁'],['💰','Langfinger-Lutz','Ich hab nix genommen. Ehrlich. 😇'],['⛈️','Donner-Doris','Heute gibt’s Gewitter. Mit Blitz-Garantie ⚡'],
+  ['🌋','Vulkan Volker','Mir ist sooo warm 🥵'],['🧑‍🌾','Misti','Wir sind viele. Sehr viele. 😬'],['🐸','Quaxi','Quak! Quak quak? QUAK! 🐸'],['🫕','Brutzel-Kessel','Blubb … blubb … 🫧'],
+  ['🪨','Schleuder-Susi','Ich hab einen Stein für dich 🪨😄'],['👻','Spukolino','Buuuh! Hab ich dich erschreckt? 👻']];
+function chatFill(){ const el=$('chatList'); el.innerHTML=''; for(const [av,nm,tx] of shuffle(CHAT.slice()).slice(0,7)){ const d=document.createElement('div'); d.className='msg';
+  d.innerHTML=`<span class="av">${av}</span><span class="bub"><b>${nm}</b>${tx}</span>`; el.appendChild(d); } }
+
+// --- App 5: Kamera ---
+function camShot(){ try{ const url=cv.toDataURL('image/png'); $('camImg').src=url; $('camSave').href=url; }catch(e){}
+  const f=document.createElement('div'); f.className='cam-flash'; document.body.appendChild(f); setTimeout(()=>f.remove(),600); sfx('zap'); }
+$('camAgain').addEventListener('click',camShot);
 $('resume').addEventListener('click',()=>{ G.paused=false; $('pause').hidden=true; });
 // Tempo: 1× → 2× → 3× → 1×
 // Tempo: 1× (⏩) → 2× (⏩ hell) → 4× Turbo (🚀) → 1×
