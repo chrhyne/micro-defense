@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791786352">
+<meta name="md-build" content="1791786769">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -577,7 +577,8 @@ const VOLC = {x:1290, y:722, s:1};
 const YARD = {x0:40, x1:222, y0:770, y1:932};
 const OUTSIDE = {x0:262, x1:640, y0:826, y1:950};
 // Brokkolis Lager direkt vor dem Tor: von hier springt er mit dem Schwert in den Kampf
-const CAMP = {x:GATE.x+105, y:GATE.y-60};
+const CAMP = {x:GATE.x+100, y:GATE.y+30};          // hier steht Brokkoli – unten auf der Straße
+const CAMPFIRE = {x:CAMP.x+16, y:CAMP.y+34};      // das Feuer gleich unterhalb der Straße
 // ---------- KARTEN ----------
 // lanes = waagerechte Wege (wie die Wiese) · pts = Wegpunkte, durch die der Weg in weichen Kurven läuft
 // volc = wo Vulkan Volker steht (s = Größe) · cloud = wo Donner-Doris schwebt
@@ -1505,7 +1506,7 @@ const TUT=[
   {say:'Von hier oben schieße ich weit! Da kommen sie …', enter(){ tutSpawn('flatter',4,1000); }, done:()=>G.alive===0 && G.tut.t>2},
   {say:'Allein schaffe ich nicht alle Flieger. Bau dir Pfeil-Paule als Helfer!', enter(){ tutTop('bogen'); }, finger:()=>tutTile('bogen'), done:()=>G.archer>=0},
   {say:'Pfeil-Paule erwischt einzelne Flieger ganz von allein!', enter(){ for(let k=0;k<4;k++) spawn(T_.flatter,0,Math.max(0,L-1100-k*220),Math.random()-0.5); }, done:()=>G.alive===0 && G.tut.t>2},
-  {say:'Jetzt kommt eine ganze Horde mit dem starken Stampfi! Tippe aufs Lagerfeuer – ich kämpfe am Tor!', finger:()=>tutWorld({x:CAMP.x+20,y:CAMP.y-6}), done:()=>tutAt('lager')},
+  {say:'Jetzt kommt eine ganze Horde mit dem starken Stampfi! Tippe aufs Lagerfeuer – ich kämpfe am Tor!', finger:()=>tutWorld({x:CAMPFIRE.x,y:CAMPFIRE.y-8}), done:()=>tutAt('lager')},
   {say:'Hol mir einen Piekser zur Hilfe!', enter(){ tutTop('messer'); }, finger:()=>tutTile('messer'), done:()=>G.fighters.length>=1},
   {say:'Los geht’s! Paule schießt die Flieger, wir kämpfen am Tor.', enter(){ tutSpawn('misti',14,900); tutSpawn('stampfi',2,1050); tutSpawn('flatter',3,1150); }, done:()=>G.alive===0 && G.tut.t>2},
   {say:'Mach mich stärker! Tippe unten auf Brokkoli.', enter(){ tutTop('brok'); }, finger:()=>tutTile('brok'), done:()=>G.brok>=1},
@@ -2095,9 +2096,9 @@ function drawOil(T){
     rr(ctx,x-22,y+8,44,16,6,'#ffc93c',2); ctx.fillStyle=INK; ctx.font='11px "Lilita One", sans-serif'; ctx.textAlign='center'; ctx.fillText('ÖL!',x,y+20); }
 }
 function drawCamp(T){
-  const x=CAMP.x+20, y=CAMP.y+2;
+  const x=CAMPFIRE.x, y=CAMPFIRE.y;
   // Baumstamm zum Sitzen und Lagerfeuer
-  rr(ctx,CAMP.x-16,CAMP.y-2,22,7,3,'#8a5a32',1.5);
+  rr(ctx,x-38,y-4,22,7,3,'#8a5a32',1.5);
   ctx.strokeStyle=INK; ctx.lineWidth=4; ln(ctx,x-8,y+3,x+8,y-2); ln(ctx,x-8,y-2,x+8,y+3); ctx.strokeStyle='#7a4a1f'; ctx.lineWidth=2.4; ln(ctx,x-8,y+3,x+8,y-2); ln(ctx,x-8,y-2,x+8,y+3);
   const fl=1+0.15*Math.sin(T*13)+0.1*Math.sin(T*7);
   poly(ctx,[x-6,y,x-2,y-12*fl,x+1,y-6,x+4,y-15*fl,x+7,y],'#ff8a2a',INK,1.2); poly(ctx,[x-2,y,x+1,y-7*fl,x+4,y],'#ffe27a');
@@ -2188,7 +2189,7 @@ function tap(p){
   if(G.gew.lvl<0 && near(p,CLOUD,70)){ notHere('gewitter','Donner-Doris'); return; }
   if(G.vul.lvl<0 && near(p,{x:VOLC.x,y:VOLC.y+80},110)){ notHere('vulkan','Vulkan Volker'); return; }
   if(near(p,{x:BTOWER.x,y:BTOWER.y+20},55)){ heroGoHome('turm'); return; }
-  if(near(p,{x:CAMP.x+18,y:CAMP.y},55)){ heroGoHome('lager'); return; }
+  if(near(p,CAMPFIRE,55)||near(p,CAMP,40)){ heroGoHome('lager'); return; }
   // vors Tor getippt: Brokkoli geht ans Lagerfeuer
   if(p.x>OUTSIDE.x0 && p.x<OUTSIDE.x1 && p.y>OUTSIDE.y0-40 && p.y<OUTSIDE.y1 && G.hero.home!=='lager'){ heroGoHome('lager'); return; }
   // Monster markieren
