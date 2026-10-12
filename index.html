@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791787608">
+<meta name="md-build" content="1791787779">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -1073,6 +1073,8 @@ function addCoins(v){ G.coins+=v; G.earned+=v; G.mbBounce=1; }
 function wmult(i,el){ const m=weakOf(TYPES[eType[i]],el); let v=(m===undefined)?1:m; if((el==='pfeil'||el==='brok') && eShield[i]) v*=0.2; return v; }
 // Stufe: 2 = Lieblingsgegner, 1 = normal, 0 = macht kaum Schaden
 function tierOf(i,el){ const v=wmult(i,el); return v>=1.5?2:(v>=0.9?1:0); }
+// Schützen nehmen bei gleicher Stärke zuerst Flieger – die erwischt am Boden ja keiner
+function aimTier(i,el){ const t=tierOf(i,el); return (el==='pfeil'||el==='brok') && TYPES[eType[i]].fly && t>0 ? t+0.5 : t; }
 function nearestEnemy(x,y,maxR,ground,minDist,el){
   let best=1e18, bi=-1; const R2=maxR*maxR;
   for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; if(ground && TYPES[eType[i]].fly) continue; if(minDist && eDist[i]<minDist) continue;
@@ -1089,7 +1091,7 @@ function pickFront(minD,el){
   if(mk>=0 && eDist[mk]>=minD && targetable(mk,el)) return mk;
   let best=-1, bd=-1, bt=-1;
   for(let i=0;i<eHi;i++){ if(!eAlive[i] || eDist[i]<minD || !targetable(i,el)) continue;
-    const t=tierOf(i,el); if(t<bt || (t===bt && eDist[i]<=bd)) continue; bt=t; bd=eDist[i]; best=i; }
+    const t=aimTier(i,el); if(t<bt || (t===bt && eDist[i]<=bd)) continue; bt=t; bd=eDist[i]; best=i; }
   return best;
 }
 function updateFighters(dt){
@@ -1252,7 +1254,7 @@ function updateArcher(dt){
   G.archerCd=1/A.rate;
   shoot(ATOWER.x,ATOWER.y-22,best,A.dmg);
   if(A.n>1){ cand.length=0; let top=0;
-    for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<minD||!targetable(i,'pfeil')) continue; const t=tierOf(i,'pfeil'); if(t>top){ top=t; cand.length=0; } if(t===top) cand.push(i); }
+    for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<minD||!targetable(i,'pfeil')) continue; const t=aimTier(i,'pfeil'); if(t>top){ top=t; cand.length=0; } if(t===top) cand.push(i); }
     for(let k=1;k<A.n && cand.length;k++) shoot(ATOWER.x,ATOWER.y-22,cand[(Math.random()*cand.length)|0],A.dmg); }
   sfx('twang');
 }
@@ -1464,6 +1466,7 @@ function update(dt){
   if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt; if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! Schnell: Brutzel-Kessel, Piekser oder Brokkoli vors Tor!'); } if(G.hp<=0){ G.hp=0; endGame(false); } }
   updateFighters(dt); updateHero(dt); updateArcher(dt); updateWizard(dt); updateRobbers(dt);
   airWarn(dt);
+  if(G.speed===3 && G.gateDps>0 && !G.over){ G.speed=1; speedBtn(); toast('Monster am Tor! Tempo wieder normal.'); }   // Turbo nur, solange es ruhig ist
   updateProjectiles(dt); updateLava(dt); updateTimers(dt); updateBuilds(dt);
   if(G.burnT>0){ G.burnT-=dt; const O=OEL[G.oil.lvl]; HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.burn*dt,'feuer'); } HSRC=null; }
   autoCatapult(dt); autoStorm(dt); autoVolcano(dt);
