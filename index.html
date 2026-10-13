@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791805233">
+<meta name="md-build" content="1791894156">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -2533,7 +2533,7 @@ function ringAt(x,y,r,p,T){
   if(p>=1){ ctx.strokeStyle=`rgba(255,201,60,${0.7+0.3*Math.sin(T*5)})`; ctx.lineWidth=4+Math.sin(T*5)*1.2; ctx.beginPath(); ctx.arc(x,y,r,0,6.283); ctx.stroke(); }
   else { ctx.strokeStyle='#fff6c8'; ctx.lineWidth=3.5; ctx.beginPath(); ctx.arc(x,y,r,-Math.PI/2,-Math.PI/2+p*6.283); ctx.stroke(); }
 }
-const BUBBLES = { brok:{get x(){return G.hero.x}, get y(){return G.hero.y-12-60*1.7*(1+0.6*G.brok/(BROK.length-1))}}, bogen:{x:ATOWER.x+2,y:ATOWER.y-58}, kat:{x:CATAPULT.x,y:CATAPULT.y-66}, gew:{get x(){return CLOUD.x}, get y(){return CLOUD.y-62}}, vul:{get x(){return VOLC.x}, get y(){return VOLC.y-56*VOLC.s}} };
+const BUBBLES = { brok:{get x(){return (G.hero.home==='turm'?BTOWER:CAMP).x}, get y(){return (G.hero.home==='turm'?BTOWER:CAMP).y-12-60*1.7*(1+0.6*G.brok/(BROK.length-1))}}, /* POWER-Knopf bleibt an Brokkolis Platz (Feuer/Turm), auch wenn er herumläuft */ bogen:{x:ATOWER.x+2,y:ATOWER.y-58}, kat:{x:CATAPULT.x,y:CATAPULT.y-66}, gew:{get x(){return CLOUD.x}, get y(){return CLOUD.y-62}}, vul:{get x(){return VOLC.x}, get y(){return VOLC.y-56*VOLC.s}} };
 function owned(){ return {brok:!G.spin, bogen:G.archer>=0,kat:G.kat.lvl>=0,gew:G.gew.lvl>=0,vul:G.vul.lvl>=0}; }
 function drawReadiness(T){
   if(G.kat.lvl>=0) ringAt(CATAPULT.x,CATAPULT.y-10,34,1-G.kat.cd/KATAPULT[G.kat.lvl].cd,T);
