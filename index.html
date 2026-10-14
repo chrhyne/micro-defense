@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791967209">
+<meta name="md-build" content="1791977540">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -662,7 +662,7 @@ function genWaves(){
 // horden = Anzahl Monster, hp = Monster-Leben, tempo = Monster-Tempo, muenzen = Münzen pro Monster, start = Start-Münzen, burg = Burg-Leben
 const STUFEN = {
   leicht: {name:'🐣 Leicht', horden:0.55, hordenVon:0.75, hordenBis:0.38, verteilt:true, hp:0.85, tempo:0.85, muenzen:1.3, start:250, burg:1.6},
-  normal: {name:'⚔️ Normal', horden:1,    hp:1.25, tempo:1,    muenzen:1,   start:150, burg:1},
+  normal: {name:'⚔️ Normal', horden:0.85, hp:1.1,  tempo:1,    muenzen:1,   start:150, burg:1},
   schwer: {name:'🔥 Schwer', horden:1.3,  hp:1.55, tempo:1.1,  muenzen:0.9, start:120, burg:1},
 };
 let STUFE_WAHL='normal';
@@ -727,8 +727,8 @@ const ROB = [ {cap:30,speed:140,steal:0.5,n:1}, {cap:50,speed:150,steal:0.4,n:1}
 const ROB_PREIS = [150, 400, 1350, 2700, 4500];
 const ROB_GRIFF_MIN = 5, ROB_GRIFF_MAX = 10;   // so viele Münzen klaut Lutz pro Griff
 const ZAUBER_PREIS = [250, 600, 1800, 3000, 4800, 7500];
-const OEL = [ {cd:10,dmg:20,burn:8}, {cd:8,dmg:35,burn:14}, {cd:6,dmg:60,burn:24} , {cd:5,dmg:90,burn:34}, {cd:4,dmg:130,burn:48}];  // burn = Schaden pro Sekunde, solange es brennt
-const OEL_BRENNZEIT = 5;
+const OEL = [ {cd:12,dmg:20,burn:8}, {cd:11,dmg:35,burn:14}, {cd:10,dmg:60,burn:24} , {cd:9,dmg:90,burn:34}, {cd:8,dmg:130,burn:48}];   // Abklingzeit immer doppelt so lang wie das Feuer brennt  // burn = Schaden pro Sekunde, solange es brennt
+const OEL_BRENNZEIT = 4;
 const OEL_PREIS = [80, 250, 900, 1650, 3000];
 const KATAPULT = [ {cd:16,r:80,dmg:11,reihen:2.5}, {cd:11,r:105,dmg:18,reihen:2.8}, {cd:7,r:135,dmg:29,reihen:3.0}, {cd:6,r:150,dmg:40,reihen:3.2}, {cd:5,r:165,dmg:56,reihen:3.4}, {cd:4,r:180,dmg:76,reihen:3.5} ];
 const KATAPULT_PREIS = [180, 380, 1400, 2600, 4600, 7000];
@@ -1145,12 +1145,12 @@ function buildQueue(){
         q.push({t,type,w});
       }
     }
-    // Besondere Momente mit Schatztruhe: Welle 2 goldene Horde, 5 Truhen-Troll, 8 Schatz-Rabe, 11 Goldener Troll (mit Leibwache)
+    // Besondere Momente mit Schatztruhe: Welle 2 goldene Horde, 4 Truhen-Troll, 6 Schatz-Rabe, 9 Goldener Troll (mit Leibwache) – deutlich vor Gromp
     const mid=start+dur*0.5;
     if(w===1){ const n={leicht:10,normal:12,schwer:14}[STUFE_WAHL]||12; for(let i=0;i<n;i++) q.push({t:mid+i*0.3,type:T_.misti,w,gold:1}); }
-    if(w===4) q.push({t:mid,type:T_.troll,w});
-    if(w===7) q.push({t:mid,type:T_.rabe,w});
-    if(w===10){ q.push({t:mid,type:T_.goldtroll,w}); for(let i=0;i<6;i++) q.push({t:mid-1.5+i*0.5,type:T_.misti,w}); }
+    if(w===3) q.push({t:mid,type:T_.troll,w});
+    if(w===5) q.push({t:mid,type:T_.rabe,w});
+    if(w===8){ q.push({t:mid,type:T_.goldtroll,w}); for(let i=0;i<6;i++) q.push({t:mid-1.5+i*0.5,type:T_.misti,w}); }
   });
   q.sort((a,b)=>a.t-b.t);
   G.queue=q; G.qi=0;
@@ -1351,14 +1351,19 @@ function pickFront(minD,el){
     const t=aimTier(i,el); if(t<bt || (t===bt && eDist[i]<=bd)) continue; bt=t; bd=eDist[i]; best=i; }
   return best;
 }
+const PIEKS=[5,6.5,8];   // Schaden pro Pieks – je größer die Truppe (ab 5 und ab 10 Pieksern), desto stärker
 function updateFighters(dt){
+  const pkT=G.fighters.length>=10?2:(G.fighters.length>=5?1:0);
   for(const f of G.fighters){
     f.cd-=dt; f.scan-=dt; f.stab=Math.max(0,f.stab-dt);
     let valid=f.tgt>=0 && eAlive[f.tgt] && eUid[f.tgt]===f.uid && eDist[f.tgt]>L-480 && !eUnder[f.tgt];
     if(!valid && f.scan<=0){ f.scan=0.25; f.tgt=nearestEnemy(f.x,f.y,1e5,true,L-480,'messer'); if(f.tgt>=0) f.uid=eUid[f.tgt]; valid=f.tgt>=0; }
     let tx=f.hx, ty=f.hy; if(valid){ tx=eX[f.tgt]; ty=eY[f.tgt]; }
     const dx=tx-f.x, dy=ty-f.y, d=Math.hypot(dx,dy);
-    if(valid && d<15){ if(f.cd<=0){ f.cd=0.6; f.stab=0.15; hurt(f.tgt,4,'messer'); } }
+    if(valid && d<15){ if(f.cd<=0){ f.cd=0.6; f.stab=0.15; const dm=PIEKS[pkT];
+        hurt(f.tgt,dm,'messer');
+        // Rundum-Pieks: erwischt auch ein Monster direkt daneben (gut gegen Horden)
+        const j=nearestEnemy(f.x,f.y,22,true,L-480,'messer'); if(j>=0 && j!==f.tgt) hurt(j,dm*0.6,'messer'); } }
     else if(d>2){ const sp=140*dt; f.x+=dx/d*Math.min(sp,d); f.y+=dy/d*Math.min(sp,d); f.walk+=dt*10; }
   }
 }
