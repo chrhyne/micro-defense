@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791894156">
+<meta name="md-build" content="1791967209">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -501,7 +501,7 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <div class="helpgrid">
       <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Dort kämpft er nur mit dem Schwert am Tor. Tippe auf den Turm: Dort schießt er nur Pfeile – weit und auch auf Flieger. Power-Leiste voll? POWER antippen: am Lagerfeuer gibt’s den Wirbel, auf dem Turm einen Pfeilregen!</div>
       <div><b>🛠️ Bauen</b>Mit den Münzen aus dem Briefkasten baust du unten in der Leiste Helfer und machst sie stärker.</div>
-      <div><b>👆 Wischen &amp; Tippen</b>Wisch über Münzen für einen Bonus. Tippe ein Monster an, dann zielen alle darauf.</div>
+      <div><b>🎁 Schatztruhen</b>Besiegst du einen Zwischenboss oder die goldene Horde, fällt eine Truhe – schnell antippen! Tippe ein Monster an, dann zielen alle darauf.</div>
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
@@ -588,8 +588,8 @@ const CFG = {
   tntSchaden: 450,      // Schaden direkt am Vulkan, weiter weg weniger
   powerZeit: 150,       // so viele Sekunden lädt eine Power-Attacke
   horden: 1.6,          // so viel mal mehr Monster als in der Wellen-Liste
-  muenzenAutoFlug: 3.5, // nach so vielen Sekunden fliegen Münzen von selbst in den Briefkasten
-  wischBonus: 1.25,     // Münzen, über die man wischt, zählen 25 % mehr
+  muenzenAutoFlug: 0.45, // Münzen fliegen fast sofort von selbst in den Briefkasten (kein Wischen nötig)
+  wischBonus: 1,        // Wischen bringt keinen Bonus mehr – dafür gibt es Schatztruhen
   hpProWelle: 0.09,     // jede Welle sind Monster 9 % stärker
   tiefenTempo: 0.7,     // wie stark die Monster in der Ferne langsamer sind (0 = gar nicht)
 };
@@ -615,9 +615,13 @@ const TYPES = [
   { id:'kalle',    name:'Kanonen-Kalle',   hp:30,   speed:34, coin:13,   dps:0,   anim:1.4, cannon:true, weak:{stein:2.2, blitz:1.5}, desc:'schießt aus der Ferne' },
   { id:'zuendi',   name:'Zündi',           hp:14,   speed:66, coin:7,    dps:1.5, anim:3,   fly:true, weak:{pfeil:2, blitz:1.5, feuer:0}, desc:'Feuer macht ihm nichts' },
   { id:'spuk',     name:'Spukolino',       hp:20,   speed:40, coin:13,   dps:1.5, anim:1.5, fly:true, ghost:true, weak:{messer:0, schwert:0.5, pfeil:0, stein:0, feuer:0, blitz:0, zauber:2}, desc:'Zauber hilft am besten – Brokkoli schafft ein bisschen' },
+  // Zwischenbosse: tragen eine Schatztruhe – besiegt man sie, fällt die Truhe (3 Sekunden Zeit zum Antippen!)
+  { id:'troll',    name:'Truhen-Troll',    hp:220,  speed:30, coin:30,   dps:4,   anim:1.0, mid:true, chest:1, weak:{feuer:1.5}, desc:'Zwischenboss mit Schatztruhe' },
+  { id:'rabe',     name:'Schatz-Rabe',     hp:120,  speed:46, coin:30,   dps:2,   anim:3,   mid:true, chest:1, fly:true, weak:{pfeil:1.5, stein:0, feuer:0}, desc:'fliegender Zwischenboss mit Schatz' },
+  { id:'goldtroll',name:'Goldener Troll',  hp:520,  speed:28, coin:60,   dps:6,   anim:0.9, mid:true, chest:2, weak:{}, desc:'stärkster Zwischenboss – goldene Truhe' },
 ];
 const T_ = {}; TYPES.forEach((t,i)=>T_[t.id]=i);
-const COLS={"misti": "#3b6fd1", "ritter": "#a8703f", "stampfi": "#6fbf4a", "flatter": "#8a55c9", "blech": "#c8443c", "gromp": "#9b59d0", "schleimi": "#36c9d6", "mini": "#36c9d6", "buddel": "#8a6a52", "schorsch": "#5aa03a", "quaxi": "#6cc04f", "puste": "#bfe6f7", "paula": "#ff9ec4", "kalle": "#c8443c", "zuendi": "#e8502a", "spuk": "#f4f8ff"}; TYPES.forEach(t=>t.col=COLS[t.id]);
+const COLS={"troll":"#5f8f3a","rabe":"#2b2b3a","goldtroll":"#e0a817","misti": "#3b6fd1", "ritter": "#a8703f", "stampfi": "#6fbf4a", "flatter": "#8a55c9", "blech": "#c8443c", "gromp": "#9b59d0", "schleimi": "#36c9d6", "mini": "#36c9d6", "buddel": "#8a6a52", "schorsch": "#5aa03a", "quaxi": "#6cc04f", "puste": "#bfe6f7", "paula": "#ff9ec4", "kalle": "#c8443c", "zuendi": "#e8502a", "spuk": "#f4f8ff"}; TYPES.forEach(t=>t.col=COLS[t.id]);
 const EL_ICON = { messer:'🔪', schwert:'⚔️', pfeil:'🏹', brok:'🥦', stein:'🪨', feuer:'🔥', blitz:'⚡', zauber:'✨' };
 
 // ---------- WELLEN (jedes Spiel anders!) ----------
@@ -982,6 +986,32 @@ const DRAW = {
     if(dead){ eyes(g,0,-18,10,1.6,true); } else { circ(g,-5,-18.5,2.2,'#fff'); circ(g,-4.5,-18.5,1.1,INK); circ(g,5,-18.5,2.2,'#fff'); circ(g,5.5,-18.5,1.1,INK); }
     g.strokeStyle=INK; g.lineWidth=1.1; g.beginPath(); g.arc(1,-12,5,0.3,Math.PI-0.3); g.stroke();
   },
+  troll(g,p,dead,gold){
+    const s=Math.sin(p*TAU), skin=gold?'#f2c33a':'#7fae4a', dark=gold?'#c8901a':'#5f8f3a';
+    g.strokeStyle=INK; g.lineWidth=3.2; ln(g,-6,-12,-7-4*s,0); ln(g,6,-12,7+4*s,0);
+    rr(g,-11,-4,8,4,2,dark,1.2); rr(g,3,-4,8,4,2,dark,1.2);
+    // Truhe auf dem Rücken
+    if(!dead){ rr(g,-21,-36,16,13,3,'#8a5a32',1.4); g.fillStyle=gold?'#fff3a0':'#ffc93c'; g.fillRect(-21,-31,16,2.4); g.fillRect(-14,-36,2.4,13); }
+    ell(g,0,-20,13,12,skin,INK,1.6); ell(g,1,-16,8,6,gold?'#ffe28a':'#a6d86f');
+    g.strokeStyle=INK; g.lineWidth=2.6; ln(g,-10,-24,-15,-14+s*2); ln(g,10,-24,16,-16-s*2);
+    circ(g,0,-35,8,skin,INK,1.5);
+    if(gold) poly(g,[-6,-41,-6,-47,-3,-44,0,-48,3,-44,6,-47,6,-41],'#ffd23f',INK,1);
+    poly(g,[-7,-39,-11,-44,-5,-41],skin,INK,1); poly(g,[7,-39,11,-44,5,-41],skin,INK,1);
+    eyes(g,0,-36,6,1.4,dead);
+    g.strokeStyle=INK; g.lineWidth=1; g.beginPath(); g.arc(0,-31,3,0.2,Math.PI-0.2); g.stroke();
+    poly(g,[-2,-31,-1,-29,0,-31],'#fff'); poly(g,[1,-31,2,-29,3,-31],'#fff');
+  },
+  goldtroll(g,p,dead){ DRAW.troll(g,p,dead,true); },
+  rabe(g,p,dead){
+    const s=Math.sin(p*TAU);
+    // Truhe in den Krallen
+    if(!dead){ rr(g,-6,4,12,9,2,'#8a5a32',1.2); g.fillStyle='#ffc93c'; g.fillRect(-6,7,12,2); g.strokeStyle=INK; g.lineWidth=1.2; ln(g,-3,1,-3,4); ln(g,3,1,3,4); }
+    poly(g,[-4,-4,-20,-8-10*s,-14,0],'#2b2b3a',INK,1.2); poly(g,[4,-4,20,-8-10*s,14,0],'#3a3a4f',INK,1.2);
+    ell(g,0,-2,9,6,'#2b2b3a',INK,1.4); circ(g,8,-6,5,'#2b2b3a',INK,1.3);
+    poly(g,[12,-7,18,-5,12,-4],'#ffc93c',INK,0.9);
+    if(dead) eyes(g,8,-7,3,1.1,true); else { circ(g,9,-7,1.8,'#fff'); circ(g,9.4,-7,0.9,INK); }
+    poly(g,[-8,-2,-15,1,-14,-4],'#2b2b3a',INK,1);
+  },
   puste(g,p,dead){
     const s=Math.sin(p*TAU);
     puffs(g,[[-5,0,7+s],[4,-2,8],[0,4,6-s*0.5]],'#cdeefc',0.8,'#ffffff');
@@ -1031,7 +1061,7 @@ const DRAW = {
 };
 const BOX = { misti:[24,36,12,33], ritter:[44,40,21,37], stampfi:[40,40,20,37], flatter:[34,28,17,14], blech:[56,30,28,27], gromp:[110,114,55,108],
   schleimi:[30,24,15,22], mini:[20,16,10,14], buddel:[34,26,16,23], hill:[34,16,17,13], schorsch:[34,34,15,32], quaxi:[30,26,15,23],
-  puste:[44,26,18,13], paula:[28,36,13,33], kalle:[38,34,18,31], zuendi:[44,28,22,14], spuk:[26,30,13,16] };
+  troll:[50,52,25,49], goldtroll:[50,56,25,53], rabe:[46,34,23,16], puste:[44,26,18,13], paula:[28,36,13,33], kalle:[38,34,18,31], zuendi:[44,28,22,14], spuk:[26,30,13,16] };
 const SPR={}, SPR_DEAD={};
 for(const id in BOX){ const b=BOX[id];
   SPR[id]=[]; for(let f=0;f<NF;f++) SPR[id].push(makeSprite(b[0],b[1],b[2],b[3],g=>DRAW[id](g,f/NF,false)));
@@ -1053,7 +1083,7 @@ const CAP = 14000;
 const eDist=new Float32Array(CAP), eLat=new Float32Array(CAP), eHp=new Float32Array(CAP), eMax=new Float32Array(CAP),
       eX=new Float32Array(CAP), eY=new Float32Array(CAP), eS=new Float32Array(CAP), ePh=new Float32Array(CAP), eJit=new Float32Array(CAP), eT=new Float32Array(CAP),
       eType=new Uint8Array(CAP), eAlive=new Uint8Array(CAP), eUid=new Uint32Array(CAP), eFlip=new Uint8Array(CAP), eGate=new Uint8Array(CAP),
-      eUnder=new Uint8Array(CAP), eShield=new Uint8Array(CAP), eRobbed=new Uint8Array(CAP), eGust=new Float32Array(CAP);
+      eUnder=new Uint8Array(CAP), eShield=new Uint8Array(CAP), eRobbed=new Uint8Array(CAP), eGust=new Float32Array(CAP), eGold=new Uint8Array(CAP), eAnn=new Uint8Array(CAP);
 const freeList=new Int32Array(CAP);
 let eHi=0, freeTop=0, uidCounter=1;
 const KCAP=3500;
@@ -1115,15 +1145,21 @@ function buildQueue(){
         q.push({t,type,w});
       }
     }
+    // Besondere Momente mit Schatztruhe: Welle 2 goldene Horde, 5 Truhen-Troll, 8 Schatz-Rabe, 11 Goldener Troll (mit Leibwache)
+    const mid=start+dur*0.5;
+    if(w===1){ const n={leicht:10,normal:12,schwer:14}[STUFE_WAHL]||12; for(let i=0;i<n;i++) q.push({t:mid+i*0.3,type:T_.misti,w,gold:1}); }
+    if(w===4) q.push({t:mid,type:T_.troll,w});
+    if(w===7) q.push({t:mid,type:T_.rabe,w});
+    if(w===10){ q.push({t:mid,type:T_.goldtroll,w}); for(let i=0;i<6;i++) q.push({t:mid-1.5+i*0.5,type:T_.misti,w}); }
   });
   q.sort((a,b)=>a.t-b.t);
   G.queue=q; G.qi=0;
 }
-function spawnDue(){ const q=G.queue; while(G.qi<q.length && q[G.qi].t<=G.t){ const s=q[G.qi++]; spawn(s.type,s.w); } }
+function spawnDue(){ const q=G.queue; while(G.qi<q.length && q[G.qi].t<=G.t){ const s=q[G.qi++]; const i=spawn(s.type,s.w); if(s.gold && i>=0){ eGold[i]=1; G.goldLeft=(G.goldLeft||0)+1; } } }
 function spawn(type,w,dist,lat){
   let i; if(freeTop>0) i=freeList[--freeTop]; else if(eHi<CAP) i=eHi++; else return -1;
   const ty=TYPES[type];
-  eType[i]=type; eAlive[i]=1; eUid[i]=uidCounter++; eGate[i]=0; eUnder[i]=0; eShield[i]=0; eT[i]=0; eRobbed[i]=0; eGust[i]=0;
+  eType[i]=type; eAlive[i]=1; eUid[i]=uidCounter++; eGate[i]=0; eUnder[i]=0; eShield[i]=0; eT[i]=0; eRobbed[i]=0; eGust[i]=0; eGold[i]=0; eAnn[i]=0;
   eDist[i]=dist!==undefined?dist:-Math.random()*10; eLat[i]=lat!==undefined?lat:(ty.boss?0:(Math.random()*2-1));
   const hp=ty.hp*(1+w*CFG.hpProWelle)*(G.diff?G.diff.hp:1); eHp[i]=hp; eMax[i]=hp;
   ePh[i]=Math.random()*10; eJit[i]=Math.random()*24;
@@ -1222,11 +1258,68 @@ function kill(i){
   const x=eX[i], y=eY[i], s=eS[i], d=eDist[i], lat=eLat[i];
   removeEnemy(i); G.kills++;
   if(cN<CCAP && s>=FAR*0.8 && !ty.boss){ cx_[cN]=x; cy_[cN]=y; cs_[cN]=s; ct_[cN]=0; cty[cN]=eType[i]; cfl[cN]=eFlip[i]; cN++; }
-  if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*BURG[G.burgLvl].mult*G.diff.muenzen)),s);
+  if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*BURG[G.burgLvl].mult*G.diff.muenzen*1.1)),s);   // +10 %: Ausgleich fürs weggefallene Wischen
+  if(eGold[i]){ eGold[i]=0; G.goldLeft--; if(G.goldLeft<=0) dropChest(x,y-8*s,1); }
+  if(ty.chest) dropChest(x,y-10*s,ty.chest);
   if(ty.split){ spawn(T_.mini,0,Math.max(0,d-8),Math.max(-1,lat-0.4)); spawn(T_.mini,0,d+6,Math.min(1,lat+0.4)); }
   if(ty.boss){ toast('Gromp ist besiegt! 🎉'); G.shake=20; G.bossDeath={x,y,s,m:s*(1+0.3*s),flip:eFlip[i],t:0,boomed:0}; G.fw=[]; sfx('boss'); for(let k=0;k<12;k++) dropCoin(x+(Math.random()-.5)*80*s,y+(Math.random()-.5)*40*s,15,s); }
-  if(!G.tips.kill && G.running){ G.tips.kill=1; setTimeout(()=>toast('Tipp: Wisch mit dem Finger über die Münzen – dann gibt es einen kleinen Bonus!'),900); }
 }
+// ---------- Schatztruhen (von Zwischenbossen und der goldenen Horde) ----------
+const CHEST_ZEIT=3;   // Sekunden (echte Zeit), um die Truhe anzutippen
+function curWave(){ return Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1); }
+function dropChest(x,y,kind){ (G.chests||(G.chests=[])).push({x,y:Math.min(y,PY[L]+40),t:0,life:G.tut?8:CHEST_ZEIT,gold:kind===2}); sfx('coin'); }
+function updateChests(dt){
+  if(G.point){ G.point.t-=dt; if(G.point.t<=0) G.point=null; }
+  if(!G.chests) return;
+  for(let k=G.chests.length-1;k>=0;k--){ const c=G.chests[k]; c.t+=dt; if(c.t>=c.life){ G.chests.splice(k,1); G.booms.push({x:c.x,y:c.y,r:22,t:0}); toast('💨 Puff – die Truhe ist weg! Beim nächsten Mal schneller tippen.'); } }
+}
+function chestTap(p){ if(!G.chests) return false;
+  for(let k=0;k<G.chests.length;k++){ const c=G.chests[k]; if(Math.hypot(p.x-c.x,p.y-(c.y-14))<60){ G.chests.splice(k,1); openChest(c); return true; } }
+  return false; }
+const POW_NAME={brok:'Brokkoli-Power',bogen:'Feuerpfeile',kat:'Feuerball-Hagel',gew:'Super-Gewitter',vul:'Lava-Welle'};
+function openChest(c){
+  const wv=curWave(), coins=Math.round((30+14*wv)*G.diff.muenzen*(c.gold?2:1));
+  const n=8; for(let k=0;k<n;k++){ dropCoin(c.x+(Math.random()-.5)*40,c.y-10+(Math.random()-.5)*20,Math.round(coins/n),1); startCoinFly(kN-1,1); }
+  // Extra: genau das, was gerade am meisten hilft (goldene Truhe: alles, was passt)
+  const extra=[], own=owned();
+  const heal=()=>{ const m=maxHp(); G.hp=Math.min(m,G.hp+m*0.3); extra.push('🩹 Burg geheilt'); };
+  const pow=()=>{ const ks=Object.keys(POW_NAME).filter(k=>own[k] && !powerReady(k)); if(!ks.length) return false; ks.sort((a,b)=>G.pow[a]-G.pow[b]); G.pow[ks[0]]=CFG.powerZeit; extra.push('💥 '+POW_NAME[ks[0]]+' voll'); return true; };
+  const rab=()=>{ G.rabatt=true; extra.push('⭐ nächster Ausbau halber Preis'); refreshToolbar(); };
+  if(c.gold){ if(G.hp<maxHp()) heal(); pow(); rab(); }
+  else if(G.hp<maxHp()*0.6) heal(); else if(!pow()) rab();
+  banner((c.gold?'👑 ':'🎁 ')+'+'+coins+' 🪙','#ffd23f'); toast(extra.join(' · ')||'Schatz!'); sfx('buy');
+  G.pops.push({x:c.x,y:c.y-30,t:0,life:1.4,coin:true,txt:'+'+coins,sc:1.2,col:'#ffd23f'});
+  if(G.tut) G.tut.chest=true;
+  track('truhe',{welle:wv, extra:extra.join(', '), gold:c.gold?1:0});
+}
+function drawChests(T){ if(!G.chests||!G.chests.length) return;
+  for(const c of G.chests){ const left=1-c.t/c.life, b=Math.abs(Math.sin(T*6))*6, x=c.x, y=c.y-b;
+    const gl=ctx.createRadialGradient(x,y-10,4,x,y-10,46); gl.addColorStop(0,'rgba(255,230,120,0.85)'); gl.addColorStop(1,'rgba(255,210,60,0)'); ctx.fillStyle=gl; ctx.fillRect(x-48,y-58,96,96);
+    ctx.lineWidth=5; ctx.strokeStyle='rgba(43,33,24,0.45)'; ctx.beginPath(); ctx.arc(x,y-10,34,0,TAU); ctx.stroke();
+    ctx.strokeStyle=left>0.35?'#ffd23f':'#e0453f'; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(x,y-10,34,-Math.PI/2,-Math.PI/2+left*TAU); ctx.stroke();
+    ctx.save(); ctx.translate(x,y-5); ctx.scale(1.4,1.4); ctx.translate(-x,-(y-5));
+    const body=c.gold?'#e0a817':'#8a5a32', band=c.gold?'#fff3a0':'#ffc93c';
+    rr(ctx,x-16,y-14,32,18,3,body,2.2); rr(ctx,x-17,y-24,34,11,[6,6,1,1],body,2.2);
+    ctx.fillStyle=band; ctx.fillRect(x-16,y-15,32,3); ctx.fillRect(x-3,y-24,6,28); circ(ctx,x,y-12,3,'#fff3a0',INK,1.2); ctx.restore();
+    ctx.font='16px "Lilita One", sans-serif'; ctx.textAlign='center'; ctx.lineWidth=4; ctx.strokeStyle=INK; ctx.strokeText('TIPP!',x,y-50); ctx.fillStyle='#ffd23f'; ctx.fillText('TIPP!',x,y-50);
+    if(Math.random()<0.3) G.pops.push({x:x+(Math.random()-.5)*30,y:y-20,t:0,txt:'✨'}); }
+}
+// Ankündigung: erst wenn ein Boss aus dem Nebel kommt (dann sieht man ihn) – Banner + hüpfender Pfeil
+const ANSAGE={ gromp:['👹 GROMP DER RIESE!','#c86bff','⚠️ Gromp der Riese kommt! Der Boden bebt …'],
+  troll:['💰 TRUHEN-TROLL!','#ffd23f','Ein Truhen-Troll! Besiege ihn und tipp dann schnell auf seine Truhe!'],
+  rabe:['💰 SCHATZ-RABE!','#ffd23f','Ein Schatz-Rabe! Nur Pfeile, Zauber und Blitze treffen ihn – dann schnell die Truhe antippen!'],
+  goldtroll:['👑 GOLDENER TROLL!','#ffd23f','Der Goldene Troll mit der goldenen Truhe – da ist alles drin!'] };
+function announceCheck(dt){ G.annT=(G.annT||0)-dt; if(G.annT>0) return; G.annT=0.25;
+  for(let i=0;i<eHi;i++){ if(!eAlive[i] || eAnn[i] || eDist[i]<KZ) continue; const ty=TYPES[eType[i]];
+    if(eGold[i]){ eAnn[i]=1; if(!G.goldAnn){ G.goldAnn=1; banner('🟡 GOLDENE HORDE!','#ffd23f'); toast('Besiege alle goldenen Mistis – dann gibt es eine Schatztruhe!'); G.point={i,uid:eUid[i],t:2.5}; } continue; }
+    const a=ANSAGE[ty.id]; if(!a) continue; eAnn[i]=1;
+    banner(a[0],a[1]); toast(a[2]); G.point={i,uid:eUid[i],t:2.8};
+    if(ty.boss){ if(G.boss) G.boss.seen=true; G.shake=16; sfx('boss'); sfx('rumble'); } else sfx('mark');
+  } }
+function drawPointer(T){ const q=G.point; if(!q || !eAlive[q.i] || eUid[q.i]!==q.uid) return; const ty=TYPES[eType[q.i]], s=eS[q.i];
+  const top=SPR[ty.id]?SPR[ty.id][0].ay*s*(ty.boss?1+0.3*s:1+0.75*s):30*s, x=eX[q.i], y=eY[q.i]-top-14-Math.abs(Math.sin(T*6))*12;
+  poly(ctx,[x-11,y-26,x+11,y-26,x+11,y-12,x+20,y-12,x,y+4,x-20,y-12,x-11,y-12],'#ffd23f',INK,3); }
+
 function dropCoin(x,y,v,s){
   if(kN>=KCAP){ addCoins(v); return; }
   kx[kN]=x; ky[kN]=y; kv[kN]=v; kt[kN]=0; ks[kN]=0; ksc[kN]=Math.max(0.45,s); kN++;
@@ -1621,16 +1714,16 @@ function airWarn(dt){
   G.airT=(G.airT||0)-dt; G.airHint=Math.max(0,(G.airHint||0)-dt); if(G.airT>0 || G.tut) return; G.airT=0.5;
   if(G.archer>=0 || G.wiz>=0 || G.gew.lvl>=0 || G.hero.home==='turm') return;
   for(let i=0;i<eHi;i++) if(eAlive[i] && TYPES[eType[i]].fly && eDist[i]>L-1300){
-    if((G.airWarnCd||0)<G.t){ G.airWarnCd=G.t+25; banner('🦇 FLIEGER! Brokkoli auf den Turm!','#9fd8ff'); toast('Flieger trifft nur, wer schießt: Tippe auf den Turm links – oder bau Pfeil-Paule!'); }
+    if((G.airWarnCd||0)<G.t){ G.airWarnCd=G.t+25; banner('🦇 FLIEGER! Brokkoli auf den Turm!','#9fd8ff'); toast('Flieger trifft nur, wer schießt: Tippe auf den Turm links'+(LOADOUT.includes('bogen')?' – oder bau Pfeil-Paule!':LOADOUT.includes('zauber')?' – oder bau Zappelbart!':'!')); }
     G.airHint=1.2; return; }
 }
 function update(dt){
   G.t+=dt;
   spawnDue();
   moveEnemies(dt); updateBoss(dt);
-  if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt; if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! Schnell: Brutzel-Kessel, Piekser oder Brokkoli vors Tor!'); } if(G.hp<=0){ G.hp=0; endGame(false); } }
+  if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt; if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! '+(()=>{ const h=[]; if(LOADOUT.includes('oel')) h.push('Brutzel-Kessel'); if(LOADOUT.includes('messer')) h.push('Piekser'); return h.length?'Schnell: '+h.join(', ')+' oder Brokkoli ans Lagerfeuer!':'Schnell: Brokkoli ans Lagerfeuer!'; })()); } if(G.hp<=0){ G.hp=0; endGame(false); } }
   updateFighters(dt); updateHero(dt); updateArcher(dt); updateWizard(dt); updateRobbers(dt);
-  airWarn(dt);
+  airWarn(dt); announceCheck(dt);
   if(G.speed>=TURBO && G.gateDps>0 && !G.over){ G.speed=1; speedBtn(); toast('Monster am Tor! Tempo wieder normal.'); }   // Turbo nur, solange es ruhig ist
   updateProjectiles(dt); updateLava(dt); updateTimers(dt); updateBuilds(dt);
   if(G.burnT>0){ G.burnT-=dt; const O=OEL[G.oil.lvl]; HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.burn*dt,'feuer'); } HSRC=null; }
@@ -1642,7 +1735,7 @@ function update(dt){
   updateBossDeath(dt);
   if(G.tut) updateTut(dt);
   else if(!G.over && G.qi>=G.queue.length && G.alive<=0 && !(G.bossDeath && G.bossDeath.t<8.5)) endGame(true);   // erst das Feuerwerk zu Ende schauen
-  if(!G.tips.kat && G.kat.lvl<0 && G.t>G.t0+150){ G.tips.kat=1; toast('Tipp: Mit Schleuder-Susi erwischst du die Horden weiter hinten!'); }
+  if(!G.tips.kat && G.kat.lvl<0 && LOADOUT.includes('katapult') && G.t>G.t0+150){ G.tips.kat=1; toast('Tipp: Mit Schleuder-Susi erwischst du die Horden weiter hinten!'); }
   if(!G.tips.spuk && G.wiz<0){ for(let i=0;i<eHi;i+=7){ if(eAlive[i] && TYPES[eType[i]].ghost && eDist[i]>LS[2]){ G.tips.spuk=1; toast('Spukolino kommt! Gegen Gespenster hilft Zauberer Zappelbart am besten – Brokkoli schafft nur ein bisschen.'); break; } } }
   flushHitNumbers(dt);
 }
@@ -1698,8 +1791,10 @@ function tutCoin(){ for(let i=0;i<kN;i++) if(ks[i]===0) return tutWorld({x:kx[i]
 function tutAt(w){ const h=G.hero; return h.home===w && heroWhere()===w; }
 const TUT=[
   {say:'Hallo! Ich bin Brokkoli. Kleine Monster wollen in die Burg – wenn sie ans Tor kommen, gibt’s was mit dem Schwert!', enter(){ G.tut.noAuto=true; G.tut.noShoot=true; tutSpawn('misti',6,750); }, done:()=>G.alive===0 && G.tut.t>2},
-  {say:'Die Monster lassen Münzen fallen. Wisch mit dem Finger darüber – das gibt einen Bonus!', enter(){ G.tut.noShoot=false; let n=0; for(let i=0;i<kN;i++) if(ks[i]===0) n++; for(;n<4;n++) dropCoin(GATE.x+120+n*30,GATE.y+10,3,1); },
-    finger:tutCoin, done:()=>G.tut.swiped},
+  {say:'Ein Truhen-Troll mit Schatz! Ich hau ihn um – dann tipp ganz schnell auf seine Truhe!', enter(){ G.tut.noShoot=false; G.tut.noAuto=false;
+      const i=spawn(T_.troll,0,L-620,0.2); if(i>=0){ eHp[i]=eMax[i]=40; eAnn[i]=1; G.tut.troll={i,uid:eUid[i]}; } },
+    tick(){ const t=G.tut.troll; if(t && !(eAlive[t.i]&&eUid[t.i]===t.uid) && !G.tut.chest && !(G.chests&&G.chests.length)) dropChest(GATE.x+150,GATE.y+5,1); },   /* verpasst? Neue Truhe */
+    finger:()=>{ const c=G.chests&&G.chests[0]; return c?tutWorld({x:c.x,y:c.y-14}):null; }, done:()=>!!G.tut.chest},
   {say:'Achtung, Flieger! Die erwischt man nur aus der Luft. Tippe auf den Turm links – dann klettere ich hoch!', enter(){ G.tut.noAuto=false; }, finger:()=>tutWorld({x:BTOWER.x,y:BTOWER.y-20}), done:()=>tutAt('turm')},
   {say:'Von hier oben schieße ich weit! Da kommen sie …', enter(){ tutSpawn('flatter',4,1000); }, done:()=>G.alive===0 && G.tut.t>2},
   {say:'Allein schaffe ich nicht alle Flieger. Bau dir Pfeil-Paule als Helfer!', enter(){ tutTop('bogen'); }, finger:()=>tutTile('bogen'), done:()=>G.archer>=0},
@@ -1751,7 +1846,6 @@ function finishTutorial(how){
 function startBoss(i){
   G.boss={i,uid:eUid[i],phase:0,stun:0,roar:0,rage:false,rockCd:3,minCd:18,tickle:0,tickleCd:6,tickles:0};
   G.rocks=G.rocks||[];
-  if(G.running){ G.shake=16; sfx('boss'); sfx('rumble'); toast('⚠️ GROMP DER RIESE kommt! Der Boden bebt …'); }
 }
 function bossAlive(){ const b=G.boss; return !!(b && eAlive[b.i] && eUid[b.i]===b.uid); }
 const KITZEL_NOETIG=6;
@@ -2197,13 +2291,15 @@ function render(time){
     if(!eAlive[i] || eDist[i]<0) continue;
     const ty=TYPES[eType[i]], s=eS[i];
     if(ty.fly){ fl.push(i); ell(ctx,eX[i],eY[i]+22*s,6*s,2*s,'rgba(0,0,0,0.18)'); continue; }
-    if(s<FAR && !ty.boss){ dot(ty,eX[i],eY[i],s); continue; }
+    if(s<FAR && !ty.boss && !ty.mid){ dot(ty,eX[i],eY[i],s,eGold[i]); continue; }
     const ph=(eGate[i]?T*ty.anim*1.5:T*ty.anim*Math.sqrt(s))+ePh[i];
     const fr=((ph*NF)|0)%NF;
     if(eUnder[i]){ drawSprite(SPR.hill[fr],eX[i],eY[i],eFlip[i],s*(1+0.75*s)); continue; }
     let yo=0; if(ty.hop) yo=-Math.max(0,Math.sin(ph*TAU))*12*s;
-    const m=s*(ty.boss?1+0.3*s:1+0.75*s);
+    const m=s*(ty.boss?1+0.3*s:1+0.75*s)*(ty.mid?1.3:1);   // Zwischenbosse etwas größer
+    if(eGold[i]){ ctx.globalAlpha=0.55; ell(ctx,eX[i],eY[i]+1,12*m,4*m,'#ffd23f'); ctx.globalAlpha=1; }
     drawSprite(SPR[ty.id][fr],eX[i],eY[i]+yo,eFlip[i],m);
+    if(eGold[i]){ const hy=eY[i]+yo-SPR[ty.id][0].ay*m-2; poly(ctx,[eX[i]-5*m,hy,eX[i]-5*m,hy-5*m,eX[i]-2*m,hy-2.5*m,eX[i],hy-6*m,eX[i]+2*m,hy-2.5*m,eX[i]+5*m,hy-5*m,eX[i]+5*m,hy],'#ffd23f',INK,1); }
     if(ty.hp>=18 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]+yo-SPR[ty.id][0].ay*m-4*s, eHp[i]/eMax[i], (ty.boss?70:22)*Math.max(0.5,s), Math.max(2,4*s));
     if(ty.heal && ((T*2+ePh[i])%1)<0.5) { ctx.fillStyle='#e0453f'; ctx.font=`${Math.max(6,12*s)}px sans-serif`; ctx.textAlign='center'; ctx.fillText('+',eX[i]+8*s,eY[i]-34*s); }
   }
@@ -2224,7 +2320,7 @@ function render(time){
   // Flieger
   for(const i of fl){ const ty=TYPES[eType[i]]; if(eS[i]<FAR){ dot(ty,eX[i],eY[i],eS[i]); continue; } const fr=(((T*ty.anim+ePh[i])*NF)|0)%NF;
     if(ty.ghost) ctx.globalAlpha=0.72+0.15*Math.sin(T*3+ePh[i]);
-    drawSprite(SPR[ty.id][fr],eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])); ctx.globalAlpha=1;
+    drawSprite(SPR[ty.id][fr],eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])*(ty.mid?1.3:1)); ctx.globalAlpha=1;
     if(ty.hp>=14 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]-16*eS[i], eHp[i]/eMax[i], 20*Math.max(0.5,eS[i]), Math.max(2,4*eS[i])); }
   drawBossFx(T); drawBossDeath(T); drawBuilds(T);
   // Markierung
@@ -2267,7 +2363,7 @@ function render(time){
     const rise=p.live?Math.max(0,p.t-(p.life-1))*50:p.t*50;
     const y=p.y-rise; ctx.lineWidth=6*p.sc; ctx.strokeStyle='#3a2410'; ctx.strokeText(p.txt,p.x,y); ctx.fillStyle=p.col||'#ffd23f'; ctx.fillText(p.txt,p.x,y); }
   ctx.globalAlpha=1; ctx.font='16px sans-serif';
-  drawReadiness(T);
+  drawReadiness(T); drawChests(T); drawPointer(T);
   if(G.airHint>0 && G.hero.home!=='turm'){ const x=BTOWER.x, y=BTOWER.y-70-Math.abs(Math.sin(T*5))*12; poly(ctx,[x-14,y-24,x+14,y-24,x+14,y-6,x+24,y-6,x,y+16,x-24,y-6,x-14,y-6],'#9fd8ff',INK,3); }
   if(G.running && !G.over){ const ratio=Math.max(0,G.hp/maxHp()); let a=Math.pow(1-ratio,1.3)*0.65; if(G.gateDps>0) a+=0.14+0.08*Math.sin(T*8); a+=G.hurtFlash||0;
     if(a>0.02){ ctx.setTransform(1,0,0,1,0,0); const w=cv.width,h=cv.height; const rg=ctx.createRadialGradient(w/2,h/2,Math.min(w,h)*0.32,w/2,h/2,Math.hypot(w,h)/2); rg.addColorStop(0,'rgba(210,20,20,0)'); rg.addColorStop(1,`rgba(210,20,20,${Math.min(0.8,a)})`); ctx.fillStyle=rg; ctx.fillRect(0,0,w,h); } }
@@ -2277,7 +2373,7 @@ function render(time){
 function big(x,y,f,fn){ ctx.save(); ctx.translate(x,y); ctx.scale(f,f); ctx.translate(-x,-y); fn(); ctx.restore(); }
 // weit entfernte Monster: nur ein bunter Punkt (spart sehr viel Rechenzeit)
 let FAR=0.32;
-function dot(ty,x,y,s){ const h=26*s*(1+0.75*s), w=Math.max(1.5,h*0.45); ctx.fillStyle=ty.col; ctx.fillRect(x-w/2,y-h,w,h); ctx.fillStyle=INK; ctx.fillRect(x-w/2,y-h,w,Math.max(1,h*0.28)); }
+function dot(ty,x,y,s,gold){ const h=26*s*(1+0.75*s), w=Math.max(1.5,h*0.45); ctx.fillStyle=gold?'#ffd23f':ty.col; ctx.fillRect(x-w/2,y-h,w,h); ctx.fillStyle=INK; ctx.fillRect(x-w/2,y-h,w,Math.max(1,h*0.28)); }
 function drawIgel(d,T){
   const x=PX[d], y=PY[d], s=PS[d];
   ctx.save(); ctx.translate(x,y); ctx.scale(s,s);
@@ -2574,6 +2670,7 @@ function swipe(p){
 const near=(p,o,r)=>Math.hypot(p.x-o.x,p.y-o.y)<r;
 function tap(p){
   if(G.over) return;
+  if(chestTap(p)) return;
   if(!G.mode && bossTap(p)) return;
   if(G.mode==='kat'||G.mode==='katPow'||G.mode==='gew'){ const n=nearestPathDist(p.x,p.y); if(n.d<modeReach()){ toast(G.mode==='gew'?'So weit hinten kann Donner-Doris nicht blitzen – nur auf dem gelben Weg.':'Zu weit! Schleuder-Susi schafft es nur bis zum gelben Weg.'); return; } }
   if(G.mode==='kat'){ fireCatapult(p.x,p.y); G.kat.cd=KATAPULT[G.kat.lvl].cd; setMode(null); return; }
@@ -2605,7 +2702,7 @@ function tap(p){
   // Monster markieren
   let best=-1, bd=1e9;
   for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<0) continue; const s=eS[i]; const dx=eX[i]-p.x, dy=(eY[i]-14*s)-p.y, q=dx*dx+dy*dy, r=24*s+10; if(q<r*r && q<bd){bd=q;best=i;} }
-  if(best>=0){ G.mark={i:best,uid:eUid[best]}; sfx('mark'); if(!G.tips.mark){ G.tips.mark=1; toast(`${TYPES[eType[best]].name} ist markiert! Pfeil-Paule, Brokkoli und Zappelbart zielen zuerst darauf.`); } }
+  if(best>=0){ G.mark={i:best,uid:eUid[best]}; sfx('mark'); if(!G.tips.mark){ G.tips.mark=1; toast((()=>{ const w=['Brokkoli',...(LOADOUT.includes('bogen')?['Pfeil-Paule']:[]),...(LOADOUT.includes('zauber')?['Zappelbart']:[])]; return `${TYPES[eType[best]].name} ist markiert! `+w.join(', ').replace(/, ([^,]*)$/,' und $1')+(w.length>1?' zielen':' zielt')+' zuerst darauf.'; })()); } }
 }
 function modeReach(){ return G.mode==='gew' ? reihen(GEWITTER[G.gew.lvl].reihen) : reihen(KATAPULT[Math.max(0,G.kat.lvl)].reihen); }
 const MODE_TEXT={kat:'🪨 Tippe auf den gelben Weg – dorthin fliegt der Stein!', katPow:'💥 POWER! Tippe auf den gelben Weg – dorthin fliegen 5 Feuerbälle!', gew:'⛈️ Tippe irgendwo auf den Weg – Donner-Doris blitzt überall, sogar ganz hinten!', falle:'🦔 Tippe auf den Weg – dort legt sich der Aua-Igel hin.'};
@@ -2663,7 +2760,7 @@ function buildToolbar(){
 }
 function refreshToolbar(){
   if(!G) return;
-  for(const it of ITEMS){ const el=toolEls[it.id]; if(!el) continue; const done=it.done(), price=it.price();
+  for(const it of ITEMS){ const el=toolEls[it.id]; if(!el) continue; const done=it.done(), price=effPrice(it);
     el.lv.textContent=it.lvl();
     el.pr.textContent=done?(it.id==='tnt'?'bereit':it.id==='heilen'?'heil':'fertig ✓'):'🪙 '+price.toLocaleString('de-DE');
     el.b.classList.toggle('done',done);
@@ -2677,18 +2774,19 @@ function buyItem(it){
   if(G.mode===it.id){ setMode(null); return; }
   if(it.done()){ toast(it.info); return; }
   if(it.need && it.need()){ toast('Du brauchst zuerst Schleuder-Susi!'); return; }
-  const price=it.price();
+  const price=effPrice(it);
   if(G.coins<price){ toast(`${it.name}: ${it.info} Es fehlen noch ${Math.ceil(price-G.coins)} Münzen.`); return; }
   if(it.place){ setMode(it.id); return; }
   const B=G.builds||(G.builds={});
   if(B[it.id]){ toast(`${it.name} wird gerade gebaut – noch ${Math.ceil(B[it.id].dur-B[it.id].t)} Sekunden!`); return; }
-  G.coins-=price; sfx('buy');
+  G.coins-=price; sfx('buy'); if(G.rabatt && !SOFORT.has(it.id) && it.price()>price){ G.rabatt=false; toast('⭐ Halber Preis eingelöst!'); }
   if(SOFORT.has(it.id)){ it.buy(); refreshToolbar(); return; }
   // Bauzeit: neue Helfer 2 s, Ausbau je nach Preis 2–6 s. Bis dahin arbeitet der Helfer auf der alten Stufe weiter.
   const neu=it.lvl()==='neu', dur=neu?2:Math.min(6,Math.max(2,2+price/1000));
   B[it.id]={t:0,dur,it}; refreshToolbar();
 }
 const SOFORT=new Set(['heilen','tnt']);
+function effPrice(it){ const p=it.price(); return (G && G.rabatt && !SOFORT.has(it.id) && !it.done()) ? Math.ceil(p/2) : p; }
 const BAU_POS={ brok:()=>({x:G.hero.x,y:G.hero.y-70}), bogen:()=>({x:ATOWER.x,y:ATOWER.y-20}), zauber:()=>({x:WIZPOS.x,y:WIZPOS.y-20}), katapult:()=>CATAPULT, oel:()=>OILPOT,
   gewitter:()=>CLOUD, vulkan:()=>({x:VOLC.x,y:VOLC.y-30*VOLC.s}), messer:()=>({x:GATE.x+45,y:GATE.y+20}), raeuber:()=>({x:GATE.x+40,y:GATE.y-20}), burg:()=>({x:GATE.x-90,y:GATE.y-40}) };
 function updateBuilds(dt){
@@ -2733,7 +2831,7 @@ function updateHud(dt){
     if(G.lastWaveShown!==started){ G.lastWaveShown=started;
       $('nextList').innerHTML=WAVES[started].map(([id,n])=>{ const ty=TYPES[T_[id]]; return `<span title="${ty.name}"><img src="${ICONS[ty.id]}" alt="${ty.name}">×${n}<small>${weakText(ty)}</small></span>`; }).join(''); }
   } else { $('waveTxt').textContent='Alle Wellen sind unterwegs!'; $('nextList').textContent=`Noch ${G.alive} Monster`; G.lastWaveShown=-1; }
-  const ba=G.boss && bossAlive(); $('bossBar').hidden=!ba; if(ba){ $('bossBar').style.bottom=(($('toolbar').offsetWidth<innerWidth*0.5)?8:$('toolbar').offsetHeight+10)+'px'; } if(ba) $('bossFill').style.width=(100*Math.max(0,eHp[G.boss.i]/eMax[G.boss.i]))+'%';
+  const ba=G.boss && bossAlive() && G.boss.seen; $('bossBar').hidden=!ba; if(ba){ $('bossBar').style.bottom=(($('toolbar').offsetWidth<innerWidth*0.5)?8:$('toolbar').offsetHeight+10)+'px'; } if(ba) $('bossFill').style.width=(100*Math.max(0,eHp[G.boss.i]/eMax[G.boss.i]))+'%';
   refreshToolbar();
 }
 
@@ -3263,6 +3361,7 @@ function loop(now){
   frameAvg=frameAvg*0.97+dt*0.03; if(frameAvg>0.024) FAR=Math.min(0.55,FAR+0.002); else if(frameAvg<0.018) FAR=Math.max(0.32,FAR-0.001);
   const hoch=HOCH.matches; if(hoch!==wasHoch){ wasHoch=hoch; $('rotPaused').hidden=!(G&&G.running); }
   if(G && G.running && !G.paused && !hoch && !(G.over && !$('end').hidden)){   // hochkant: Spiel wartet   // nach Spielende steht alles still
+    updateChests(dt);   // Truhen & Hinweis-Pfeil laufen nach echter Zeit – bei jedem Tempo gleich lang
     const f=G.over?0.4:G.speed; const sdt=dt*f;
     if(f>1){ const n=Math.ceil(f); for(let q=0;q<n;q++) update(sdt/n); } else update(sdt);
     G.shake=Math.max(0,G.shake-dt*30); G.flash=Math.max(0,G.flash-dt*2.5); G.hurtFlash=Math.max(0,(G.hurtFlash||0)-dt*1.2);
