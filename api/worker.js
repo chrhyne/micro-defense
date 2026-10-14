@@ -1,6 +1,8 @@
 // Micro Defense – kleine Schnittstelle für die gemeinsame Bestenliste der Familie.
 // GET  /scores            → die besten 20 (optional ?map=wiese&stufe=normal&regel=1)
 // POST /scores  {name,pts,map,stufe,won,wave,waves} → speichern, Antwort: Platz + Liste
+// GET  /gesamt?regel=1    → Punkte aller Partien pro Name zusammengezählt („Ewige Bestenliste“)
+// POST /scores/rename {d,pts,name} → Namen eines eigenen Eintrags ändern (nur vom selben Anschluss)
 const ORIGINS = ['https://micro-defense.christian-hein.de'];
 const MAPS = ['wiese', 'wueste', 'eis'];
 const STUFEN = ['leicht', 'normal', 'schwer'];
@@ -43,6 +45,19 @@ export default {
 
     if (url.pathname === '/scores' && req.method === 'GET') {
       return json({ scores: await top(env, url.searchParams.get('map'), url.searchParams.get('stufe'), url.searchParams.has('regel') ? parseInt(url.searchParams.get('regel')) : undefined) }, req);
+    }
+
+    if (url.pathname === '/gesamt' && req.method === 'GET') {
+      const regel = parseInt(url.searchParams.get('regel')) || 1;
+      const r = await env.DB.prepare('SELECT MIN(name) AS name, SUM(pts) AS total, COUNT(*) AS n, MAX(pts) AS best, SUM(won) AS siege FROM scores WHERE regel = ? GROUP BY LOWER(name) ORDER BY total DESC LIMIT 20').bind(regel).all();
+      return json({ gesamt: r.results || [] }, req);
+    }
+
+    if (url.pathname === '/scores/rename' && req.method === 'POST') {
+      let b; try { b = await req.json(); } catch { return json({ error: 'kein JSON' }, req, 400); }
+      const name = String(b.name || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 14) || 'Unbekannt';
+      const r = await env.DB.prepare('UPDATE OR IGNORE scores SET name = ? WHERE created = ? AND pts = ? AND ip = ?').bind(name, Math.round(Number(b.d)) || 0, Math.round(Number(b.pts)) || 0, await ipHash(req)).run();
+      return json({ ok: true, geaendert: r.meta ? r.meta.changes : 0 }, req);
     }
 
     // POST /scores        {name,pts,map,stufe,won,wave,waves,d}  → ein Eintrag
