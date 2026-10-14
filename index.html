@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791978658">
+<meta name="md-build" content="1791978844">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -282,6 +282,22 @@ body.inmenu #bossBar{display:none}
 body.inmenu #hud, body.inmenu #toolbar{display:none}
 
 #endList .hs tr:nth-child(n+4){display:none}   /* am Spielende nur die Top 3 – die ganze Liste gibt's im Hauptmenü */
+/* ===== Glückskarten ===== */
+#cards{z-index:7}
+.cardsheet{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(760px,100%)}
+.cardsheet h2{font-size:clamp(20px,3vw,30px);text-align:center}
+.gcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:100%}
+.gcard{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border:3px solid var(--ink);border-radius:18px;cursor:pointer;
+  background:linear-gradient(160deg,#fffbea,#ffe9a8);box-shadow:0 5px 0 var(--ink);animation:gcIn .45s cubic-bezier(.2,1.5,.4,1) both;font-family:var(--body);color:var(--ink)}
+.gcard:hover{transform:translateY(-3px)} .gcard:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+.gcard .gic{font-size:46px;line-height:1;filter:drop-shadow(0 3px 0 rgba(0,0,0,.2))}
+.gcard b{font-family:var(--display);font-weight:400;font-size:20px}
+.gcard small{font-size:14px;font-weight:700;line-height:1.3;color:var(--ink-soft)}
+@keyframes gcIn{from{transform:translateY(40px) rotate(-6deg);opacity:0}}
+#buffs{position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 58px);display:flex;gap:5px;z-index:2;pointer-events:none}
+#buffs span{background:var(--parch);border:2px solid var(--ink);border-radius:10px;padding:1px 6px;font:800 13px var(--body);box-shadow:0 2px 0 var(--ink)}
+body.inmenu #buffs{display:none}
+@media (orientation:landscape) and (max-height:520px){ .cardsheet{gap:6px} .cardsheet h2{font-size:18px} .gcard{padding:8px 6px;gap:3px} .gcard .gic{font-size:30px} .gcard b{font-size:15px} .gcard small{font-size:11.5px} #buffs{top:calc(env(safe-area-inset-top,0px) + 44px)} #buffs span{font-size:11px} }
 /* ===== Das Handy im Spiel ===== */
 #phone{background:rgba(20,12,4,.55);z-index:8}
 .ph-frame{position:relative;height:min(600px,94vh);aspect-ratio:9/17.5;background:linear-gradient(145deg,#3a3f4a,#15171c);border:3px solid var(--ink);border-radius:clamp(22px,6vh,40px);padding:clamp(8px,2.2vh,14px) clamp(6px,1.6vh,10px);box-shadow:0 8px 0 var(--ink),0 20px 50px rgba(0,0,0,.5);display:flex;flex-direction:column;animation:phIn .35s cubic-bezier(.2,1.4,.4,1)}
@@ -548,6 +564,11 @@ body.inmenu #hud, body.inmenu #toolbar{display:none}
     <div class="row"><button class="big" id="scoresClose">Zurück</button></div>
   </div>
 </div>
+
+<div class="overlay" id="cards" hidden>
+  <div class="sheet cardsheet"><h2 id="cardTitle">🍀 Wähl eine Glückskarte</h2><div class="gcards" id="cardList"></div></div>
+</div>
+<div id="buffs"></div>
 
 <div class="overlay" id="phone" hidden>
   <div class="ph-frame">
@@ -1124,7 +1145,7 @@ function newGame(){
   const step=0.1; let maxD=0;
   while(maxD<LS[4]-150 && G.t<900){ G.t+=step; spawnDue(); moveEnemies(step);
     maxD=0; for(let i=0;i<eHi;i++) if(eAlive[i] && eDist[i]>maxD) maxD=eDist[i]; }
-  G.t0=G.t;
+  G.t0=G.t; G.cardWave=curWave();
 }
 function addFighter(){
   const n=G.fighters.length;
@@ -1177,13 +1198,14 @@ function spawn(type,w,dist,lat){
 
 /* ============================ SPIELLOGIK ============================ */
 function moveEnemies(dt){
+  SLOW=buff('schleim')?0.75:1;
   const traps=G.traps; let gate=0;
   const nw=[], ns=[], nh=[];
   for(let i=0;i<eHi;i++){
     if(!eAlive[i]) continue;
     const ty=TYPES[eType[i]];
     const d=eDist[i]; const di0=d<0?0:(d|0);
-    let sp=ty.speed*PSP[di0]*G.diff.tempo;
+    let sp=ty.speed*PSP[di0]*G.diff.tempo*SLOW;
     // Pustefix pustet jedes Monster nur EINMAL kurz an (sonst sammeln sich alle vor ihm zu einem riesigen Haufen)
     if(eGust[i]>0){ eGust[i]=Math.max(0,eGust[i]-dt); if(eGust[i]<=0) eGust[i]=-1; sp*=1.6; }
     else if(eGust[i]===0 && windD.length && !ty.wind){ for(const wd of windD){ if(d>wd && d<wd+130){ eGust[i]=1.2+Math.random()*0.8; break; } } }
@@ -1263,12 +1285,52 @@ function kill(i){
   const x=eX[i], y=eY[i], s=eS[i], d=eDist[i], lat=eLat[i];
   removeEnemy(i); G.kills++;
   if(cN<CCAP && s>=FAR*0.8 && !ty.boss){ cx_[cN]=x; cy_[cN]=y; cs_[cN]=s; ct_[cN]=0; cty[cN]=eType[i]; cfl[cN]=eFlip[i]; cN++; }
-  if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*BURG[G.burgLvl].mult*G.diff.muenzen*1.1)),s);   // +10 %: Ausgleich fürs weggefallene Wischen
+  if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*BURG[G.burgLvl].mult*G.diff.muenzen*1.1*(buff('muenzen')?1.5:1))),s);   // +10 %: Ausgleich fürs weggefallene Wischen
   if(eGold[i]){ eGold[i]=0; G.goldLeft--; if(G.goldLeft<=0) dropChest(x,y-8*s,1); }
   if(ty.chest) dropChest(x,y-10*s,ty.chest);
   if(ty.split){ spawn(T_.mini,0,Math.max(0,d-8),Math.max(-1,lat-0.4)); spawn(T_.mini,0,d+6,Math.min(1,lat+0.4)); }
   if(ty.boss){ toast('Gromp ist besiegt! 🎉'); G.shake=20; G.bossDeath={x,y,s,m:s*(1+0.3*s),flip:eFlip[i],t:0,boomed:0}; G.fw=[]; sfx('boss'); for(let k=0;k<12;k++) dropCoin(x+(Math.random()-.5)*80*s,y+(Math.random()-.5)*40*s,15,s); }
 }
+// ---------- Glückskarten: nach jeder zweiten Welle eine von drei wählen ----------
+let SLOW=1, CARD_AUTO=false;
+function buff(k){ return !!(G && G.buffs && G.buffs[k]>G.t); }
+function addBuff(k,wellen){ (G.buffs||(G.buffs={}))[k]=Math.max(G.buffs[k]||0,G.t)+wellen*CFG.wellenAbstand; }
+const CARDS=[
+  {id:'beutel', ic:'💰', name:'Schatzbeutel', txt:()=>`+${cardCoins()} Münzen`, ok:()=>true, go:()=>{ addCoins(cardCoins()); }},
+  {id:'reparatur', ic:'🩹', name:'Burg-Reparatur', txt:()=>'Burg sofort zur Hälfte geheilt', ok:()=>G.hp<maxHp()*0.9, go:()=>{ G.hp=Math.min(maxHp(),G.hp+maxHp()*0.5); }},
+  {id:'power', ic:'💥', name:'Volle Power', txt:()=>'Alle deine Power-Leisten sofort voll', ok:()=>Object.keys(POW_NAME).some(k=>owned()[k] && !powerReady(k)), go:()=>{ const o=owned(); for(const k in POW_NAME) if(o[k]) G.pow[k]=CFG.powerZeit; }},
+  {id:'piekser', ic:'🔪', name:'Piekser-Trupp', txt:()=>'3 Piekser gratis', ok:()=>LOADOUT.includes('messer') && G.fighters.length<=11, go:()=>{ for(let k=0;k<3;k++) addFighter(); }},
+  {id:'brok', ic:'🥦', name:'Brokkoli-Training', txt:()=>'Brokkoli eine Stufe stärker – gratis', ok:()=>G.brok<BROK.length-1, go:()=>{ G.brok++; }},
+  {id:'rabatt', ic:'⭐', name:'Sonderangebot', txt:()=>'Die nächsten 2 Ausbauten halber Preis', ok:()=>true, go:()=>{ G.rabatt=2; }},
+  {id:'feuerpfeile', ic:'🏹', name:'Feuerpfeile', txt:()=>'Pfeil-Paule +50 % Schaden – 2 Wellen lang', ok:()=>G.archer>=0, go:()=>addBuff('feuerpfeile',2)},
+  {id:'heissoel', ic:'🫕', name:'Heißes Öl', txt:()=>'Brutzel-Kessel lädt doppelt so schnell – 2 Wellen', ok:()=>G.oil.lvl>=0, go:()=>addBuff('heissoel',2)},
+  {id:'steinhagel', ic:'🪨', name:'Steinhagel', txt:()=>'Schleuder-Susi lädt doppelt so schnell – 2 Wellen', ok:()=>G.kat.lvl>=0, go:()=>addBuff('steinhagel',2)},
+  {id:'funken', ic:'✨', name:'Zauber-Funken', txt:()=>'Zappelbarts Zauber springt auf 2 Monster mehr – 2 Wellen', ok:()=>G.wiz>=0, go:()=>addBuff('funken',2)},
+  {id:'schleim', ic:'🐌', name:'Klebschleim', txt:()=>'Alle Monster 25 % langsamer – 1 Welle lang', ok:()=>true, go:()=>addBuff('schleim',1)},
+  {id:'schild', ic:'🛡️', name:'Schutzschild', txt:()=>'Die Burg nimmt nur halben Schaden – 1 Welle', ok:()=>true, go:()=>addBuff('schild',1)},
+  {id:'muenzen', ic:'🪙', name:'Goldregen', txt:()=>'Monster lassen 50 % mehr Münzen fallen – 1 Welle', ok:()=>true, go:()=>addBuff('muenzen',1)},
+];
+const BUFF_IC={feuerpfeile:'🏹',heissoel:'🫕',steinhagel:'🪨',funken:'✨',schleim:'🐌',schild:'🛡️',muenzen:'🪙'};
+function cardCoins(){ return Math.round((80+45*curWave())*G.diff.muenzen); }
+function cardCheck(){
+  if(G.tut || G.over || G.cardOpen) return; const wv=curWave();
+  if(wv<=(G.cardWave||1)) return; G.cardWave=wv;
+  if(wv<3 || (wv-1)%2!==0) return;            // nach Welle 2, 4, 6, 8 und 10
+  const pool=shuffle(CARDS.filter(c=>c.ok())), pick=[];
+  for(const c of pool){ if(pick.length>=3) break; if(!pick.some(x=>x.id===c.id)) pick.push(c); }
+  if(!pick.some(c=>c.id==='beutel'||c.id==='reparatur'||c.id==='rabatt')) pick[2]=CARDS.find(c=>c.id==='beutel');   // immer eine sichere Wahl dabei
+  if(CARD_AUTO){ const c=pick[(Math.random()*pick.length)|0]; c.go(); return; }
+  G.cardOpen=true; G.cardWasPaused=G.paused; G.paused=true; $('toast').classList.add('hide');
+  const box=$('cardList'); box.innerHTML='';
+  pick.forEach((c,n)=>{ const b=document.createElement('button'); b.type='button'; b.className='gcard'; b.style.animationDelay=(n*0.12)+'s';
+    b.innerHTML=`<span class="gic">${c.ic}</span><b>${c.name}</b><small>${c.txt()}</small>`;
+    b.addEventListener('click',()=>{ if(!G.cardOpen) return; c.go(); G.cardOpen=false; $('cards').hidden=true; G.paused=G.cardWasPaused; refreshToolbar(); sfx('buy');
+      banner(c.ic+' '+c.name.toUpperCase()+'!','#9dff7a'); track('karte',{karte:c.id, welle:wv}); });
+    box.appendChild(b); });
+  $('cardTitle').textContent=`🍀 Welle ${wv-1} geschafft! Wähl eine Glückskarte:`;
+  $('cards').hidden=false; sfx('coin');
+}
+
 // ---------- Schatztruhen (von Zwischenbossen und der goldenen Horde) ----------
 const CHEST_ZEIT=5;   // Sekunden (echte Zeit), um die Truhe anzutippen
 function curWave(){ return Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1); }
@@ -1520,11 +1582,12 @@ function updateArcher(dt){
   const minD=reihen(A.reihen); const best=pickFront(minD,'pfeil');
   if(best<0){ G.archerCd=0.15; return; }
   G.archerCd=1/A.rate;
-  shoot(ATOWER.x,ATOWER.y-22,best,A.dmg);
+  const AD=A.dmg*(buff('feuerpfeile')?1.5:1);
+  shoot(ATOWER.x,ATOWER.y-22,best,AD,buff('feuerpfeile')?'#ff7a1a':undefined,buff('feuerpfeile'));
   if(A.n>1){ cand.length=0; let top=0;
     for(let i=0;i<eHi;i++){ if(!eAlive[i]||eDist[i]<minD||!targetable(i,'pfeil')) continue; const t=aimTier(i,'pfeil'); if(t>top){ top=t; cand.length=0; } if(t===top) cand.push(i); }
     cand.sort((a,b)=>eDist[b]-eDist[a]);   // weitere Pfeile auf die Vordersten derselben Gruppe – nicht irgendwo ins Feld
-    for(let k=1;k<A.n && cand.length;k++) shoot(ATOWER.x,ATOWER.y-22,cand[k%Math.min(cand.length,A.n+1)],A.dmg); }
+    for(let k=1;k<A.n && cand.length;k++) shoot(ATOWER.x,ATOWER.y-22,cand[k%Math.min(cand.length,A.n+1)],AD,buff('feuerpfeile')?'#ff7a1a':undefined,buff('feuerpfeile')); }
   sfx('twang');
 }
 function updateWizard(dt){
@@ -1535,7 +1598,7 @@ function updateWizard(dt){
   for(let i=0;i<eHi;i++){ if(!eAlive[i] || !TYPES[eType[i]].ghost || eDist[i]<minD) continue; if(eDist[i]>bd){bd=eDist[i];best=i;} }
   if(best<0) best=pickFront(minD,'zauber');
   if(best<0){ G.wizCd=0.2; return; }
-  G.wizCd=1/Z.rate; const a=shoot(WIZPOS.x,WIZPOS.y-34,best,Z.dmg,'#b06cff',false,'zauber','zauber'); a.chain=Z.chain||0; a.hit=[eUid[best]]; sfx('magic');
+  G.wizCd=1/Z.rate; const a=shoot(WIZPOS.x,WIZPOS.y-34,best,Z.dmg,'#b06cff',false,'zauber','zauber'); a.chain=(Z.chain||0)+(buff('funken')?2:0); a.hit=[eUid[best]]; sfx('magic');
 }
 function shoot(x0,y0,i,dmg,color,fire,el,src){
   const dx=eX[i]-x0, dy=eY[i]-y0, d=Math.hypot(dx,dy);
@@ -1625,7 +1688,7 @@ function autoCatapult(dt){
     for(let j=0;j<eHi;j+=st){ if(!eAlive[j]) continue; const dx=eX[j]-eX[i], dy=(eY[j]-eY[i])*1.4; if(dx*dx+dy*dy<r2) sc+=Math.min(eHp[j],K.dmg)*wmult(j,'stein'); }
     if(sc>bs){ bs=sc; best=i; } }
   if(best<0 || bs<K.dmg*1.5) return;   // lohnt sich noch nicht
-  fireCatapult(eX[best],eY[best]); G.kat.cd=K.cd;
+  fireCatapult(eX[best],eY[best]); G.kat.cd=K.cd*(buff('steinhagel')?0.5:1);
 }
 // ----- Donner-Doris blitzt von selbst dorthin, wo es am meisten bringt (Ritter, Rammbock … zählen doppelt) -----
 let gewScan=0;
@@ -1662,7 +1725,7 @@ function drawBanner(){
 }
 // ----- Brutzel-Kessel -----
 function pourOil(){
-  const O=OEL[G.oil.lvl]; G.oil.cd=O.cd;
+  const O=OEL[G.oil.lvl]; G.oil.cd=O.cd*(buff('heissoel')?0.5:1);
   liveDmgPop(GATE.x+90,GATE.y-70,'oel',OEL_BRENNZEIT+1,'#ff8a3a');
   HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.dmg,'feuer'); } HSRC=null;
   G.burnT=OEL_BRENNZEIT;
@@ -1732,9 +1795,9 @@ function update(dt){
   G.t+=dt;
   spawnDue();
   moveEnemies(dt); updateBoss(dt);
-  if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt; if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! '+(()=>{ const h=[]; if(LOADOUT.includes('oel')) h.push('Brutzel-Kessel'); if(LOADOUT.includes('messer')) h.push('Piekser'); return h.length?'Schnell: '+h.join(', ')+' oder Brokkoli ans Lagerfeuer!':'Schnell: Brokkoli ans Lagerfeuer!'; })()); } if(G.hp<=0){ G.hp=0; endGame(false); } }
+  if(G.gateDps>0 && !G.over){ G.hp-=G.gateDps*dt*(buff('schild')?0.5:1); if(!G.tips.gate){ G.tips.gate=1; toast('Monster am Tor! '+(()=>{ const h=[]; if(LOADOUT.includes('oel')) h.push('Brutzel-Kessel'); if(LOADOUT.includes('messer')) h.push('Piekser'); return h.length?'Schnell: '+h.join(', ')+' oder Brokkoli ans Lagerfeuer!':'Schnell: Brokkoli ans Lagerfeuer!'; })()); } if(G.hp<=0){ G.hp=0; endGame(false); } }
   updateFighters(dt); updateHero(dt); updateArcher(dt); updateWizard(dt); updateRobbers(dt);
-  airWarn(dt); announceCheck(dt);
+  airWarn(dt); announceCheck(dt); cardCheck();
   if(G.speed>=TURBO && G.gateDps>0 && !G.over){ G.speed=1; speedBtn(); toast('Monster am Tor! Tempo wieder normal.'); }   // Turbo nur, solange es ruhig ist
   updateProjectiles(dt); updateLava(dt); updateTimers(dt); updateBuilds(dt);
   if(G.burnT>0){ G.burnT-=dt; const O=OEL[G.oil.lvl]; HSRC='oel'; for(let i=0;i<eHi;i++){ if(!eAlive[i] || TYPES[eType[i]].fly) continue; if(eDist[i]>L-190) hurt(i,O.burn*dt,'feuer'); } HSRC=null; }
@@ -2687,7 +2750,7 @@ function tap(p){
   if(chestTap(p)) return;
   if(!G.mode && bossTap(p)) return;
   if(G.mode==='kat'||G.mode==='katPow'||G.mode==='gew'){ const n=nearestPathDist(p.x,p.y); if(n.d<modeReach()){ toast(G.mode==='gew'?'So weit hinten kann Donner-Doris nicht blitzen – nur auf dem gelben Weg.':'Zu weit! Schleuder-Susi schafft es nur bis zum gelben Weg.'); return; } }
-  if(G.mode==='kat'){ fireCatapult(p.x,p.y); G.kat.cd=KATAPULT[G.kat.lvl].cd; setMode(null); return; }
+  if(G.mode==='kat'){ fireCatapult(p.x,p.y); G.kat.cd=KATAPULT[G.kat.lvl].cd*(buff('steinhagel')?0.5:1); setMode(null); return; }
   if(G.mode==='katPow'){ G.pow.kat=0; for(let n=0;n<5;n++){ const a=Math.random()*6.283, r=(n?60+Math.random()*80:0)*SCy(p.y); fireCatapult(p.x+Math.cos(a)*r,p.y+Math.sin(a)*r*0.6,{fire:true,delay:n*0.12}); } banner('🔥 FEUERBALL-HAGEL!','#ff8a2a'); setMode(null); return; }
   if(G.mode==='gew'){ strike(p.x,p.y); G.gew.cd=GEWITTER[G.gew.lvl].cd; setMode(null); return; }
   if(G.mode==='falle'){
@@ -2793,7 +2856,7 @@ function buyItem(it){
   if(it.place){ setMode(it.id); return; }
   const B=G.builds||(G.builds={});
   if(B[it.id]){ toast(`${it.name} wird gerade gebaut – noch ${Math.ceil(B[it.id].dur-B[it.id].t)} Sekunden!`); return; }
-  G.coins-=price; sfx('buy'); if(G.rabatt && !SOFORT.has(it.id) && it.price()>price){ G.rabatt=false; toast('⭐ Halber Preis eingelöst!'); }
+  G.coins-=price; sfx('buy'); if(G.rabatt && !SOFORT.has(it.id) && it.price()>price){ G.rabatt=(typeof G.rabatt==='number'&&G.rabatt>1)?G.rabatt-1:false; toast('⭐ Halber Preis eingelöst!'+(G.rabatt?' Einmal geht noch!':'')); }
   if(SOFORT.has(it.id)){ it.buy(); refreshToolbar(); return; }
   // Bauzeit: neue Helfer 2 s, Ausbau je nach Preis 2–6 s. Bis dahin arbeitet der Helfer auf der alten Stufe weiter.
   const neu=it.lvl()==='neu', dur=neu?2:Math.min(6,Math.max(2,2+price/1000));
@@ -2833,6 +2896,7 @@ function weakLine(t){ const w=weakText(t); if(w) return 'schwach gegen '+w; retu
 let hudT=0;
 function updateHud(dt){
   hudT-=dt; if(hudT>0) return; hudT=0.2;
+  { let h=''; if(G.buffs) for(const k in G.buffs){ const left=G.buffs[k]-G.t; if(left>0) h+=`<span>${BUFF_IC[k]} ${Math.ceil(left)}s</span>`; } if(G.rabatt) h+=`<span>⭐ ½ Preis${typeof G.rabatt==='number'&&G.rabatt>1?' ×'+G.rabatt:''}</span>`; const el=$('buffs'); if(el.innerHTML!==h) el.innerHTML=h; }
   $('coins').textContent=Math.floor(G.coins);
   const mh=maxHp(); const p=Math.max(0,G.hp/mh);
   $('hpFill').style.width=(p*100)+'%'; $('hpFill').classList.toggle('low',p<0.35); $('hpTxt').textContent=Math.ceil(G.hp);
