@@ -1,0 +1,10 @@
+# Cloudflare Worker für die gemeinsame Bestenliste – wird von GitHub automatisch veröffentlicht (.github/workflows/api.yml)
+name = "micro-defense-api"
+main = "worker.js"
+compatibility_date = "2026-06-01"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "micro-defense"
+database_id = "HIER-DIE-DATENBANK-ID-EINTRAGEN"

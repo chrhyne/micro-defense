@@ -1,0 +1,32 @@
+# Veröffentlicht die Bestenlisten-Schnittstelle bei Cloudflare, sobald sich etwas im Ordner api/ ändert.
+# Einmalig nötig: Repo-Secrets CLOUDFLARE_API_TOKEN und CLOUDFLARE_ACCOUNT_ID.
+name: Bestenliste (Cloudflare) veröffentlichen
+on:
+  push:
+    branches: [main]
+    paths: ['api/**', '.github/workflows/api.yml']
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Ist alles eingerichtet?
+        run: |
+          if grep -q HIER-DIE-DATENBANK-ID wrangler.toml; then echo "::warning::Datenbank-ID fehlt noch in api/wrangler.toml – nichts veröffentlicht."; echo "SKIP=1" >> $GITHUB_ENV; fi
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then echo "::warning::Secret CLOUDFLARE_API_TOKEN fehlt – nichts veröffentlicht."; echo "SKIP=1" >> $GITHUB_ENV; fi
+      - name: Tabelle anlegen (falls noch nicht da)
+        if: env.SKIP != '1'
+        run: npx --yes wrangler@3 d1 execute micro-defense --remote --file=schema.sql
+      - name: Worker veröffentlichen
+        if: env.SKIP != '1'
+        run: npx --yes wrangler@3 deploy
