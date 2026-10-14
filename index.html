@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791977540">
+<meta name="md-build" content="1791978347">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -109,13 +109,18 @@ body.inmenu #bossBar{display:none}
   #nextList img{height:16px}
   #bossBar{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important;left:calc(50% - 75px);width:min(320px,50vw)} #bossBar .bbar{height:11px;border-width:2px}
   #tutBubble{top:calc(env(safe-area-inset-top,0px) + 40px);font-size:14px;padding:4px 10px;gap:6px;max-width:calc(100vw - 190px)} #tutBubble .tb-ic{font-size:22px}
-  #toast,#modeHint{left:calc(50% - 75px);top:calc(env(safe-area-inset-top,0px) + 40px);font-size:14px;padding:5px 10px;max-width:calc(100vw - 180px)}
+  #toast{left:calc(50% - 75px);top:calc(env(safe-area-inset-top,0px) + 40px);font-size:14px;padding:5px 10px;max-width:calc(100vw - 180px)}
+  #modeHint{left:8px;bottom:8px;font-size:13px;padding:4px 8px;max-width:42vw}
   #modeHint button{font-size:12px;padding:2px 7px}
 }
 
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 60px);transform:translateX(-50%);background:var(--parch);border:3px solid var(--ink);border-radius:16px;padding:8px 16px;font-family:var(--display);font-size:clamp(15px,2vw,20px);color:var(--ink);box-shadow:0 4px 0 var(--ink);text-align:center;max-width:min(90vw,640px);pointer-events:none;transition:opacity .3s,transform .3s;z-index:8}
 #toast.hide{opacity:0;transform:translate(-50%,-10px)}
-#modeHint{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 58px);transform:translateX(-50%);z-index:4;display:flex;gap:10px;align-items:center;background:var(--gold);border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);padding:8px 10px 8px 16px;font-family:var(--display);font-size:clamp(16px,2.2vw,22px);color:var(--ink);max-width:min(94vw,720px);animation:hint 1s ease-in-out infinite}
+#modeHint{position:fixed;left:12px;top:auto;bottom:calc(var(--tbH,100px) + 10px);transform:none;max-width:min(46vw,420px);z-index:4;display:flex;gap:10px;align-items:center;background:var(--gold);border:3px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 var(--ink);padding:8px 10px 8px 16px;font-family:var(--display);font-size:clamp(16px,2.2vw,22px);color:var(--ink);animation:hint2 1s ease-in-out infinite}
+@keyframes hint2{50%{transform:scale(1.03)}}
+#modeHint{transform-origin:left bottom;max-width:min(30vw,340px);font-size:clamp(13px,1.4vw,16px);padding:6px 8px 6px 10px;gap:6px;line-height:1.15}
+#modeHint button{font-size:13px;padding:3px 7px}
+@media (orientation:landscape) and (max-height:520px){#modeHint{max-width:34vw;font-size:11.5px;padding:4px 6px;border-width:2px}#modeHint button{font-size:11px;padding:2px 5px;border-width:2px}}
 #modeHint button{border:3px solid var(--ink);border-radius:12px;background:var(--parch);font-family:var(--display);font-size:15px;padding:4px 10px;cursor:pointer;white-space:nowrap}
 @keyframes hint{50%{transform:translateX(-50%) scale(1.04)}}
 
@@ -662,7 +667,7 @@ function genWaves(){
 // horden = Anzahl Monster, hp = Monster-Leben, tempo = Monster-Tempo, muenzen = Münzen pro Monster, start = Start-Münzen, burg = Burg-Leben
 const STUFEN = {
   leicht: {name:'🐣 Leicht', horden:0.55, hordenVon:0.75, hordenBis:0.38, verteilt:true, hp:0.85, tempo:0.85, muenzen:1.3, start:250, burg:1.6},
-  normal: {name:'⚔️ Normal', horden:0.85, hp:1.1,  tempo:1,    muenzen:1,   start:150, burg:1},
+  normal: {name:'⚔️ Normal', horden:0.95, hp:1.2,  tempo:1,    muenzen:1,   start:150, burg:1},
   schwer: {name:'🔥 Schwer', horden:1.3,  hp:1.55, tempo:1.1,  muenzen:0.9, start:120, burg:1},
 };
 let STUFE_WAHL='normal';
@@ -1265,7 +1270,7 @@ function kill(i){
   if(ty.boss){ toast('Gromp ist besiegt! 🎉'); G.shake=20; G.bossDeath={x,y,s,m:s*(1+0.3*s),flip:eFlip[i],t:0,boomed:0}; G.fw=[]; sfx('boss'); for(let k=0;k<12;k++) dropCoin(x+(Math.random()-.5)*80*s,y+(Math.random()-.5)*40*s,15,s); }
 }
 // ---------- Schatztruhen (von Zwischenbossen und der goldenen Horde) ----------
-const CHEST_ZEIT=3;   // Sekunden (echte Zeit), um die Truhe anzutippen
+const CHEST_ZEIT=5;   // Sekunden (echte Zeit), um die Truhe anzutippen
 function curWave(){ return Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1); }
 function dropChest(x,y,kind){ (G.chests||(G.chests=[])).push({x,y:Math.min(y,PY[L]+40),t:0,life:G.tut?8:CHEST_ZEIT,gold:kind===2}); sfx('coin'); }
 function updateChests(dt){
@@ -1933,6 +1938,7 @@ function resize(){
   const tb=document.getElementById('toolbar');
   const side=matchMedia('(orientation:landscape) and (max-height:520px)').matches;
   const barH=side?0:(tb.offsetHeight||100), barW=side?(tb.offsetWidth||0):0;
+  document.documentElement.style.setProperty('--tbH',barH+'px');
   dpr=Math.min(devicePixelRatio||1, 1.5, Math.sqrt(2200000/Math.max(1,w*h)));
   cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
   const crop=side?70:0;              // auf kleinen Handys etwas leeren Himmel abschneiden
@@ -2817,7 +2823,7 @@ function drawBuilds(T){
 /* ============================ HUD ============================ */
 const $=id=>document.getElementById(id);
 let toastTimer=0;
-function toast(msg){ if(G&&G.tut&&!G.tutToast) return; const t=$('toast'); t.textContent=msg; t.classList.remove('hide'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hide'),3400); }
+function toast(msg){ if(G&&G.tut&&!G.tutToast) return; if(G&&G.mode&&G.mode!=='falle') return; /* beim Zielen nichts über die Karte legen */ const t=$('toast'); t.textContent=msg; t.classList.remove('hide'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.add('hide'),3400); }
 const ICONS={}; for(const t of TYPES) ICONS[t.id]=spriteURL(t.id);
 function weakText(t){ const s=[]; for(const [k,v] of Object.entries(t.weak)) if(v>=2) s.push(EL_ICON[k]); return s.join(''); }
 function weakLine(t){ const w=weakText(t); if(w) return 'schwach gegen '+w; return t.boss?'keine Schwäche!':'nichts Besonderes'; }
@@ -2942,9 +2948,12 @@ function endGame(won){
     const pts=Math.round((G.kills*10 + wv*300 + (won ? 5000+5000*Math.max(0,G.hp/maxHp()) : 0)) * SCORE_MULT[STUFE_WAHL]);
     HS_PENDING={pts, won, wave:wv, waves:WAVES.length, stufe:STUFE_WAHL, map:MAP_ID, d:Date.now()};
     $('endScore').textContent=`⭐ ${pts.toLocaleString('de-DE')} Punkte`;
-    $('endEntry').hidden=false; $('hsSave').disabled=false;
-    $('hsName').value=(()=>{ try{ return localStorage.getItem('md_name')||''; }catch(e){ return ''; } })();
-    renderScores($('endList'), null, 5);
+    // Eintrag sofort speichern (mit dem zuletzt benutzten Namen) – den Namen kann man danach noch ändern
+    const altName=(()=>{ try{ return localStorage.getItem('md_name')||''; }catch(e){ return ''; } })();
+    HS_LAST=saveScore(altName||'Spieler');
+    $('endEntry').hidden=false; $('hsSave').disabled=false; $('hsSave').textContent='✏️ Name ändern';
+    $('hsName').value=altName; $('hsName').placeholder='Dein Name';
+    renderScores($('endList'), HS_LAST, 5);
     if(won){ const neu=STERN_WERT[STUFE_WAHL]||0, st=loadStars(), alt=st[MAP_ID]||0;
       if(neu>alt){ st[MAP_ID]=neu; try{ localStorage.setItem('md_stars',JSON.stringify(st)); }catch(e){}
         $('endText').textContent+=` Neu: ${sternText(neu)} für ${MAPS[MAP_ID].name}!`; } }
@@ -3060,9 +3069,12 @@ function renderScores(el, me, limit){
   });
   el.appendChild(t);
 }
+let HS_LAST=null;
 function hsSubmit(){
-  const e=saveScore($('hsName').value); if(!e) return;
-  $('endEntry').hidden=true; renderScores($('endList'), e, 5); sfx('buy');
+  const e=HS_LAST; if(!e) return; const name=$('hsName').value.trim().slice(0,14)||'Spieler';
+  const a=loadScores(), x=a.find(q=>q.d===e.d && q.pts===e.pts); if(x) x.name=name; e.name=name;
+  try{ localStorage.setItem('md_scores',JSON.stringify(a)); localStorage.setItem('md_name',name); }catch(err){}
+  renderScores($('endList'), e, 5); sfx('buy'); $('hsSave').textContent='✓ Gespeichert'; setTimeout(()=>{ $('hsSave').textContent='✏️ Name ändern'; },1500);
 }
 $('hsSave').addEventListener('click',hsSubmit);
 $('hsName').addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); hsSubmit(); $('hsName').blur(); } });
