@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1791979105">
+<meta name="md-build" content="1791979238">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -3064,7 +3064,7 @@ if(DEV) $('devGear').hidden=false; devLook();
       const r=await fetch(location.pathname+'?check='+Date.now(),{cache:'no-store'}); const txt=await r.text();
       const m=txt.match(/name="md-build" content="(\d+)"/);
       if(m && m[1]!==mine){
-        const reload=()=>location.replace(location.pathname+'?v='+m[1]);
+        const reload=()=>{ const d=document.createElement('div'); d.className='overlay'; d.style.cssText='z-index:20;background:#4f3216;color:#fff4d6;font:400 26px var(--display);flex-direction:column;gap:10px'; d.innerHTML='<div style="font-size:54px">🥦</div>Neue Version wird geladen …'; document.body.appendChild(d); location.replace(location.pathname+'?v='+m[1]); };   // sichtbar, damit niemand dazwischen tippt
         const busy=()=>(G && G.running) || !$('end').hidden;   // nie mitten im Spiel oder beim Bestenlisten-Eintrag
         if(!busy()) reload(); else { const iv=setInterval(()=>{ if(!busy()){ clearInterval(iv); reload(); } },2000); }
       }
