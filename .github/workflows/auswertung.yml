@@ -1,0 +1,22 @@
+# Wertet die Familien-Bestenliste aus (nur von Hand gestartet). Ergebnisse stehen als Hinweise im Lauf.
+name: Bestenliste auswerten
+on: workflow_dispatch
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Abfrage
+        run: |
+          q() { npx --yes wrangler@3 d1 execute micro-defense --remote --json --command "$1" > out.json; node -e 'const j=require("./out.json"); const r=(j[0]&&j[0].results)||[]; const lines=r.map(x=>JSON.stringify(x)); for(let i=0;i<lines.length;i+=8) console.log("::notice title='"$2"' "+i+"::"+lines.slice(i,i+8).join(" | "));'; }
+          q "SELECT stufe, map, COUNT(*) n, SUM(won) siege, ROUND(AVG(wave),1) welle, MAX(pts) best FROM scores GROUP BY stufe, map ORDER BY stufe, map" "Uebersicht"
+          q "SELECT name, stufe, map, won, wave, pts, ver, datetime(created/1000,'unixepoch','+2 hours') t, substr(details,1,600) x FROM scores ORDER BY created DESC LIMIT 40" "Letzte"
