@@ -7,4 +7,4 @@ workers_dev = true
 [[d1_databases]]
 binding = "DB"
 database_name = "micro-defense"
-database_id = "HIER-DIE-DATENBANK-ID-EINTRAGEN"
+database_id = "46ba385b-077d-4376-8add-18d80855aee4"
