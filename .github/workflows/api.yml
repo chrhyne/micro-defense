@@ -27,6 +27,9 @@ jobs:
       - name: Tabelle anlegen (falls noch nicht da)
         if: env.SKIP != '1'
         run: npx --yes wrangler@3 d1 execute micro-defense --remote --file=schema.sql
+      - name: Neue Spalten ergänzen (Fehler = gibt's schon)
+        if: env.SKIP != '1'
+        run: npx --yes wrangler@3 d1 execute micro-defense --remote --command "ALTER TABLE scores ADD COLUMN details TEXT" || true
       - name: Worker veröffentlichen
         if: env.SKIP != '1'
         run: npx --yes wrangler@3 deploy

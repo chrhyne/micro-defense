@@ -12,7 +12,8 @@ CREATE TABLE IF NOT EXISTS scores (
   recv    INTEGER NOT NULL DEFAULT 0,   -- wann beim Server angekommen
   ver     TEXT,                         -- Spiel-Version (Build-Nummer), mit der gespielt wurde
   regel   INTEGER NOT NULL DEFAULT 1,   -- Version der Punkte-Zählung; ändert sie sich, zeigt die Liste nur noch neue Einträge
-  ip      TEXT
+  ip      TEXT,
+  details TEXT                          -- Spielverlauf als JSON (Helfer, Schaden, Taler, Karten …)
 );
 CREATE INDEX IF NOT EXISTS scores_pts ON scores (pts DESC);
 CREATE INDEX IF NOT EXISTS scores_ip_recv ON scores (ip, recv);

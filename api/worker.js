@@ -21,7 +21,7 @@ const json = (data, req, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ...cors(req) } });
 
 async function top(env, map, stufe, regel, limit = 20) {
-  let sql = 'SELECT name, pts, map, stufe, won, wave, waves, created, ver, regel FROM scores';
+  let sql = 'SELECT name, pts, map, stufe, won, wave, waves, created, ver, regel, details FROM scores';
   const w = [], args = [];
   if (Number.isInteger(regel)) { w.push('regel = ?'); args.push(regel); }
   if (MAPS.includes(map)) { w.push('map = ?'); args.push(map); }
@@ -29,7 +29,7 @@ async function top(env, map, stufe, regel, limit = 20) {
   if (w.length) sql += ' WHERE ' + w.join(' AND ');
   sql += ' ORDER BY pts DESC, created ASC LIMIT ?'; args.push(limit);
   const r = await env.DB.prepare(sql).bind(...args).all();
-  return r.results || [];
+  return (r.results || []).map(e => { let x = null; try { x = e.details ? JSON.parse(e.details) : null; } catch {} const { details, ...rest } = e; return { ...rest, d: e.created, x }; });
 }
 
 async function ipHash(req) {
@@ -77,8 +77,9 @@ export default {
         const wave = Math.max(0, Math.min(99, e.wave | 0)), waves = Math.max(0, Math.min(99, e.waves | 0));
         let created = Math.round(Number(e.d)); if (!(created > 1.7e12 && created <= now + 60000)) created = now;
         const ver = String(e.ver || 'unbekannt').slice(0, 20), regel = Math.max(1, Math.min(999, e.regel | 0 || 1));
-        stmts.push(env.DB.prepare('INSERT OR IGNORE INTO scores (name, pts, map, stufe, won, wave, waves, created, recv, ip, ver, regel) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)')
-          .bind(name, pts, e.map, e.stufe, e.won ? 1 : 0, wave, waves, created, now, ip, ver, regel));
+        let details = null; try { if (e.x && typeof e.x === 'object') { details = JSON.stringify(e.x); if (details.length > 3000) details = null; } } catch { details = null; }
+        stmts.push(env.DB.prepare('INSERT OR IGNORE INTO scores (name, pts, map, stufe, won, wave, waves, created, recv, ip, ver, regel, details) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
+          .bind(name, pts, e.map, e.stufe, e.won ? 1 : 0, wave, waves, created, now, ip, ver, regel, details));
         ok.push({ d: e.d, pts, regel });
       }
       if (stmts.length) await env.DB.batch(stmts);

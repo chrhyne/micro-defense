@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792004467">
+<meta name="md-build" content="1792005351">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -215,6 +215,15 @@ body.inmenu #bossBar{display:none}
 .hs tr.me{background:var(--gold)}
 .hstabs{margin:0 auto 8px;width:max-content;max-width:100%}
 .hstabs button{font-size:14px;padding:5px 9px}
+.hsdet{max-height:92vh;overflow:auto;width:min(560px,100%)}
+.hsdet h2{margin:0 0 4px}
+.hdmeta{text-align:center;font-weight:800;color:var(--ink-soft);font-size:14px;margin-bottom:6px}
+.hdstats{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:8px}
+.hdstats .plate{font-size:14px;padding:3px 9px}
+.hdcards{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:6px}
+.hdcards span{background:var(--parch-hi);border:2px solid var(--parch-edge);border-radius:10px;padding:2px 7px;font-weight:800;font-size:13px}
+#hsDetail .brow{grid-template-columns:minmax(0,240px) 1fr 70px}
+#scoreList .hs tr.click{cursor:pointer}
 .hsnote{text-align:center;font-weight:800;font-size:13px;color:var(--ink-soft);margin:4px 0}
 .hswrap{max-height:42vh;overflow:auto;width:100%}
 .privacy{font-size:12px;font-weight:700;color:var(--ink-soft);line-height:1.35;margin:4px 0 10px;text-align:left}
@@ -561,6 +570,15 @@ body.inmenu #buffs{display:none}
   </div>
 </div>
 
+<div class="overlay" id="hsDetail" hidden style="z-index:6">
+  <div class="sheet hsdet">
+    <h2 id="hdTitle"></h2>
+    <div class="hdmeta" id="hdMeta"></div>
+    <div class="hdstats" id="hdStats"></div>
+    <div id="hdBody"></div>
+    <div class="row"><button class="big" id="hdClose">Zurück</button></div>
+  </div>
+</div>
 <div class="overlay" id="scores" hidden>
   <div class="sheet">
     <h1 class="title">🏆 Bestenliste</h1>
@@ -1327,12 +1345,12 @@ function cardCheck(){
   const pool=shuffle(CARDS.filter(c=>c.ok())), pick=[];
   for(const c of pool){ if(pick.length>=3) break; if(!pick.some(x=>x.id===c.id)) pick.push(c); }
   if(!pick.some(c=>c.id==='beutel'||c.id==='reparatur'||c.id==='rabatt')) pick[2]=CARDS.find(c=>c.id==='beutel');   // immer eine sichere Wahl dabei
-  if(CARD_AUTO){ const c=pick[(Math.random()*pick.length)|0]; c.go(); return; }
+  if(CARD_AUTO){ const c=pick[(Math.random()*pick.length)|0]; c.go(); (G.cardLog||(G.cardLog=[])).push(c.id); return; }
   G.cardOpen=true; G.cardWasPaused=G.paused; G.paused=true; $('toast').classList.add('hide');
   const box=$('cardList'); box.innerHTML='';
   pick.forEach((c,n)=>{ const b=document.createElement('button'); b.type='button'; b.className='gcard'; b.style.animationDelay=(n*0.12)+'s';
     b.innerHTML=`<span class="gic">${c.ic}</span><b>${c.name}</b><small>${c.txt()}</small>`;
-    b.addEventListener('click',()=>{ if(!G.cardOpen) return; c.go(); G.cardOpen=false; $('cards').hidden=true; G.paused=G.cardWasPaused; refreshToolbar(); sfx('buy');
+    b.addEventListener('click',()=>{ if(!G.cardOpen) return; c.go(); (G.cardLog||(G.cardLog=[])).push(c.id); G.cardOpen=false; $('cards').hidden=true; G.paused=G.cardWasPaused; refreshToolbar(); sfx('buy');
       banner(c.ic+' '+c.name.toUpperCase()+'!','#9dff7a'); track('karte',{karte:c.id, welle:wv}); });
     box.appendChild(b); });
   $('cardTitle').textContent=`🍀 Welle ${wv-1} geschafft! Wähl eine Glückskarte:`;
@@ -3033,7 +3051,7 @@ function endGame(won){
     renderBilanz();
     const wv=Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1);
     const pts=Math.round((G.kills*10 + wv*300 + (won ? 5000+5000*Math.max(0,G.hp/maxHp()) : 0)) * SCORE_MULT[STUFE_WAHL]);
-    HS_PENDING={pts, won, wave:wv, waves:WAVES.length, stufe:STUFE_WAHL, map:MAP_ID, d:Date.now(), ver:HS_VER, regel:HS_REGEL};
+    HS_PENDING={pts, won, wave:wv, waves:WAVES.length, stufe:STUFE_WAHL, map:MAP_ID, d:Date.now(), ver:HS_VER, regel:HS_REGEL, x:hsDetails()};
     $('endScore').textContent=`⭐ ${pts.toLocaleString('de-DE')} Punkte`;
     // Eintrag sofort speichern (mit dem zuletzt benutzten Namen) – den Namen kann man danach noch ändern
     const altName=(()=>{ try{ return localStorage.getItem('md_name')||''; }catch(e){ return ''; } })();
@@ -3176,12 +3194,52 @@ async function showScoreTab(tab){
     if(!j){ el.innerHTML='<div class="hsempty">📴 Keine Verbindung zur Familien-Bestenliste.</div>'; return; }
     renderScores(el,null,20,j.gesamt.map(g=>({name:g.name,pts:g.total,info:`${g.n} ${g.n===1?'Partie':'Partien'} · ${g.siege||0} 🏰 · beste ${Number(g.best).toLocaleString('de-DE')}`}))); }
 }
+function hsDetails(){   /* was am Spielende zur Partie gespeichert wird */
+  const h=[];
+  for(const it of ITEMS){ if(it.id!=='brok' && !LOADOUT.includes(it.id)) continue; const dm=Math.round((G.dmgBy&&G.dmgBy[it.id])||0);
+    let lvTxt=''; try{ lvTxt=it.id==='messer'?`${G.fighters.length} Stück`:String(it.lvl()); }catch(e){}
+    if(lvTxt==='neu' || lvTxt==='braucht Susi'){ if(!dm) continue; lvTxt=''; }
+    h.push([it.id,lvTxt.replace(/\/\d+$/,''),dm]); }
+  if(G.dmgBy&&G.dmgBy.kitzeln>=1) h.push(['kitzeln','',Math.round(G.dmgBy.kitzeln)]);
+  h.sort((a,b)=>b[2]-a[2]);
+  return {s:Math.round(Math.max(0,G.t-G.t0)), k:G.kills, c:Math.floor(G.earned), hp:Math.max(0,Math.round(100*G.hp/maxHp())), b:G.burgLvl+1, h, g:(G.cardLog||[]).slice(0,12)};
+}
+function showHsDetail(e,rank){
+  const x=e.x||null, medal=['🥇','🥈','🥉'][rank]||(rank+1)+'.';
+  $('hdTitle').textContent=`${medal} ${e.name} · ${Number(e.pts).toLocaleString('de-DE')}`;
+  const dt=e.d?new Date(e.d).toLocaleString('de-DE',{weekday:'short',day:'numeric',month:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+  $('hdMeta').textContent=[dt?'📅 '+dt+' Uhr':'',MAPS[e.map]?MAPS[e.map].name:'',STUFEN[e.stufe]?STUFEN[e.stufe].name:''].filter(Boolean).join(' · ');
+  const st=[e.won?'🏰 <b>Gewonnen!</b>':`💥 Welle <b>${e.wave}/${e.waves}</b>`];
+  if(x){ st.push(`⏱ <b>${Math.floor(x.s/60)}:${String(x.s%60).padStart(2,'0')}</b>`, `👼 <b>${Number(x.k).toLocaleString('de-DE')}</b> Monster`, `🪙 <b>${Number(x.c).toLocaleString('de-DE')}</b> Taler`);
+    if(e.won) st.push(`❤️ Burg <b>${x.hp}%</b>`); if(x.b>1) st.push(`🏰 Burg Stufe <b>${x.b}</b>`); }
+  $('hdStats').innerHTML=st.map(t=>`<div class="plate">${t}</div>`).join('');
+  const body=$('hdBody'); body.innerHTML='';
+  if(!x){ body.innerHTML='<div class="hsempty">Für diese Partie gibt es noch keine Details – die werden erst seit diesem Update gespeichert.</div>'; }
+  else{
+    if(x.h&&x.h.length){ const h3=document.createElement('h3'); h3.textContent='Helfer & Schaden'; body.appendChild(h3);
+      const max=Math.max(1,...x.h.map(r=>r[2]));
+      x.h.forEach(([id,lvTxt,dm],n)=>{ const it=ITEMS.find(q=>q.id===id)||{ic:'👆',name:id==='kitzeln'?'Gromp gekitzelt':id};
+        const r=document.createElement('div'); r.className='brow';
+        const nm=document.createElement('span'); nm.className='bn'; nm.textContent=(n===0&&dm>0?'👑 ':'')+it.ic+' '+it.name;
+        if(lvTxt){ const sm=document.createElement('small'); sm.textContent=' · '+lvTxt; nm.appendChild(sm); }
+        const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(dm?2:0,100*dm/max)+'%'; bb.appendChild(bi);
+        const val=document.createElement('span'); val.className='bv'; val.textContent=dm.toLocaleString('de-DE');
+        r.append(nm,bb,val); body.appendChild(r); }); }
+    if(x.g&&x.g.length){ const h3=document.createElement('h3'); h3.textContent='🍀 Glückskarten'; body.appendChild(h3);
+      const box=document.createElement('div'); box.className='hdcards';
+      x.g.forEach(id=>{ const c=CARDS.find(q=>q.id===id); const sp=document.createElement('span'); sp.textContent=c?c.ic+' '+c.name:id; box.appendChild(sp); }); body.appendChild(box); }
+  }
+  if(e.ver){ const v=document.createElement('div'); v.className='hsnote'; v.textContent='Spielversion '+e.ver; body.appendChild(v); }
+  $('hsDetail').hidden=false;
+}
+$('hdClose').addEventListener('click',()=>{ $('hsDetail').hidden=true; });
 function renderScores(el, me, limit, list){
   const a=(list||loadScores()).slice(0,limit||20); el.innerHTML='';
   if(!a.length){ const d=document.createElement('div'); d.className='hsempty'; d.textContent='Noch keine Einträge – sei der Erste!'; el.appendChild(d); return; }
   const t=document.createElement('table'); t.className='hs'+(a.length<=5?' one':''); t.style.setProperty('--rows',a.length<=5?a.length:Math.ceil(Math.min(a.length,10)/2));
   a.forEach((e,i)=>{
     const tr=document.createElement('tr'); if(me && e.d===me.d && e.name===me.name) tr.className='me';
+    if(!e.info && el.id==='scoreList'){ tr.classList.add('click'); tr.title='Details ansehen'; tr.addEventListener('click',()=>showHsDetail(e,i)); }
     const medal=['🥇','🥈','🥉'][i]||(i+1)+'.';
     const cells=[[medal,''],[e.name,'n'],[e.info||(e.won?'🏰 ':'')+(STUFEN[e.stufe]?STUFEN[e.stufe].name:'')+' · '+(MAPS[e.map]?MAPS[e.map].name:'')+' · Welle '+e.wave+'/'+e.waves,'i'],[e.pts.toLocaleString('de-DE'),'r']];
     cells.forEach(([txt,c])=>{ const td=document.createElement('td'); td.textContent=txt; if(c) td.className=c; tr.appendChild(td); });
