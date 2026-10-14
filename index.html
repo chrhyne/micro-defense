@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792005351">
+<meta name="md-build" content="1792018281">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -712,7 +712,7 @@ function genWaves(){
 const STUFEN = {
   leicht: {name:'🐣 Leicht', horden:0.55, hordenVon:0.75, hordenBis:0.38, verteilt:true, hp:0.85, tempo:0.85, muenzen:1.3, start:250, burg:1.6},
   normal: {name:'⚔️ Normal', horden:1, hp:1.25,  tempo:1,    muenzen:1,   start:150, burg:1},
-  schwer: {name:'🔥 Schwer', horden:1.3,  hp:1.55, tempo:1.1,  muenzen:0.9, start:120, burg:1},
+  schwer: {name:'🔥 Schwer', horden:1.5,  hp:1.8,  tempo:1.1,  muenzen:0.9, start:120, burg:1},
 };
 let STUFE_WAHL='normal';
 try{ const v=localStorage.getItem('md_stufe'); if(STUFEN[v]) STUFE_WAHL=v; }catch(e){}
@@ -781,7 +781,7 @@ const OEL_BRENNZEIT = 4;
 const OEL_PREIS = [80, 250, 900, 1650, 3000];
 const KATAPULT = [ {cd:16,r:80,dmg:11,reihen:2.5}, {cd:11,r:105,dmg:18,reihen:2.8}, {cd:7,r:135,dmg:29,reihen:3.0}, {cd:6,r:150,dmg:40,reihen:3.2}, {cd:5,r:165,dmg:56,reihen:3.4}, {cd:4,r:180,dmg:76,reihen:3.5} ];
 const KATAPULT_PREIS = [180, 380, 1400, 2600, 4600, 7000];
-const GEWITTER = [ {cd:22,bolts:6,dmg:12,reihen:6}, {cd:15,bolts:10,dmg:20,reihen:6} , {cd:12,bolts:14,dmg:27,reihen:6}, {cd:10,bolts:18,dmg:38,reihen:6}, {cd:8,bolts:24,dmg:52,reihen:6}];
+const GEWITTER = [ {cd:22,bolts:6,dmg:7,reihen:6}, {cd:15,bolts:10,dmg:11,reihen:6} , {cd:12,bolts:14,dmg:15,reihen:6}, {cd:10,bolts:18,dmg:21,reihen:6}, {cd:8,bolts:24,dmg:29,reihen:6}];   /* halbiert: war viel stärker als alle anderen */
 const GEWITTER_PREIS = [450, 1000, 2700, 4500, 6750];
 const VULKAN = [ {cd:45,dur:9,dps:18,extra:0}, {cd:32,dur:13,dps:28,extra:200} , {cd:26,dur:15,dps:40,extra:300}, {cd:22,dur:17,dps:56,extra:400}];
 const VULKAN_PREIS = [900, 1600, 3900, 6000];
