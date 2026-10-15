@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792065138">
+<meta name="md-build" content="1792065226">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -2986,7 +2986,7 @@ function updateHud(dt){
     const secs=Math.ceil(started*CFG.wellenAbstand-G.t);
     $('waveTxt').textContent=`Welle ${started}/${WAVES.length} · nächste in ${secs}s:`;
     if(G.lastWaveShown!==started){ G.lastWaveShown=started;
-      $('nextList').innerHTML=WAVES[started].map(([id,n])=>{ const ty=TYPES[T_[id]]; return `<span title="${ty.name}"><img src="${ICONS[ty.id]}" alt="${ty.name}">×${n}<small>${weakText(ty)}</small></span>`; }).join('')+rankPreview(started); }
+      $('nextList').innerHTML=WAVES[started].map(([id,n])=>{ const ty=TYPES[T_[id]]; return `<span title="${ty.name}"><img src="${ICONS[ty.id]}" alt="${ty.name}">×${n}<small>${weakText(ty)}</small></span>`; }).join(''); }
   } else { $('waveTxt').textContent='Alle Wellen sind unterwegs!'; $('nextList').textContent=`Noch ${G.alive} Monster`; G.lastWaveShown=-1; }
   const ba=G.boss && bossAlive() && G.boss.seen; $('bossBar').hidden=!ba; if(ba){ $('bossBar').style.bottom=(($('toolbar').offsetWidth<innerWidth*0.5)?8:$('toolbar').offsetHeight+10)+'px'; } if(ba) $('bossFill').style.width=(100*Math.max(0,eHp[G.boss.i]/eMax[G.boss.i]))+'%';
   refreshToolbar();
