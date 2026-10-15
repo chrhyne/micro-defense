@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792057712">
+<meta name="md-build" content="1792059304">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -583,7 +583,7 @@ body.inmenu #buffs{display:none}
 <div class="overlay" id="scores" hidden>
   <div class="sheet">
     <h1 class="title">🏆 Bestenliste</h1>
-    <div class="seg hstabs" id="hsTabs"><button data-v="familie">👨‍👩‍👧 Familie</button><button data-v="gesamt">👑 Insgesamt</button><button data-v="geraet">📱 Dieses Gerät</button></div>
+    <div class="seg hstabs" id="hsTabs"><button data-v="familie">👨‍👩‍👧 Familie</button><button data-v="gesamt">👑 Insgesamt</button></div>
     <div class="hswrap" id="scoreList"></div>
     <div class="row"><button class="big" id="scoresClose">Zurück</button></div>
   </div>
@@ -3210,7 +3210,6 @@ let HS_TAB='familie';
 async function showScoreTab(tab){
   HS_TAB=tab; for(const b of $('hsTabs').querySelectorAll('button')){ b.classList.toggle('on',b.dataset.v===tab); b.onclick=()=>showScoreTab(b.dataset.v); }
   const el=$('scoreList');
-  if(tab==='geraet') return renderScores(el,null,20);
   el.innerHTML='<div class="hsempty">⏳ Lade Bestenliste …</div>';
   await hsSync();
   if(tab==='familie'){ const j=await hsGet('/scores?regel='+HS_REGEL); if(HS_TAB!==tab) return;
