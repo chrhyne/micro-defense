@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792062447">
+<meta name="md-build" content="1792065138">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -640,7 +640,7 @@ const CFG = {
   horden: 1.6,          // so viel mal mehr Monster als in der Wellen-Liste
   muenzenAutoFlug: 0.45, // Münzen fliegen fast sofort von selbst in den Briefkasten (kein Wischen nötig)
   wischBonus: 1,        // Wischen bringt keinen Bonus mehr – dafür gibt es Schatztruhen
-  hpProWelle: 0.09,     // jede Welle sind Monster 9 % stärker
+  hpProWelle: 0.06,     // jede Welle sind Monster 6 % stärker – den Rest machen die Monster-Stufen (Krieger, Champion)
   tiefenTempo: 0.7,     // wie stark die Monster in der Ferne langsamer sind (0 = gar nicht)
 };
 
@@ -1118,6 +1118,16 @@ for(const id in BOX){ const b=BOX[id];
   SPR[id]=[]; for(let f=0;f<NF;f++) SPR[id].push(makeSprite(b[0],b[1],b[2],b[3],g=>DRAW[id](g,f/NF,false)));
   if(id!=='hill') SPR_DEAD[id]=makeSprite(b[0],b[1],b[2],b[3],g=>DRAW[id](g,0,true));
 }
+/* Monster-Stufen: gleiche Figur mit Helm bzw. Krone und etwas Farbe – einmal vorgezeichnet */
+const SPR_RANK=[null,{},{}];
+for(const id in BOX){ if(id==='gromp'||id==='hill'||id==='troll'||id==='goldtroll'||id==='rabe') continue; const b=BOX[id];
+  for(const rk of [1,2]){ SPR_RANK[rk][id]=[]; for(let f=0;f<NF;f++) SPR_RANK[rk][id].push(makeSprite(b[0]+4,b[1]+9,b[2]+2,b[3]+9,g=>{
+    DRAW[id](g,f/NF,false);
+    g.save(); g.globalCompositeOperation='source-atop'; g.fillStyle=rk===1?'rgba(90,50,10,0.16)':'rgba(150,0,60,0.18)'; g.fillRect(-b[2]-2,-b[3]-9,b[0]+4,b[1]+9); g.restore();
+    const hy=-b[3]+3;   /* oberer Rand der Figur */
+    if(rk===1){ g.beginPath(); g.arc(0,hy+3,6,Math.PI,0); g.closePath(); g.fillStyle='#c98a3a'; g.fill(); g.strokeStyle=INK; g.lineWidth=1.2; g.stroke(); g.fillStyle='#e8b060'; g.fillRect(-6.5,hy+2,13,2.2); g.strokeRect(-6.5,hy+2,13,2.2); circ(g,0,hy-3.2,1.3,'#e8b060',INK,0.8); }
+    else { poly(g,[-7,hy+3,-7,hy-3,-3.5,hy,0,hy-6,3.5,hy,7,hy-3,7,hy+3],'#ffd23f',INK,1.2); circ(g,0,hy,1.2,'#e0453f'); circ(g,-4.5,hy+1,0.9,'#3f9bff'); circ(g,4.5,hy+1,0.9,'#3f9bff'); }
+  })); } }
 const ANGEL = makeSprite(22,26,11,14,g=>{
   g.strokeStyle='#ffc93c'; g.lineWidth=1.7; g.beginPath(); g.ellipse(0,-11,4.2,1.4,0,0,Math.PI*2); g.stroke();
   g.save(); g.rotate(-0.4); ell(g,-5,-1,4.5,2.6,'#ffffff','#9fb3c8',0.7); g.restore();
@@ -1134,7 +1144,7 @@ const CAP = 14000;
 const eDist=new Float32Array(CAP), eLat=new Float32Array(CAP), eHp=new Float32Array(CAP), eMax=new Float32Array(CAP),
       eX=new Float32Array(CAP), eY=new Float32Array(CAP), eS=new Float32Array(CAP), ePh=new Float32Array(CAP), eJit=new Float32Array(CAP), eT=new Float32Array(CAP),
       eType=new Uint8Array(CAP), eAlive=new Uint8Array(CAP), eUid=new Uint32Array(CAP), eFlip=new Uint8Array(CAP), eGate=new Uint8Array(CAP),
-      eUnder=new Uint8Array(CAP), eShield=new Uint8Array(CAP), eRobbed=new Uint8Array(CAP), eGust=new Float32Array(CAP), eGold=new Uint8Array(CAP), eAnn=new Uint8Array(CAP), eHex=new Float32Array(CAP);
+      eUnder=new Uint8Array(CAP), eShield=new Uint8Array(CAP), eRobbed=new Uint8Array(CAP), eGust=new Float32Array(CAP), eGold=new Uint8Array(CAP), eAnn=new Uint8Array(CAP), eHex=new Float32Array(CAP), eRank=new Uint8Array(CAP);
 const freeList=new Int32Array(CAP);
 let eHi=0, freeTop=0, uidCounter=1;
 const KCAP=3500;
@@ -1193,7 +1203,7 @@ function buildQueue(){
         let t;
         if(TYPES[type].boss) t=start+dur*0.35;
         else { const k=Math.floor(Math.random()*clumps); t=start+(k+Math.random()*0.45)/clumps*dur; }
-        q.push({t,type,w});
+        const ty0=TYPES[type]; q.push({t,type,w,rk:(ty0.boss||ty0.mid)?0:rollRank(w)});
       }
     }
     // Besondere Momente mit Schatztruhe: Welle 2 goldene Horde, 4 Truhen-Troll, 6 Schatz-Rabe, 9 Goldener Troll (mit Leibwache) – deutlich vor Gromp
@@ -1206,11 +1216,11 @@ function buildQueue(){
   q.sort((a,b)=>a.t-b.t);
   G.queue=q; G.qi=0;
 }
-function spawnDue(){ const q=G.queue; while(G.qi<q.length && q[G.qi].t<=G.t){ const s=q[G.qi++]; const i=spawn(s.type,s.w); if(s.gold && i>=0){ eGold[i]=1; G.goldLeft=(G.goldLeft||0)+1; } } }
+function spawnDue(){ const q=G.queue; while(G.qi<q.length && q[G.qi].t<=G.t){ const s=q[G.qi++]; const i=spawn(s.type,s.w); if(i>=0 && s.rk){ eRank[i]=s.rk; eHp[i]*=RANK_HP[s.rk]; eMax[i]=eHp[i]; } if(s.gold && i>=0){ eGold[i]=1; G.goldLeft=(G.goldLeft||0)+1; } } }
 function spawn(type,w,dist,lat){
   let i; if(freeTop>0) i=freeList[--freeTop]; else if(eHi<CAP) i=eHi++; else return -1;
   const ty=TYPES[type];
-  eType[i]=type; eAlive[i]=1; eUid[i]=uidCounter++; eGate[i]=0; eUnder[i]=0; eShield[i]=0; eT[i]=0; eRobbed[i]=0; eGust[i]=0; eGold[i]=0; eAnn[i]=0; eHex[i]=0;
+  eType[i]=type; eAlive[i]=1; eUid[i]=uidCounter++; eGate[i]=0; eUnder[i]=0; eShield[i]=0; eT[i]=0; eRobbed[i]=0; eGust[i]=0; eGold[i]=0; eAnn[i]=0; eHex[i]=0; eRank[i]=0;
   eDist[i]=dist!==undefined?dist:-Math.random()*10; eLat[i]=lat!==undefined?lat:(ty.boss?0:(Math.random()*2-1));
   const D=G.diff||{}, sp=Math.max(0,w-6);   /* Schwer/Profi: ab Welle 8 werden die Monster immer zäher, damit es hinten raus spannend bleibt */
   const hp=ty.hp*(1+w*CFG.hpProWelle+(D.spaet||0)*sp*sp)*(D.hp||1)*(ty.boss?(D.bossHp||1):1); eHp[i]=hp; eMax[i]=hp;
@@ -1292,6 +1302,9 @@ function dmgPop(x,y,v,col){ if(v<1) return; G.pops.push({x,y,t:0,life:1.2,coin:t
 function liveDmgPop(x,y,src,life,col,sc){ G.pops.push({x,y,t:0,life,coin:true,live:{src,s0:dmgSnap(src)},txt:'',sc:sc||1.15,col}); }
 // Wer hat den Schaden gemacht? (für die Bilanz am Spielende)
 let HSRC=null;
+/* Monster-Stufen: 0 normal, 1 Krieger (Bronzehelm), 2 Champion (Goldkrone) */
+const RANK_HP=[1,1.4,1.9], RANK_COIN=[1,1.2,1.4], RANK_SHIFT={leicht:-0.4, normal:0, schwer:0.3, profi:0.6};
+function rollRank(w){ const x=w*0.22+(RANK_SHIFT[STUFE_WAHL]||0)+(Math.random()-0.5)*1.2; return Math.max(0,Math.min(2,Math.floor(x))); }
 const HEX_BONUS=1.4, HEX_ZEIT=[3,4,5,6,7,8];   /* Verhexen: +25 % Schaden von allen, 20 % langsamer */
 const EL_SRC={brok:'brok', pfeil:'bogen', messer:'messer', schwert:'brok', zauber:'zauber', stein:'katapult', blitz:'gewitter', tnt:'tnt', feuer:'vulkan'};
 function hurt(i,dmg,el){
@@ -1303,6 +1316,7 @@ function hurt(i,dmg,el){
   if((el==='pfeil'||el==='brok') && eShield[i]) mult*=0.2;   /* Schild-Schorsch schützt die dahinter vor Pfeilen */
   if(ty.boss && G.boss && G.boss.stun>0) mult*=2;   // Gromp lacht: doppelter Schaden
   if(src==='bogen' && (ty.boss||ty.mid)) mult*=2;   /* Boss-Jäger */
+  if(eRank[i]===2 && (src==='bogen'||src==='zauber')) mult*=1.5;   /* Pfeil-Paule und Zappelbart: stark gegen Champions */
   const hexed=eHex[i]>0 && src!=='zauber'; if(hexed) mult*=HEX_BONUS;
   const real=Math.min(Math.max(0,eHp[i]), dmg*mult);
   const db=G.dmgBy||(G.dmgBy={});
@@ -1318,7 +1332,7 @@ function kill(i){
   const x=eX[i], y=eY[i], s=eS[i], d=eDist[i], lat=eLat[i];
   removeEnemy(i); G.kills++;
   if(cN<CCAP && s>=FAR*0.8 && !ty.boss){ cx_[cN]=x; cy_[cN]=y; cs_[cN]=s; ct_[cN]=0; cty[cN]=eType[i]; cfl[cN]=eFlip[i]; cN++; }
-  if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*BURG[G.burgLvl].mult*G.diff.muenzen*1.1*(1+0.15*perk('muenzen')))),s);   // +10 %: Ausgleich fürs weggefallene Wischen
+  if(!eRobbed[i]) dropCoin(x,y+3*s,Math.max(1,Math.round(ty.coin*RANK_COIN[eRank[i]]*BURG[G.burgLvl].mult*G.diff.muenzen*1.1*(1+0.15*perk('muenzen')))),s);   // +10 %: Ausgleich fürs weggefallene Wischen
   if(eGold[i]){ eGold[i]=0; G.goldLeft--; if(G.goldLeft<=0) dropChest(x,y-8*s,1); }
   if(ty.chest) dropChest(x,y-10*s,ty.chest);
   if(ty.split){ spawn(T_.mini,0,Math.max(0,d-8),Math.max(-1,lat-0.4)); spawn(T_.mini,0,d+6,Math.min(1,lat+0.4)); }
@@ -2430,7 +2444,8 @@ function render(time){
     let yo=0; if(ty.hop) yo=-Math.max(0,Math.sin(ph*TAU))*12*s;
     const m=s*(ty.boss?1+0.3*s:1+0.75*s)*(ty.mid?1.3:1);   // Zwischenbosse etwas größer
     if(eGold[i]){ ctx.globalAlpha=0.55; ell(ctx,eX[i],eY[i]+1,12*m,4*m,'#ffd23f'); ctx.globalAlpha=1; }
-    drawSprite(SPR[ty.id][fr],eX[i],eY[i]+yo,eFlip[i],m);
+    const rk=eRank[i], spr=(rk&&SPR_RANK[rk][ty.id])?SPR_RANK[rk][ty.id][fr]:SPR[ty.id][fr];
+    drawSprite(spr,eX[i],eY[i]+yo,eFlip[i],rk===2?m*1.12:m);
     if(eGold[i]){ const hy=eY[i]+yo-SPR[ty.id][0].ay*m-2; poly(ctx,[eX[i]-5*m,hy,eX[i]-5*m,hy-5*m,eX[i]-2*m,hy-2.5*m,eX[i],hy-6*m,eX[i]+2*m,hy-2.5*m,eX[i]+5*m,hy-5*m,eX[i]+5*m,hy],'#ffd23f',INK,1); }
     if(eHex[i]>0){ ctx.globalAlpha=0.45+0.2*Math.sin(T*8+i); ell(ctx,eX[i],eY[i]+1,9*m,3.2*m,'#b06cff'); ctx.globalAlpha=1; }
     if(ty.hp>=18 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]+yo-SPR[ty.id][0].ay*m-4*s, eHp[i]/eMax[i], (ty.boss?70:22)*Math.max(0.5,s), Math.max(2,4*s));
@@ -2453,7 +2468,7 @@ function render(time){
   // Flieger
   for(const i of fl){ const ty=TYPES[eType[i]]; if(eS[i]<FAR){ dot(ty,eX[i],eY[i],eS[i]); continue; } const fr=(((T*ty.anim+ePh[i])*NF)|0)%NF;
     if(ty.ghost) ctx.globalAlpha=0.72+0.15*Math.sin(T*3+ePh[i]);
-    drawSprite(SPR[ty.id][fr],eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])*(ty.mid?1.3:1)); ctx.globalAlpha=1;
+    { const rk=eRank[i], spr=(rk&&SPR_RANK[rk][ty.id])?SPR_RANK[rk][ty.id][fr]:SPR[ty.id][fr]; drawSprite(spr,eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])*(ty.mid?1.3:1)*(rk===2?1.12:1)); } ctx.globalAlpha=1;
     if(eHex[i]>0){ ctx.globalAlpha=0.5; circ(ctx,eX[i],eY[i]-2*eS[i],9*Math.max(0.6,eS[i]),'#b06cff'); ctx.globalAlpha=1; }
     if(ty.hp>=14 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]-16*eS[i], eHp[i]/eMax[i], 20*Math.max(0.5,eS[i]), Math.max(2,4*eS[i])); }
   drawBossFx(T); drawBossDeath(T); drawBuilds(T);
@@ -2953,6 +2968,11 @@ const ICONS={}; for(const t of TYPES) ICONS[t.id]=spriteURL(t.id);
 function weakText(t){ const s=[]; for(const [k,v] of Object.entries(t.weak)) if(v>=2) s.push(EL_ICON[k]); return s.join(''); }
 function weakLine(t){ const w=weakText(t); if(w) return 'schwach gegen '+w; return t.boss?'keine Schwäche!':'nichts Besonderes'; }
 let hudT=0;
+function rankPreview(w){   /* zeigt, wie viele Krieger 🪖 und Champions 👑 in der nächsten Welle stecken */
+  if(!G.queue) return ''; let n=0,k1=0,k2=0; for(const q of G.queue){ if(q.w!==w) continue; n++; if(q.rk===1) k1++; else if(q.rk===2) k2++; }
+  if(!n) return ''; const raw=WAVES[w].reduce((a,g)=>a+g[1],0), sc=x=>Math.max(1,Math.round(x/n*raw));
+  return (k1?`<span title="Krieger: zäher, mehr Münzen">🪖×${sc(k1)}</span>`:'')+(k2?`<span title="Champions: viel zäher, doppelte Münzen">👑×${sc(k2)}</span>`:'');
+}
 function updateHud(dt){
   hudT-=dt; if(hudT>0) return; hudT=0.2;
   { let h=''; if(G.buffs) for(const k in G.buffs){ const left=G.buffs[k]-G.t; if(left>0) h+=`<span>${BUFF_IC[k]} ${Math.ceil(left)}s</span>`; } if(G.perks) for(const k in G.perks) if(G.perks[k]) h+=`<span>${BUFF_IC[k]}${G.perks[k]>1?' ×'+G.perks[k]:''}</span>`; if(G.rabatt) h+=`<span>⭐ ½ Preis${typeof G.rabatt==='number'&&G.rabatt>1?' ×'+G.rabatt:''}</span>`; const el=$('buffs'); if(el.innerHTML!==h) el.innerHTML=h; }
@@ -2966,7 +2986,7 @@ function updateHud(dt){
     const secs=Math.ceil(started*CFG.wellenAbstand-G.t);
     $('waveTxt').textContent=`Welle ${started}/${WAVES.length} · nächste in ${secs}s:`;
     if(G.lastWaveShown!==started){ G.lastWaveShown=started;
-      $('nextList').innerHTML=WAVES[started].map(([id,n])=>{ const ty=TYPES[T_[id]]; return `<span title="${ty.name}"><img src="${ICONS[ty.id]}" alt="${ty.name}">×${n}<small>${weakText(ty)}</small></span>`; }).join(''); }
+      $('nextList').innerHTML=WAVES[started].map(([id,n])=>{ const ty=TYPES[T_[id]]; return `<span title="${ty.name}"><img src="${ICONS[ty.id]}" alt="${ty.name}">×${n}<small>${weakText(ty)}</small></span>`; }).join('')+rankPreview(started); }
   } else { $('waveTxt').textContent='Alle Wellen sind unterwegs!'; $('nextList').textContent=`Noch ${G.alive} Monster`; G.lastWaveShown=-1; }
   const ba=G.boss && bossAlive() && G.boss.seen; $('bossBar').hidden=!ba; if(ba){ $('bossBar').style.bottom=(($('toolbar').offsetWidth<innerWidth*0.5)?8:$('toolbar').offsetHeight+10)+'px'; } if(ba) $('bossFill').style.width=(100*Math.max(0,eHp[G.boss.i]/eMax[G.boss.i]))+'%';
   refreshToolbar();
