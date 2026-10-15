@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792051540">
+<meta name="md-build" content="1792056632">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -713,7 +713,7 @@ function genWaves(){
 const STUFEN = {
   leicht: {name:'🐣 Leicht', horden:0.55, hordenVon:0.75, hordenBis:0.38, verteilt:true, hp:0.85, tempo:0.85, muenzen:1.3, start:250, burg:1.6},
   normal: {name:'⚔️ Normal', horden:1, hp:1.25,  tempo:1,    muenzen:1,   start:150, burg:1},
-  schwer: {name:'🔥 Schwer', horden:1.5,  hp:1.8,  tempo:1.1,  muenzen:0.9, start:120, burg:1},
+  schwer: {name:'🔥 Schwer', horden:1.7,  hp:1.8,  tempo:1.1,  muenzen:0.9, start:120, burg:1},
 };
 let STUFE_WAHL='normal';
 try{ const v=localStorage.getItem('md_stufe'); if(STUFEN[v]) STUFE_WAHL=v; }catch(e){}
@@ -767,25 +767,25 @@ function progressHtml(){
 // ---------- WAFFEN ----------
 // reihen = Reichweite: 1 = nur der vorderste Weg, 2 = die vorderen zwei Wege, 2.5 = bis zur Mitte des dritten Weges (weiter geht nichts!)
 const BROK = [ {dmg:4.5,rate:1.6,n:1,sword:8,reihen:1.3}, {dmg:7,rate:1.9,n:1,sword:12,reihen:1.45}, {dmg:9,rate:2.2,n:2,sword:18,reihen:1.6}, {dmg:12,rate:2.6,n:2,sword:26,reihen:1.7}, {dmg:16,rate:3,n:3,sword:36,reihen:1.8}, {dmg:22,rate:3.4,n:3,sword:48,reihen:1.9}, {dmg:30,rate:3.8,n:4,sword:63,reihen:2.0}, {dmg:40,rate:4.2,n:4,sword:82,reihen:2.0} ];
-const BROK_PREIS = [80, 200, 680, 1350, 2400, 4200, 6750];
-const BOGEN = [ {rate:1.4,dmg:2,n:1,reihen:1.5}, {rate:2,dmg:3,n:1,reihen:1.65}, {rate:2.4,dmg:4.5,n:2,reihen:1.8}, {rate:2.8,dmg:6,n:2,reihen:1.95}, {rate:3,dmg:8,n:3,reihen:2.1}, {rate:3.3,dmg:10.5,n:3,reihen:2.25}, {rate:3.6,dmg:13,n:4,reihen:2.4}, {rate:4,dmg:16,n:4,reihen:2.6} ];
-const BOGEN_PREIS = [25, 70, 260, 630, 1420, 2400, 3900, 6000];
+const BROK_PREIS = [80, 200, 420, 900, 1800, 3800, 8400];
+const BOGEN = [ {rate:1.4,dmg:2.8,n:1,reihen:1.5}, {rate:2,dmg:4.2,n:1,reihen:1.65}, {rate:2.4,dmg:6.3,n:2,reihen:1.8}, {rate:2.8,dmg:8.4,n:2,reihen:1.95}, {rate:3,dmg:11.2,n:3,reihen:2.1}, {rate:3.3,dmg:14.7,n:3,reihen:2.25}, {rate:3.6,dmg:18.2,n:4,reihen:2.4}, {rate:4,dmg:22.4,n:4,reihen:2.6} ];
+const BOGEN_PREIS = [20, 50, 120, 260, 560, 1200, 2500, 5500];
 // chain = auf so viele weitere Monster springt der Zauber über
-const ZAUBER = [ {rate:0.9,dmg:6,reihen:1.6,chain:1}, {rate:1.5,dmg:10,reihen:1.9,chain:1}, {rate:2.2,dmg:16,reihen:2.2,chain:2}, {rate:2.8,dmg:22,reihen:2.3,chain:3}, {rate:3.4,dmg:30,reihen:2.4,chain:3}, {rate:4,dmg:40,reihen:2.5,chain:4} ];
+const ZAUBER = [ {rate:0.9,dmg:10,reihen:1.6,chain:1}, {rate:1.5,dmg:16,reihen:1.9,chain:1}, {rate:2.2,dmg:26,reihen:2.2,chain:2}, {rate:2.8,dmg:35,reihen:2.3,chain:3}, {rate:3.4,dmg:48,reihen:2.4,chain:3}, {rate:4,dmg:64,reihen:2.5,chain:4} ];
 // Langfinger-Lutz: cap = so viele Münzen passen in den Sack, steal = Sekunden pro Griff, n = so viele Räuber
 const ROB = [ {cap:30,speed:140,steal:0.5,n:1}, {cap:50,speed:150,steal:0.4,n:1}, {cap:70,speed:160,steal:0.35,n:2}, {cap:100,speed:170,steal:0.3,n:2}, {cap:140,speed:190,steal:0.25,n:3} ];
-const ROB_PREIS = [150, 400, 1350, 2700, 4500];
+const ROB_PREIS = [150, 400, 1000, 2300, 5200];
 const ROB_GRIFF_MIN = 5, ROB_GRIFF_MAX = 10;   // so viele Münzen klaut Lutz pro Griff
-const ZAUBER_PREIS = [250, 600, 1800, 3000, 4800, 7500];
-const OEL = [ {cd:12,dmg:20,burn:8}, {cd:11,dmg:35,burn:14}, {cd:10,dmg:60,burn:24} , {cd:9,dmg:90,burn:34}, {cd:8,dmg:130,burn:48}];   // Abklingzeit immer doppelt so lang wie das Feuer brennt  // burn = Schaden pro Sekunde, solange es brennt
+const ZAUBER_PREIS = [170, 400, 900, 1900, 3600, 5600];
+const OEL = [ {cd:12,dmg:30,burn:12}, {cd:11,dmg:52,burn:21}, {cd:10,dmg:90,burn:36} , {cd:9,dmg:135,burn:51}, {cd:8,dmg:195,burn:72}];   // Abklingzeit immer doppelt so lang wie das Feuer brennt  // burn = Schaden pro Sekunde, solange es brennt
 const OEL_BRENNZEIT = 4;
-const OEL_PREIS = [80, 250, 900, 1650, 3000];
-const KATAPULT = [ {cd:16,r:80,dmg:11,reihen:2.5}, {cd:11,r:105,dmg:18,reihen:2.8}, {cd:7,r:135,dmg:29,reihen:3.0}, {cd:6,r:150,dmg:40,reihen:3.2}, {cd:5,r:165,dmg:56,reihen:3.4}, {cd:4,r:180,dmg:76,reihen:3.5} ];
-const KATAPULT_PREIS = [180, 380, 1400, 2600, 4600, 7000];
-const GEWITTER = [ {cd:22,bolts:6,dmg:7,reihen:6}, {cd:15,bolts:10,dmg:11,reihen:6} , {cd:12,bolts:14,dmg:15,reihen:6}, {cd:10,bolts:18,dmg:21,reihen:6}, {cd:8,bolts:24,dmg:29,reihen:6}];   /* halbiert: war viel stärker als alle anderen */
-const GEWITTER_PREIS = [450, 1000, 2700, 4500, 6750];
+const OEL_PREIS = [80, 250, 600, 1500, 3400];
+const KATAPULT = [ {cd:16,r:80,dmg:7,reihen:2.5}, {cd:11,r:105,dmg:9,reihen:2.8}, {cd:7,r:135,dmg:14,reihen:3.0}, {cd:6,r:150,dmg:19,reihen:3.2}, {cd:5,r:165,dmg:25,reihen:3.4}, {cd:4,r:180,dmg:31,reihen:3.5} ];
+const KATAPULT_PREIS = [180, 450, 1000, 2100, 4300, 8100];
+const GEWITTER = [ {cd:22,bolts:6,dmg:4,reihen:6}, {cd:15,bolts:10,dmg:5,reihen:6} , {cd:12,bolts:14,dmg:8,reihen:6}, {cd:10,bolts:18,dmg:10,reihen:6}, {cd:8,bolts:24,dmg:13,reihen:6}];   /* halbiert: war viel stärker als alle anderen */
+const GEWITTER_PREIS = [450, 1000, 2200, 4300, 7400];
 const VULKAN = [ {cd:45,dur:9,dps:18,extra:0}, {cd:32,dur:13,dps:28,extra:200} , {cd:26,dur:15,dps:40,extra:300}, {cd:22,dur:17,dps:56,extra:400}];
-const VULKAN_PREIS = [900, 1600, 3900, 6000];
+const VULKAN_PREIS = [900, 1800, 3400, 6300];
 const BURG = [ {hp:300,mult:1}, {hp:450,mult:1.15}, {hp:650,mult:1.3}, {hp:900,mult:1.5} , {hp:1200,mult:1.7}, {hp:1600,mult:1.9}];
 const BURG_PREIS = [150, 400, 1350, 2250, 3750];
 
@@ -1133,7 +1133,7 @@ const CAP = 14000;
 const eDist=new Float32Array(CAP), eLat=new Float32Array(CAP), eHp=new Float32Array(CAP), eMax=new Float32Array(CAP),
       eX=new Float32Array(CAP), eY=new Float32Array(CAP), eS=new Float32Array(CAP), ePh=new Float32Array(CAP), eJit=new Float32Array(CAP), eT=new Float32Array(CAP),
       eType=new Uint8Array(CAP), eAlive=new Uint8Array(CAP), eUid=new Uint32Array(CAP), eFlip=new Uint8Array(CAP), eGate=new Uint8Array(CAP),
-      eUnder=new Uint8Array(CAP), eShield=new Uint8Array(CAP), eRobbed=new Uint8Array(CAP), eGust=new Float32Array(CAP), eGold=new Uint8Array(CAP), eAnn=new Uint8Array(CAP);
+      eUnder=new Uint8Array(CAP), eShield=new Uint8Array(CAP), eRobbed=new Uint8Array(CAP), eGust=new Float32Array(CAP), eGold=new Uint8Array(CAP), eAnn=new Uint8Array(CAP), eHex=new Float32Array(CAP);
 const freeList=new Int32Array(CAP);
 let eHi=0, freeTop=0, uidCounter=1;
 const KCAP=3500;
@@ -1209,7 +1209,7 @@ function spawnDue(){ const q=G.queue; while(G.qi<q.length && q[G.qi].t<=G.t){ co
 function spawn(type,w,dist,lat){
   let i; if(freeTop>0) i=freeList[--freeTop]; else if(eHi<CAP) i=eHi++; else return -1;
   const ty=TYPES[type];
-  eType[i]=type; eAlive[i]=1; eUid[i]=uidCounter++; eGate[i]=0; eUnder[i]=0; eShield[i]=0; eT[i]=0; eRobbed[i]=0; eGust[i]=0; eGold[i]=0; eAnn[i]=0;
+  eType[i]=type; eAlive[i]=1; eUid[i]=uidCounter++; eGate[i]=0; eUnder[i]=0; eShield[i]=0; eT[i]=0; eRobbed[i]=0; eGust[i]=0; eGold[i]=0; eAnn[i]=0; eHex[i]=0;
   eDist[i]=dist!==undefined?dist:-Math.random()*10; eLat[i]=lat!==undefined?lat:(ty.boss?0:(Math.random()*2-1));
   const hp=ty.hp*(1+w*CFG.hpProWelle)*(G.diff?G.diff.hp:1); eHp[i]=hp; eMax[i]=hp;
   ePh[i]=Math.random()*10; eJit[i]=Math.random()*24;
@@ -1230,6 +1230,7 @@ function moveEnemies(dt){
     const ty=TYPES[eType[i]];
     const d=eDist[i]; const di0=d<0?0:(d|0);
     let sp=ty.speed*PSP[di0]*G.diff.tempo*SLOW;
+    if(eHex[i]>0){ eHex[i]-=dt; sp*=0.8; }   /* von Zappelbart verhext: langsamer */
     // Pustefix pustet jedes Monster nur EINMAL kurz an (sonst sammeln sich alle vor ihm zu einem riesigen Haufen)
     if(eGust[i]>0){ eGust[i]=Math.max(0,eGust[i]-dt); if(eGust[i]<=0) eGust[i]=-1; sp*=1.6; }
     else if(eGust[i]===0 && windD.length && !ty.wind){ for(const wd of windD){ if(d>wd && d<wd+130){ eGust[i]=1.2+Math.random()*0.8; break; } } }
@@ -1289,19 +1290,25 @@ function dmgPop(x,y,v,col){ if(v<1) return; G.pops.push({x,y,t:0,life:1.2,coin:t
 function liveDmgPop(x,y,src,life,col,sc){ G.pops.push({x,y,t:0,life,coin:true,live:{src,s0:dmgSnap(src)},txt:'',sc:sc||1.15,col}); }
 // Wer hat den Schaden gemacht? (für die Bilanz am Spielende)
 let HSRC=null;
+const HEX_BONUS=1.4, HEX_ZEIT=[3,4,5,6,7,8];   /* Verhexen: +25 % Schaden von allen, 20 % langsamer */
 const EL_SRC={brok:'brok', pfeil:'bogen', messer:'messer', schwert:'brok', zauber:'zauber', stein:'katapult', blitz:'gewitter', tnt:'tnt', feuer:'vulkan'};
 function hurt(i,dmg,el){
   if(!eAlive[i]) return false;
   if(eUnder[i] && el!=='stein' && el!=='tnt') return false;
   const ty=TYPES[eType[i]]; if(el==='schwert' && ty.fly) return false; const m=weakOf(ty,el); let mult=(m===undefined)?1:m;
   if(mult===0) return false;
-  if((el==='pfeil'||el==='brok') && eShield[i]) mult*=0.2;
+  const src=HSRC||EL_SRC[el]||el;
+  if((el==='pfeil'||el==='brok') && eShield[i] && src!=='bogen') mult*=0.2;   /* Pfeil-Paule schießt durch Schilde */
   if(ty.boss && G.boss && G.boss.stun>0) mult*=2;   // Gromp lacht: doppelter Schaden
-  const real=Math.min(Math.max(0,eHp[i]), dmg*mult), src=HSRC||EL_SRC[el]||el;
-  const db=G.dmgBy||(G.dmgBy={}); db[src]=(db[src]||0)+real;
+  if(src==='bogen' && (ty.boss||ty.mid)) mult*=2;   /* Boss-Jäger */
+  const hexed=eHex[i]>0 && src!=='zauber'; if(hexed) mult*=HEX_BONUS;
+  const real=Math.min(Math.max(0,eHp[i]), dmg*mult);
+  const db=G.dmgBy||(G.dmgBy={});
+  if(hexed){ const ex=real*(1-1/HEX_BONUS); db[src]=(db[src]||0)+real-ex; db.zauber=(db.zauber||0)+ex; } else db[src]=(db[src]||0)+real;
+  if(src==='zauber' && G.wiz>=0) eHex[i]=Math.max(eHex[i],HEX_ZEIT[G.wiz]);
   if(real>0 && (ty.boss || !AREA_SRC.has(src))){ if(eAcc[i]===0){ accList.push(i); eAccT[i]=0; eCrit[i]=0; } eAcc[i]+=real; if(m!==undefined && m>=1.5) eCrit[i]=1; }
   eHp[i]-=dmg*mult;
-  if(eHp[i]<=0) kill(i);
+  if(eHp[i]<=0){ const kb=G.killsBy||(G.killsBy={}); kb[src]=(kb[src]||0)+1; kill(i); }
   return true;
 }
 function kill(i){
@@ -1438,6 +1445,18 @@ function nearestEnemy(x,y,maxR,ground,minDist,el){
 }
 function markValid(){ const m=G.mark; if(!m) return -1; if(eAlive[m.i] && eUid[m.i]===m.uid) return m.i; G.mark=null; return -1; }
 // Ziel in Reichweite: zuerst die, gegen die die Waffe stark ist, dann der Vorderste
+function pickBig(minD){   /* Boss-Jäger: Zwischenbosse und Gromp zuerst */
+  const mk=markValid(); if(mk>=0 && eDist[mk]>=minD && targetable(mk,'pfeil')) return mk;
+  let best=-1, bd=-1; for(let i=0;i<eHi;i++){ if(!eAlive[i] || eDist[i]<minD || !targetable(i,'pfeil')) continue; const ty=TYPES[eType[i]]; if(!(ty.mid||ty.boss)) continue; if(eDist[i]>bd){ bd=eDist[i]; best=i; } }
+  return best;
+}
+function pickFinish(minD,el,dmg){   /* angeschlagene Monster, die mit einem Treffer umfallen */
+  const mk=markValid(); if(mk>=0 && eDist[mk]>=minD && targetable(mk,el)) return mk;
+  let best=-1, bd=-1, bt=-1;
+  for(let i=0;i<eHi;i++){ if(!eAlive[i] || eDist[i]<minD || !targetable(i,el) || eHp[i]>dmg*wmult(i,el)) continue;
+    const t=aimTier(i,el); if(t<=0 || t<bt || (t===bt && eDist[i]<=bd)) continue; bt=t; bd=eDist[i]; best=i; }
+  return best;
+}
 function pickFront(minD,el){
   const mk=markValid();
   if(mk>=0 && eDist[mk]>=minD && targetable(mk,el)) return mk;
@@ -1493,7 +1512,7 @@ function updateHero(dt){
   else if(h.wx!==null){ h.wx=null; h.wy=null; }
   if(where==='turm' && h.cd<=0 && !(G.tut && G.tut.noShoot)){
     // Nur auf dem Turm Pfeile (weit, ein Pfeil mehr) – am Lagerfeuer nur das Schwert
-    const minD=reihen(B.reihen+0.8), extra=1; const best=pickFront(minD,'brok'); const sx=BTOWER.x, sy=BTOWER.y-30;
+    const minD=reihen(B.reihen+0.8), extra=1; let best=pickFinish(minD,'brok',B.dmg); if(best<0) best=pickFront(minD,'brok'); const sx=BTOWER.x, sy=BTOWER.y-30;
     if(best>=0){ h.cd=1/B.rate; shoot(sx,sy,best,B.dmg,'#3f9b45',false,'brok','brok');
       for(let k=1;k<B.n+extra;k++){ const j=nearestEnemy(eX[best]+(Math.random()-.5)*80,eY[best],120,false,minD,'brok'); if(j>=0) shoot(sx,sy,j,B.dmg,'#3f9b45',false,'brok','brok'); }
       sfx('twang'); }
@@ -1606,7 +1625,7 @@ function updateArcher(dt){
   if(G.archer<0) return;
   const A=BOGEN[G.archer];
   G.archerCd-=dt; if(G.archerCd>0) return;
-  const minD=reihen(A.reihen); const best=pickFront(minD,'pfeil');
+  const minD=reihen(A.reihen); const AD0=A.dmg*(1+0.2*perk('feuerpfeile')); let best=pickBig(minD); if(best<0) best=pickFinish(minD,'pfeil',AD0); if(best<0) best=pickFront(minD,'pfeil');
   if(best<0){ G.archerCd=0.15; return; }
   G.archerCd=1/A.rate;
   const AD=A.dmg*(1+0.2*perk('feuerpfeile'));
@@ -1623,7 +1642,7 @@ function updateWizard(dt){
   // Gespenster zuerst!
   let best=-1, bd=-1; const minD=reihen(Z.reihen);
   for(let i=0;i<eHi;i++){ if(!eAlive[i] || !TYPES[eType[i]].ghost || eDist[i]<minD) continue; if(eDist[i]>bd){bd=eDist[i];best=i;} }
-  if(best<0) best=pickFront(minD,'zauber');
+  if(best<0) best=pickFinish(minD,'zauber',Z.dmg); if(best<0) best=pickFront(minD,'zauber');
   if(best<0){ G.wizCd=0.2; return; }
   G.wizCd=1/Z.rate; const a=shoot(WIZPOS.x,WIZPOS.y-34,best,Z.dmg,'#b06cff',false,'zauber','zauber'); a.chain=(Z.chain||0)+perk('funken'); a.hit=[eUid[best]]; sfx('magic');
 }
@@ -1643,7 +1662,9 @@ function chainNext(a){
 function updateProjectiles(dt){
   for(let k=G.arrows.length-1;k>=0;k--){ const a=G.arrows[k]; a.t+=dt;
     if(eAlive[a.tgt] && eUid[a.tgt]===a.uid){ a.tx=eX[a.tgt]; a.ty=eY[a.tgt]-8*eS[a.tgt]; }
-    if(a.t>=a.dur){ if(eAlive[a.tgt] && eUid[a.tgt]===a.uid){ HSRC=a.src; hurt(a.tgt,a.dmg,a.el); HSRC=null; }
+    if(a.t>=a.dur){ if(eAlive[a.tgt] && eUid[a.tgt]===a.uid){ const tx=eX[a.tgt], ty2=eY[a.tgt], td=eDist[a.tgt]; HSRC=a.src; hurt(a.tgt,a.dmg,a.el);
+        if(a.src==='bogen' && G.archer>=4){ let bj=-1, bd=1e9; for(let j=0;j<eHi;j++){ if(!eAlive[j] || j===a.tgt || eDist[j]>td) continue; const dx=eX[j]-tx, dy=eY[j]-ty2, q=dx*dx+dy*dy; if(q<bd && q<55*55) { bd=q; bj=j; } } if(bj>=0) hurt(bj,a.dmg*0.7,a.el); }   /* Durchschuss */
+        HSRC=null; }
       G.arrows.splice(k,1); if(a.chain>0) chainNext(a); } }
   for(let k=G.boulders.length-1;k>=0;k--){ const b=G.boulders[k]; b.t+=dt;
     if(b.t>=b.dur){ G.boulders.splice(k,1); if(b.tnt) tntBoom(); else boulderHit(b); } }
@@ -1669,16 +1690,17 @@ function fireCatapult(x,y,opts){
   G.catAnim=0.5; sfx('throw');
 }
 // ----- Donner-Doris -----
-function strikeAt(bx,by,dmg){
+function strikeAt(bx,by,dmg,hit){
   G.bolts.push({x:bx,y:by,t:0,life:0.35,seed:Math.random()*1000,s:SCy(by)});
   const rr2=40*(0.5+0.5*SCy(by));
-  for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const dx=eX[i]-bx, dy=eY[i]-by; if(dx*dx+dy*dy<rr2*rr2) hurt(i,dmg,'blitz'); }
+  for(let i=0;i<eHi;i++){ if(!eAlive[i]) continue; const dx=eX[i]-bx, dy=eY[i]-by; if(dx*dx+dy*dy<rr2*rr2){ if(hit){ if(hit.has(eUid[i])) continue; hit.add(eUid[i]); } hurt(i,dmg,'blitz'); } }
 }
 function strike(x,y){
   const S=GEWITTER[G.gew.lvl], s=SCy(y);
   liveDmgPop(x,y-50*Math.max(0.5,s),'gewitter',S.bolts*0.06+1.1,'#fff27a');
+  const hit=new Set();   /* jedes Monster bekommt pro Einschlag nur einmal Schaden */
   for(let n=0;n<S.bolts;n++){ const a=Math.random()*Math.PI*2, r=Math.random()*95*s;
-    later(n*0.06,()=>strikeAt(x+Math.cos(a)*r, y+Math.sin(a)*r*0.6, S.dmg)); }
+    later(n*0.06,()=>strikeAt(x+Math.cos(a)*r, y+Math.sin(a)*r*0.6, S.dmg, hit)); }
   G.flash=0.25; G.shake=Math.max(G.shake,5); sfx('zap');
 }
 // ----- Vulkan Volker -----
@@ -2408,6 +2430,7 @@ function render(time){
     if(eGold[i]){ ctx.globalAlpha=0.55; ell(ctx,eX[i],eY[i]+1,12*m,4*m,'#ffd23f'); ctx.globalAlpha=1; }
     drawSprite(SPR[ty.id][fr],eX[i],eY[i]+yo,eFlip[i],m);
     if(eGold[i]){ const hy=eY[i]+yo-SPR[ty.id][0].ay*m-2; poly(ctx,[eX[i]-5*m,hy,eX[i]-5*m,hy-5*m,eX[i]-2*m,hy-2.5*m,eX[i],hy-6*m,eX[i]+2*m,hy-2.5*m,eX[i]+5*m,hy-5*m,eX[i]+5*m,hy],'#ffd23f',INK,1); }
+    if(eHex[i]>0){ ctx.globalAlpha=0.45+0.2*Math.sin(T*8+i); ell(ctx,eX[i],eY[i]+1,9*m,3.2*m,'#b06cff'); ctx.globalAlpha=1; }
     if(ty.hp>=18 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]+yo-SPR[ty.id][0].ay*m-4*s, eHp[i]/eMax[i], (ty.boss?70:22)*Math.max(0.5,s), Math.max(2,4*s));
     if(ty.heal && ((T*2+ePh[i])%1)<0.5) { ctx.fillStyle='#e0453f'; ctx.font=`${Math.max(6,12*s)}px sans-serif`; ctx.textAlign='center'; ctx.fillText('+',eX[i]+8*s,eY[i]-34*s); }
   }
@@ -2429,6 +2452,7 @@ function render(time){
   for(const i of fl){ const ty=TYPES[eType[i]]; if(eS[i]<FAR){ dot(ty,eX[i],eY[i],eS[i]); continue; } const fr=(((T*ty.anim+ePh[i])*NF)|0)%NF;
     if(ty.ghost) ctx.globalAlpha=0.72+0.15*Math.sin(T*3+ePh[i]);
     drawSprite(SPR[ty.id][fr],eX[i],eY[i]+Math.sin(T*3+ePh[i])*3*eS[i],eFlip[i],eS[i]*(1+0.75*eS[i])*(ty.mid?1.3:1)); ctx.globalAlpha=1;
+    if(eHex[i]>0){ ctx.globalAlpha=0.5; circ(ctx,eX[i],eY[i]-2*eS[i],9*Math.max(0.6,eS[i]),'#b06cff'); ctx.globalAlpha=1; }
     if(ty.hp>=14 && eHp[i]<eMax[i]) hpBar(eX[i],eY[i]-16*eS[i], eHp[i]/eMax[i], 20*Math.max(0.5,eS[i]), Math.max(2,4*eS[i])); }
   drawBossFx(T); drawBossDeath(T); drawBuilds(T);
   // Markierung
@@ -2834,13 +2858,13 @@ const lv=(n,max)=>`Stufe ${n}/${max}`;
 const ITEMS = [
   {id:'brok', ic:'🥦', name:'Brokkoli', info:'Stärkeres Schwert und mehr Pfeile für Brokkoli.',
     lvl:()=>lv(G.brok+1,BROK.length), done:()=>G.brok>=BROK.length-1, price:()=>BROK_PREIS[G.brok], buy:()=>{G.brok++;}},
-  {id:'bogen', ic:'🏹', name:'Pfeil-Paule', info:'Schießt vom rechten Turm. Super gegen Flatterfritz, schwach gegen Rüstung.',
+  {id:'bogen', ic:'🏹', name:'Pfeil-Paule', info:'Boss-Jäger auf dem rechten Turm: doppelter Schaden gegen Trolle, Raben und Gromp, schießt durch Schilde. Super gegen Flieger. Ab Stufe 5 fliegt jeder Pfeil durch.',
     lvl:()=>G.archer<0?'neu':lv(G.archer+1,BOGEN.length), done:()=>G.archer>=BOGEN.length-1, price:()=>BOGEN_PREIS[G.archer+1], buy:()=>{G.archer++; G.archerCd=0;}},
   {id:'messer', ic:'🔪', name:'Piekser', info:'Rennen vors Tor und pieksen Monster. Fliegende erwischen sie nicht.',
     lvl:()=>`${G.fighters.length}/14`, done:()=>G.fighters.length>=14, price:()=>Math.round(25+G.fighters.length*20), buy:()=>addFighter()},
   {id:'raeuber', ic:'💰', name:'Langfinger-Lutz', info:'Ein Räuber auf eurer Seite: Er schleicht sich sogar hinter die Reichweite-Grenze und klaut den Monstern ihre Münzen!',
     lvl:()=>G.rob<0?'neu':lv(G.rob+1,ROB.length), done:()=>G.rob>=ROB.length-1, price:()=>ROB_PREIS[G.rob+1], buy:()=>{G.rob++; while(G.robbers.length<ROB[G.rob].n) addRobber(); if(G.rob===0) toast('Langfinger-Lutz schleicht los und klaut den Monstern die Münzen! 💰');}},
-  {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Sein Zauber springt auf weitere Monster über. Der Beste gegen Spukolino!',
+  {id:'zauber', ic:'🧙', name:'Zappelbart', info:'Zauberer auf der Burgmauer. Sein Zauber springt weiter und verhext: Verhexte Monster sind langsamer und nehmen von allen 25 % mehr Schaden. Der Beste gegen Spukolino!',
     lvl:()=>G.wiz<0?'neu':lv(G.wiz+1,ZAUBER.length), done:()=>G.wiz>=ZAUBER.length-1, price:()=>ZAUBER_PREIS[G.wiz+1], buy:()=>{G.wiz++; G.wizCd=0;}},
   {id:'oel', ic:'🫕', name:'Brutzel-Kessel', info:'Kessel über dem Tor. Kippt von selbst heißes Öl auf alle Monster am Tor!',
     lvl:()=>G.oil.lvl<0?'neu':lv(G.oil.lvl+1,OEL.length), done:()=>G.oil.lvl>=OEL.length-1, price:()=>OEL_PREIS[G.oil.lvl+1], buy:()=>{G.oil.lvl++; if(G.oil.lvl===0) toast('Der Kessel kippt von selbst Öl, wenn Monster am Tor sind!');}},
@@ -3128,7 +3152,7 @@ function renderBilanz(){
   rows.slice(0,8).forEach(([k,v],n)=>{ const it=ITEMS.find(x=>x.id===k)||{ic:'👆',name:'Du (Gromp gekitzelt)',lvl:()=>''};
     const r=document.createElement('div'); r.className='brow';
     const nm=document.createElement('span'); nm.className='bn'; nm.textContent=(n===0?'👑 ':'')+it.ic+' '+it.name;
-    if(k!=='tnt' && k!=='kitzeln'){ const lvTxt=k==='messer'?`${G.fighters.length} Stück`:it.lvl().replace(/\/\d+$/,''); const sm=document.createElement('small'); sm.textContent=' · '+lvTxt; nm.appendChild(sm); }
+    { const kb=(G.killsBy||{})[k]||0; const parts=[]; if(k!=='tnt' && k!=='kitzeln') parts.push(k==='messer'?`${G.fighters.length} Stück`:it.lvl().replace(/\/\d+$/,'')); if(kb) parts.push('👊 '+kb.toLocaleString('de-DE')); if(parts.length){ const sm=document.createElement('small'); sm.textContent=' · '+parts.join(' · '); nm.appendChild(sm); } }
     const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(2,100*v/max)+'%'; bb.appendChild(bi);
     const val=document.createElement('span'); val.className='bv'; val.textContent=Math.round(v).toLocaleString('de-DE');
     r.append(nm,bb,val); el.appendChild(r); });
@@ -3200,7 +3224,7 @@ function hsDetails(){   /* was am Spielende zur Partie gespeichert wird */
   for(const it of ITEMS){ if(it.id!=='brok' && !LOADOUT.includes(it.id)) continue; const dm=Math.round((G.dmgBy&&G.dmgBy[it.id])||0);
     let lvTxt=''; try{ lvTxt=it.id==='messer'?`${G.fighters.length} Stück`:String(it.lvl()); }catch(e){}
     if(lvTxt==='neu' || lvTxt==='braucht Susi'){ if(!dm) continue; lvTxt=''; }
-    h.push([it.id,lvTxt.replace(/\/\d+$/,''),dm]); }
+    h.push([it.id,lvTxt.replace(/\/\d+$/,''),dm,(G.killsBy&&G.killsBy[it.id])||0]); }
   if(G.dmgBy&&G.dmgBy.kitzeln>=1) h.push(['kitzeln','',Math.round(G.dmgBy.kitzeln)]);
   h.sort((a,b)=>b[2]-a[2]);
   return {s:Math.round(Math.max(0,G.t-G.t0)), k:G.kills, c:Math.floor(G.earned), hp:Math.max(0,Math.round(100*G.hp/maxHp())), b:G.burgLvl+1, h, g:(G.cardLog||[]).slice(0,12)};
@@ -3219,10 +3243,10 @@ function showHsDetail(e,rank){
   else{
     if(x.h&&x.h.length){ const h3=document.createElement('h3'); h3.textContent='Helfer & Schaden'; body.appendChild(h3);
       const max=Math.max(1,...x.h.map(r=>r[2]));
-      x.h.forEach(([id,lvTxt,dm],n)=>{ const it=ITEMS.find(q=>q.id===id)||{ic:'👆',name:id==='kitzeln'?'Gromp gekitzelt':id};
+      x.h.forEach(([id,lvTxt,dm,kl],n)=>{ const it=ITEMS.find(q=>q.id===id)||{ic:'👆',name:id==='kitzeln'?'Gromp gekitzelt':id};
         const r=document.createElement('div'); r.className='brow';
         const nm=document.createElement('span'); nm.className='bn'; nm.textContent=(n===0&&dm>0?'👑 ':'')+it.ic+' '+it.name;
-        if(lvTxt){ const sm=document.createElement('small'); sm.textContent=' · '+lvTxt; nm.appendChild(sm); }
+        const pt=[lvTxt,kl?'👊 '+Number(kl).toLocaleString('de-DE'):''].filter(Boolean); if(pt.length){ const sm=document.createElement('small'); sm.textContent=' · '+pt.join(' · '); nm.appendChild(sm); }
         const bb=document.createElement('span'); bb.className='bb'; const bi=document.createElement('i'); bi.style.width=Math.max(dm?2:0,100*dm/max)+'%'; bb.appendChild(bi);
         const val=document.createElement('span'); val.className='bv'; val.textContent=dm.toLocaleString('de-DE');
         r.append(nm,bb,val); body.appendChild(r); }); }
