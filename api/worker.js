@@ -5,7 +5,7 @@
 // POST /scores/rename {d,pts,name} → Namen eines eigenen Eintrags ändern (nur vom selben Anschluss)
 const ORIGINS = ['https://micro-defense.christian-hein.de'];
 const MAPS = ['wiese', 'wueste', 'eis'];
-const STUFEN = ['leicht', 'normal', 'schwer'];
+const STUFEN = ['leicht', 'normal', 'schwer', 'profi'];
 const MAX_PTS = 3000000;          // mehr geht in einer Partie nicht – alles darüber ist geschummelt
 
 function cors(req) {
