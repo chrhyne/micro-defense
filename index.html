@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792065226">
+<meta name="md-build" content="1792071614">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -778,10 +778,10 @@ const ROB = [ {cap:30,speed:140,steal:0.5,n:1}, {cap:50,speed:150,steal:0.4,n:1}
 const ROB_PREIS = [150, 400, 1000, 2300, 5200];
 const ROB_GRIFF_MIN = 5, ROB_GRIFF_MAX = 10;   // so viele Münzen klaut Lutz pro Griff
 const ZAUBER_PREIS = [170, 400, 900, 1900, 3600, 5600];
-const OEL = [ {cd:12,dmg:30,burn:12}, {cd:11,dmg:52,burn:21}, {cd:10,dmg:90,burn:36} , {cd:9,dmg:135,burn:51}, {cd:8,dmg:195,burn:72}];   // Abklingzeit immer doppelt so lang wie das Feuer brennt  // burn = Schaden pro Sekunde, solange es brennt
+const OEL = [ {cd:12,dmg:20,burn:8}, {cd:11,dmg:35,burn:14}, {cd:10,dmg:60,burn:24} , {cd:9,dmg:90,burn:34}, {cd:8,dmg:130,burn:48}];   // Abklingzeit immer doppelt so lang wie das Feuer brennt  // burn = Schaden pro Sekunde, solange es brennt
 const OEL_BRENNZEIT = 4;
 const OEL_PREIS = [80, 250, 600, 1500, 3400];
-const KATAPULT = [ {cd:16,r:80,dmg:7,reihen:2.5}, {cd:11,r:95,dmg:9,reihen:2.8}, {cd:7,r:110,dmg:14,reihen:3.0}, {cd:6,r:120,dmg:19,reihen:3.2}, {cd:5,r:130,dmg:25,reihen:3.4}, {cd:4,r:140,dmg:31,reihen:3.5} ];   /* Wurfkreis wächst langsamer: war gegen große Horden zu stark */
+const KATAPULT = [ {cd:16,r:80,dmg:7,reihen:2.5}, {cd:12,r:95,dmg:9,reihen:2.8}, {cd:9,r:110,dmg:12,reihen:3.0}, {cd:8,r:120,dmg:16,reihen:3.2}, {cd:7,r:130,dmg:21,reihen:3.4}, {cd:6,r:140,dmg:26,reihen:3.5} ];   /* Wurfkreis wächst langsamer: war gegen große Horden zu stark */
 const KATAPULT_PREIS = [180, 450, 1000, 2100, 4300, 8100];
 const GEWITTER = [ {cd:22,bolts:6,dmg:4,reihen:6}, {cd:15,bolts:10,dmg:5,reihen:6} , {cd:12,bolts:14,dmg:8,reihen:6}, {cd:10,bolts:18,dmg:10,reihen:6}, {cd:8,bolts:24,dmg:13,reihen:6}];   /* halbiert: war viel stärker als alle anderen */
 const GEWITTER_PREIS = [450, 1000, 2200, 4300, 7400];
