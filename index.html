@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792056632">
+<meta name="md-build" content="1792057399">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -1298,7 +1298,7 @@ function hurt(i,dmg,el){
   const ty=TYPES[eType[i]]; if(el==='schwert' && ty.fly) return false; const m=weakOf(ty,el); let mult=(m===undefined)?1:m;
   if(mult===0) return false;
   const src=HSRC||EL_SRC[el]||el;
-  if((el==='pfeil'||el==='brok') && eShield[i] && src!=='bogen') mult*=0.2;   /* Pfeil-Paule schießt durch Schilde */
+  if((el==='pfeil'||el==='brok') && eShield[i]) mult*=0.2;   /* Schild-Schorsch schützt die dahinter vor Pfeilen */
   if(ty.boss && G.boss && G.boss.stun>0) mult*=2;   // Gromp lacht: doppelter Schaden
   if(src==='bogen' && (ty.boss||ty.mid)) mult*=2;   /* Boss-Jäger */
   const hexed=eHex[i]>0 && src!=='zauber'; if(hexed) mult*=HEX_BONUS;
@@ -2858,7 +2858,7 @@ const lv=(n,max)=>`Stufe ${n}/${max}`;
 const ITEMS = [
   {id:'brok', ic:'🥦', name:'Brokkoli', info:'Stärkeres Schwert und mehr Pfeile für Brokkoli.',
     lvl:()=>lv(G.brok+1,BROK.length), done:()=>G.brok>=BROK.length-1, price:()=>BROK_PREIS[G.brok], buy:()=>{G.brok++;}},
-  {id:'bogen', ic:'🏹', name:'Pfeil-Paule', info:'Boss-Jäger auf dem rechten Turm: doppelter Schaden gegen Trolle, Raben und Gromp, schießt durch Schilde. Super gegen Flieger. Ab Stufe 5 fliegt jeder Pfeil durch.',
+  {id:'bogen', ic:'🏹', name:'Pfeil-Paule', info:'Boss-Jäger auf dem rechten Turm: doppelter Schaden gegen Trolle, Raben und Gromp. Super gegen Flieger, schwach hinter Schild-Schorsch. Ab Stufe 5 fliegt jeder Pfeil durch.',
     lvl:()=>G.archer<0?'neu':lv(G.archer+1,BOGEN.length), done:()=>G.archer>=BOGEN.length-1, price:()=>BOGEN_PREIS[G.archer+1], buy:()=>{G.archer++; G.archerCd=0;}},
   {id:'messer', ic:'🔪', name:'Piekser', info:'Rennen vors Tor und pieksen Monster. Fliegende erwischen sie nicht.',
     lvl:()=>`${G.fighters.length}/14`, done:()=>G.fighters.length>=14, price:()=>Math.round(25+G.fighters.length*20), buy:()=>addFighter()},
