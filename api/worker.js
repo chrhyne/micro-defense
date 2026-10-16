@@ -4,7 +4,7 @@
 // GET  /gesamt?regel=1    → Punkte aller Partien pro Name zusammengezählt („Ewige Bestenliste“)
 // POST /scores/rename {d,pts,name} → Namen eines eigenen Eintrags ändern (nur vom selben Anschluss)
 const ORIGINS = ['https://micro-defense.christian-hein.de'];
-const MAPS = ['wiese', 'wueste', 'eis'];
+const MAPS = ['wiese', 'wueste', 'eis', 'herbst', 'bluete'];
 const STUFEN = ['leicht', 'normal', 'schwer', 'profi'];
 const MAX_PTS = 3000000;          // mehr geht in einer Partie nicht – alles darüber ist geschummelt
 

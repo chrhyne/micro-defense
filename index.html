@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792097592">
+<meta name="md-build" content="1792140939">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -148,7 +148,10 @@ body.inmenu #bossBar{display:none}
 .mapinfo{display:block;font-family:var(--body);font-size:11px;font-weight:800;color:var(--ink-soft)}
 .setup .sub{text-align:center;margin-top:4px}
 .mapcards,.stufcards{display:grid;gap:10px;width:100%;margin:6px 0 10px}
-.mapcards{grid-template-columns:repeat(3,1fr)}
+.mapcards{grid-template-columns:repeat(5,1fr);gap:8px}
+.mapcard b{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.mapcard small{font-size:11px}
+.mapcard .stars{font-size:16px}
 .stufcards{grid-template-columns:repeat(4,1fr)}
 .mapcard,.stufcard{border:3px solid var(--parch-edge);background:var(--parch-hi);border-radius:16px;padding:8px;cursor:pointer;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;min-width:0}
 .mapcard img{width:100%;aspect-ratio:16/10;border-radius:6px;border:0;box-shadow:0 2px 0 var(--ink);display:block;background:#ddd}
@@ -166,7 +169,7 @@ body.inmenu #bossBar{display:none}
 @media (max-height:520px){ .setup .sub{font-size:18px;margin:0} .mapcard img{aspect-ratio:auto;height:50px;object-fit:cover} .mapcard{padding:5px;gap:2px} .stars{font-size:17px} .stufcard small,.mapcard small{display:none}
   .setup .prep-head{position:absolute;margin:0} .setup .prep-head .small{font-size:13px;padding:3px 9px} .mapcard img{object-position:center 65%} .setup{position:relative} .setup .big{padding-top:6px;padding-bottom:6px} }
 .choice{border:3px solid var(--ink);background:var(--gold);border-radius:14px;padding:5px 12px;font-family:var(--display);font-size:17px;cursor:pointer;color:var(--ink);box-shadow:0 3px 0 var(--ink)}
-@media (max-height:520px){ .mapcard img{aspect-ratio:16/8} .mapcard b,.stufcard b{font-size:16px} .mapcards,.stufcards{gap:7px;margin:4px 0 6px} .stufcard{padding:5px} }
+@media (max-height:520px){ .mapcard img{aspect-ratio:16/9;height:auto} .mapcard b{font-size:13px} .stufcard b{font-size:16px} .mapcard .stars{font-size:13px} .mapcard{padding:4px;border-radius:12px;border-width:2px} .mapcards,.stufcards{gap:7px;margin:4px 0 6px} .stufcard{padding:5px} }
 .hint{margin:0;font-weight:700;font-size:14px;color:var(--ink-soft)}
 .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;width:100%}
 .pick{display:grid;grid-template-columns:34px 1fr;column-gap:8px;text-align:left;background:var(--parch-hi);border:3px solid var(--parch-edge);border-radius:14px;padding:8px;cursor:pointer;min-width:0}
@@ -637,7 +640,7 @@ const CFG = {
   tntPreis: 8000,       // Mega-Bumm ist teuer – und man kann es mehrmals kaufen
   tntSchaden: 450,      // Schaden direkt am Vulkan, weiter weg weniger
   powerZeit: 150,       // so viele Sekunden lädt eine Power-Attacke
-  horden: 1.6,          // so viel mal mehr Monster als in der Wellen-Liste
+  horden: 1.66,         // so viel mal mehr Monster als in der Wellen-Liste (+4 %: mehr Luft nach oben für die Bestenliste)
   muenzenAutoFlug: 0.45, // Münzen fliegen fast sofort von selbst in den Briefkasten (kein Wischen nötig)
   wischBonus: 1,        // Wischen bringt keinen Bonus mehr – dafür gibt es Schatztruhen
   hpProWelle: 0.06,     // jede Welle sind Monster 6 % stärker – den Rest machen die Monster-Stufen (Krieger, Champion)
@@ -753,7 +756,7 @@ function availHelpers(){ return Object.keys(WAHL).filter(isUnlocked); }
 // Monster, gegen die man ohne bestimmte Helfer keine Chance hätte, kommen erst später
 const MON_NEEDS={spuk:['zauber'], blech:['katapult','gewitter'], buddel:['katapult'], kalle:['katapult','gewitter'], schorsch:['katapult','gewitter']};
 function monsterAllowed(id){ const n=MON_NEEDS[id]; return !n || n.some(isUnlocked); }
-const MAP_ORDER=['wiese','wueste','eis'];
+const MAP_ORDER=['wiese','wueste','eis','herbst','bluete'];
 function mapUnlocked(k){ if(DEV) return true; const i=MAP_ORDER.indexOf(k); return i<=0 || (loadStars()[MAP_ORDER[i-1]]||0)>=1; }
 function stufeUnlocked(map,k){ if(DEV) return true; const st=loadStars()[map]||0; return k==='leicht' || (k==='normal'&&st>=1) || (k==='schwer'&&st>=2) || (k==='profi'&&st>=3); }
 function progSnap(){ return { plaetze:plaetze(), helfer:[...Object.keys(WAHL),'tnt'].filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:MAP_ORDER.flatMap(m=>['normal','schwer','profi'].filter(k=>stufeUnlocked(m,k)).map(k=>m+':'+k)) }; }
@@ -785,7 +788,7 @@ const KATAPULT = [ {cd:16,r:80,dmg:7,reihen:2.5}, {cd:12,r:95,dmg:9,reihen:2.8},
 const KATAPULT_PREIS = [180, 450, 1000, 2100, 4300, 8100];
 const GEWITTER = [ {cd:22,bolts:6,dmg:4,reihen:6}, {cd:15,bolts:10,dmg:5,reihen:6} , {cd:12,bolts:14,dmg:8,reihen:6}, {cd:10,bolts:18,dmg:10,reihen:6}, {cd:8,bolts:24,dmg:13,reihen:6}];   /* halbiert: war viel stärker als alle anderen */
 const GEWITTER_PREIS = [450, 1000, 2200, 4300, 7400];
-const VULKAN = [ {cd:45,dur:9,dps:18,extra:0}, {cd:32,dur:13,dps:28,extra:200} , {cd:26,dur:15,dps:40,extra:300}, {cd:22,dur:17,dps:56,extra:400}];
+const VULKAN = [ {cd:45,dur:8,dps:8,extra:0}, {cd:34,dur:10,dps:11,extra:120} , {cd:28,dur:12,dps:15,extra:180}, {cd:24,dur:13,dps:19,extra:240}];   /* deutlich schwächer: Lava traf auf Profi riesige Horden */
 const VULKAN_PREIS = [900, 1800, 3400, 6300];
 const BURG = [ {hp:300,mult:1}, {hp:450,mult:1.15}, {hp:650,mult:1.3}, {hp:900,mult:1.5} , {hp:1200,mult:1.7}, {hp:1600,mult:1.9}];
 const BURG_PREIS = [150, 400, 1350, 2250, 3750];
@@ -823,6 +826,12 @@ const MAPS = {
   eis: { name:'❄️ Eisland', info:'quer über den Gletscher', theme:'eis',
     pts:[[1580,140],[1300,158],[800,192],[420,220],[300,255],[330,300],[700,340],[1100,385],[1400,425],[1490,470],[1430,525],[1100,630],[800,725],[560,800],[420,860],[340,880],[GATE.x+8,880]],
     volc:{x:1330,y:720,s:0.85}, cloud:{x:110,y:440} },
+  herbst: { name:'🍂 Herbstwald', info:'die lange Schlangenlinie', theme:'herbst',
+    pts:[[1580,140],[1200,150],[700,170],[400,200],[340,270],[430,330],[900,335],[1340,360],[1470,440],[1380,530],[900,555],[530,580],[430,650],[530,720],[900,735],[1220,765],[1290,830],[1050,875],[650,885],[GATE.x+8,880]],
+    volc:{x:1470,y:690,s:0.7}, cloud:{x:110,y:440} },
+  bluete: { name:'🌸 Blütental', info:'zwei große Kehren', theme:'bluete',
+    pts:[[330,150],[800,140],[1300,152],[1500,225],[1450,320],[1000,350],[600,372],[380,430],[360,515],[600,560],[1100,580],[1440,625],[1480,725],[1200,805],[800,852],[GATE.x+8,880]],
+    volc:{x:980,y:400,s:0.5}, cloud:{x:110,y:440} },
 };
 let MAP_ID='wiese'; try{ const v=localStorage.getItem('md_map'); if(MAPS[v]) MAP_ID=v; }catch(e){}
 function SCy(y){ return Math.max(0.13, Math.min(1,(y-60)/820)); }
@@ -876,6 +885,10 @@ const THEMES = {
   eis:   {fill:'#e3edf6', sky:['#8fcaf0','#eef8ff'], hills:['#dbe8f4','#c4d8ea'], ground:['#f7fbfe','#e9f1f8','#d9e5f0'], tuft:'rgba(120,150,190,0.3)', flowers:null, path:['#4f6a85','#9fb8cf','#bdd0e1'], pebble:'#7f98b2', tree:'tanne', fog:'#ffffff', front:'#c4553a',
     rich:{patch:['#b9cfe6','#ffffff'], blade:['#9bb3cc','#c2d4e6','#7f98b2'], bladeN:160, edge:'rgba(110,140,175,0.35)', sand:['#6f8ca8','#a7bfd5','#c8d9e8'], speck:['#5d7893','#e9f2fa','#ffffff'], sparkle:true,
       pine:['#1f5a3e','#2b7050','#3f8a64'], rock:['#8fa3b8','#b4c4d4','#6f8398']}},
+  herbst:{fill:'#b8a650', sky:['#f2b67e','#fde9d0'], hills:['#dcbf96','#b9a262'], ground:['#d8c97c','#c4b35c','#ab9b46'], tuft:'rgba(110,90,30,0.35)', flowers:['#ff9a3c','#e0453f','#ffd23f','#ffffff'], path:['#9a6a3a','#dcbd8c','#ecd7b0'], pebble:'#a8865a', tree:'laub', fog:'#fbefe0', front:'#c2401e',
+    rich:{patch:['#9a8a3a','#e8d890'], blade:['#8a7a2c','#a89640','#c8b45a'], edge:'rgba(120,95,40,0.45)', sand:['#c9a46e','#e2c896','#f2e2c0'], speck:['#a8865a','#8e6a40','#fff2d8'], leaf:[['#b8461a','#dc6c28','#f39a44'],['#a63a18','#cc5a26','#ec8436'],['#c3861c','#e2a82c','#f6cc58']], pine:['#2c5a34','#3a7044','#5a8c56']}},
+  bluete:{fill:'#86c873', sky:['#9fd6ff','#fff0f7'], hills:['#c9d4f0','#a3d397'], ground:['#bde6a6','#9ed986','#84c66c'], tuft:'rgba(40,110,30,0.3)', flowers:['#ffb3d1','#ffffff','#ff8fbf','#f7e07a'], path:['#b88a52','#efd6a6','#f7e7c4'], pebble:'#c9a46e', tree:'laub', fog:'#fdf0f6', front:'#d2603a',
+    rich:{patch:['#4a9a3a','#d4f2a0'], blade:['#3c8a2c','#5fae40','#86cc5c'], edge:'rgba(70,120,40,0.45)', sand:['#d9b77c','#ecd6a2','#f6e8c6'], speck:['#c9a46e','#ffc4dc','#fff5dc'], leaf:[['#e07aac','#f19cc4','#ffcde2'],['#c9649a','#e58ab8','#f7bcd8'],['#3f8f35','#5aae45','#86cf62']], pine:['#24603a','#2f7a48','#4f9c62']}},
 };
 let THEME;
 function applyMap(id){
@@ -3539,7 +3552,7 @@ let MAP_THUMBS=null;
 // Vorschau der Karten: echte Landschaft, ein paar Monster, Glut, Rauch und ein goldener Rahmen
 function makeThumbs(){
   const keep=MAP_ID, out={}, TW=480, TH2=300, kk=TW/W;
-  const MON={wiese:['misti','stampfi','misti','flatter','quaxi','misti'], wueste:['ritter','misti','stampfi','zuendi','misti','kalle'], eis:['misti','flatter','schorsch','misti','spuk','stampfi']};
+  const MON={wiese:['misti','stampfi','misti','flatter','quaxi','misti'], wueste:['ritter','misti','stampfi','zuendi','misti','kalle'], eis:['misti','flatter','schorsch','misti','spuk','stampfi'], herbst:['misti','buddel','misti','ritter','flatter','misti'], bluete:['misti','quaxi','schleimi','misti','paula','flatter']};
   for(const id of Object.keys(MAPS)){
     applyMap(id); const c=document.createElement('canvas'); c.width=TW; c.height=TH2;
     renderBg({c,k:kk,tx:0,ty:0});
