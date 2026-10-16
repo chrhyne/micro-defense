@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792164705">
+<meta name="md-build" content="1792192386">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -785,10 +785,10 @@ const OEL = [ {cd:12,dmg:20,burn:8}, {cd:11,dmg:35,burn:14}, {cd:10,dmg:60,burn:
 const OEL_BRENNZEIT = 4;
 const OEL_PREIS = [80, 250, 600, 1500, 3400];
 const KATAPULT = [ {cd:16,r:80,dmg:7,reihen:2.5}, {cd:12,r:95,dmg:9,reihen:2.8}, {cd:9,r:110,dmg:12,reihen:3.0}, {cd:8,r:120,dmg:16,reihen:3.2}, {cd:7,r:130,dmg:21,reihen:3.4}, {cd:6,r:140,dmg:26,reihen:3.5} ];   /* Wurfkreis wächst langsamer: war gegen große Horden zu stark */
-const KATAPULT_PREIS = [180, 450, 1000, 2100, 4300, 8100];
+const KATAPULT_PREIS = [200, 550, 1400, 2800, 5000, 8100];
 const GEWITTER = [ {cd:22,bolts:6,dmg:4,reihen:6}, {cd:15,bolts:10,dmg:5,reihen:6} , {cd:12,bolts:14,dmg:8,reihen:6}, {cd:10,bolts:18,dmg:10,reihen:6}, {cd:8,bolts:24,dmg:13,reihen:6}];   /* halbiert: war viel stärker als alle anderen */
 const GEWITTER_PREIS = [450, 1000, 2200, 4300, 7400];
-const VULKAN = [ {cd:45,dur:8,dps:8,extra:0}, {cd:34,dur:10,dps:11,extra:120} , {cd:28,dur:12,dps:15,extra:180}, {cd:24,dur:13,dps:19,extra:240}];   /* deutlich schwächer: Lava traf auf Profi riesige Horden */
+const VULKAN = [ {cd:45,dur:8,dps:7,extra:0}, {cd:34,dur:10,dps:9,extra:80} , {cd:28,dur:12,dps:12,extra:120}, {cd:24,dur:13,dps:15,extra:160}];   /* deutlich schwächer: Lava traf auf Profi riesige Horden */
 const VULKAN_PREIS = [900, 1800, 3400, 6300];
 const BURG = [ {hp:300,mult:1}, {hp:450,mult:1.15}, {hp:650,mult:1.3}, {hp:900,mult:1.5} , {hp:1200,mult:1.7}, {hp:1600,mult:1.9}];
 const BURG_PREIS = [150, 400, 1350, 2250, 3750];
@@ -896,7 +896,7 @@ function applyMap(id){
   VOLC.x=m.volc.x; VOLC.y=m.volc.y; VOLC.s=m.volc.s; CLOUD.x=m.cloud.x; CLOUD.y=m.cloud.y;
   KZ=reihen(3.5); KALLE_STOP=L-560;
   VOLC_D=nearestPathDist(VOLC.x,VOLC.y+70*VOLC.s).d;
-  LAVA={from:VOLC_D-330,to:Math.min(L-200,VOLC_D+330),powFrom:VOLC_D-750,powTo:Math.min(L-150,VOLC_D+750)};
+  LAVA={from:VOLC_D-230,to:Math.min(L-200,VOLC_D+230),powFrom:VOLC_D-520,powTo:Math.min(L-150,VOLC_D+520)};   /* kürzerer Lavastrom: die ganze Horde lief sonst durch */
   THEME=THEMES[m.theme];
 }
 applyMap(MAP_ID);
