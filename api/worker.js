@@ -3,6 +3,7 @@
 // POST /scores  {name,pts,map,stufe,won,wave,waves} → speichern, Antwort: Platz + Liste
 // GET  /gesamt?regel=1    → Punkte aller Partien pro Name zusammengezählt („Ewige Bestenliste“)
 // POST /scores/rename {d,pts,name} → Namen eines eigenen Eintrags ändern (nur vom selben Anschluss)
+// GET  /profil?name=…    → Fortschritt (Punktesumme, Siege pro Karte/Stufe) für mehrere Geräte
 const ORIGINS = ['https://micro-defense.christian-hein.de'];
 const MAPS = ['wiese', 'wueste', 'eis', 'herbst', 'bluete'];
 const STUFEN = ['leicht', 'normal', 'schwer', 'profi'];
@@ -51,6 +52,15 @@ export default {
       const regel = parseInt(url.searchParams.get('regel')) || 1;
       const r = await env.DB.prepare('SELECT MIN(name) AS name, SUM(pts) AS total, COUNT(*) AS n, MAX(pts) AS best, SUM(won) AS siege FROM scores WHERE regel = ? GROUP BY LOWER(name) ORDER BY total DESC LIMIT 20').bind(regel).all();
       return json({ gesamt: r.results || [] }, req);
+    }
+
+    // GET /profil?name=Adrian → Fortschritt eines Spielers über alle Geräte: Punktesumme und gewonnene Karten/Stufen
+    if (url.pathname === '/profil' && req.method === 'GET') {
+      const name = String(url.searchParams.get('name') || '').trim().slice(0, 14);
+      if (!name) return json({ pts: 0, siege: [] }, req);
+      const p = await env.DB.prepare('SELECT COALESCE(SUM(pts),0) AS pts FROM scores WHERE LOWER(name) = LOWER(?)').bind(name).first();
+      const w = await env.DB.prepare('SELECT map, stufe FROM scores WHERE LOWER(name) = LOWER(?) AND won = 1 GROUP BY map, stufe').bind(name).all();
+      return json({ pts: p ? p.pts : 0, siege: w.results || [] }, req);
     }
 
     if (url.pathname === '/scores/rename' && req.method === 'POST') {

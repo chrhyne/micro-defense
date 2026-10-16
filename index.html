@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792192386">
+<meta name="md-build" content="1792193182">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -216,6 +216,7 @@ body.inmenu #bossBar{display:none}
 .hs td.n{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hs td.i{color:var(--ink-soft);font-size:12px;font-weight:700}
 .hs tr.me{background:var(--gold)}
+.setname{flex:1;min-width:0;max-width:220px;margin-left:auto;font:800 16px var(--body);padding:5px 9px;border:3px solid var(--ink);border-radius:10px;background:var(--parch-hi);color:var(--ink)}
 .hstabs{margin:0 auto 8px;width:max-content;max-width:100%}
 .hstabs button{font-size:14px;padding:5px 9px}
 .hsdet{max-height:92vh;overflow:auto;width:min(560px,100%)}
@@ -397,12 +398,14 @@ body.inmenu #buffs{display:none}
   .helpgrid b{font-size:14px}
   .helpPrivacy{font-size:10px;line-height:1.3}
   /* Einstellungen */
-  .setsheet{display:grid;grid-template-columns:1fr 1fr;column-gap:16px;row-gap:5px;align-items:center}
+  .setsheet{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);column-gap:16px;row-gap:5px;align-items:center;width:min(780px,96vw);max-width:none}
+  .setsheet .vol{width:110px}
+  .setsheet .setname{font-size:14px;padding:3px 7px;max-width:170px}
   .setsheet h2,.setsheet .privacy,.setsheet #setClose{grid-column:1/-1}
   .setsheet #setClose{justify-self:center}
   .setsheet .setrow{font-size:15px}
   .setsheet .setrow>span{white-space:nowrap}
-  .setsheet .setrow.col{grid-column:2;grid-row:2/5;align-self:start}
+  .setsheet .setrow.col{grid-column:2;grid-row:2/6;align-self:start}
   .installbox{font-size:12px;padding:6px 8px}
   .setsheet .privacy{font-size:10.5px;margin:0}
   /* Spielende: zwei Spalten */
@@ -543,7 +546,7 @@ body.inmenu #buffs{display:none}
       <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
-    <p class="helpPrivacy"><b>Datenschutz:</b> Spielstand, freigeschaltete Karten und Einstellungen bleiben auf diesem Gerät. Für die gemeinsame Bestenliste schickt das Spiel nach jeder Partie den eingegebenen Namen, die Punkte, Karte, Stufe, Welle, Datum, Spielversion und die Partie-Details (Helfer, Schaden, Taler, Glückskarten) an unsere eigene Datenbank bei Cloudflare. Gegen Spam speichern wir dazu nur einen verschlüsselten Kurzwert der IP-Adresse, nicht die Adresse selbst. Tipp: Ein Vorname oder Spitzname reicht. Einträge löschen wir gern auf Zuruf. Wie oft und wie lange gespielt wird, zählen wir anonym mit <a href="https://umami.is" target="_blank" rel="noopener">Umami</a> (ohne Cookies, ohne Namen, ohne gespeicherte IP-Adresse). Schriften und Bilder kommen von dieser Seite selbst.</p>
+    <p class="helpPrivacy"><b>Datenschutz:</b> Spielstand, freigeschaltete Karten und Einstellungen bleiben auf diesem Gerät. Für die gemeinsame Bestenliste schickt das Spiel nach jeder Partie den eingegebenen Namen, die Punkte, Karte, Stufe, Welle, Datum, Spielversion und die Partie-Details (Helfer, Schaden, Taler, Glückskarten) an unsere eigene Datenbank bei Cloudflare. Gegen Spam speichern wir dazu nur einen verschlüsselten Kurzwert der IP-Adresse, nicht die Adresse selbst. Dein Fortschritt (Punkte, Siege) hängt an deinem Namen – mit demselben Namen geht es auf jedem Gerät weiter. Tipp: Ein Vorname oder Spitzname reicht. Einträge löschen wir gern auf Zuruf. Wie oft und wie lange gespielt wird, zählen wir anonym mit <a href="https://umami.is" target="_blank" rel="noopener">Umami</a> (ohne Cookies, ohne Namen, ohne gespeicherte IP-Adresse). Schriften und Bilder kommen von dieser Seite selbst.</p>
   </div>
 </div>
 
@@ -552,6 +555,7 @@ body.inmenu #buffs{display:none}
     <h2>Einstellungen</h2>
     <div class="setrow"><span>🎵 Musik</span><input type="range" class="vol" id="setMusic" min="0" max="100" step="5"><b class="volv" id="setMusicV"></b></div>
     <div class="setrow"><span>🔊 Geräusche</span><input type="range" class="vol" id="setSfx" min="0" max="100" step="5"><b class="volv" id="setSfxV"></b></div>
+    <div class="setrow"><span>👤 Dein Name</span><input id="setName" class="setname" maxlength="14" placeholder="z. B. Adrian" autocomplete="off"></div>
     <div class="setrow"><span>⛶ Vollbild</span><button class="small" id="setFull">umschalten</button></div>
     <div class="setrow col"><span>📲 Als App installieren</span><div id="installBox" class="installbox"></div></div>
     <p class="privacy">🔒 Datenschutz: Spielstand und Einstellungen bleiben auf diesem Gerät. Für die Bestenliste speichern wir Name, Punkte und Partie-Details in unserer Datenbank bei Cloudflare – ohne IP-Adresse (nur ein verschlüsselter Kurzwert gegen Spam). Wie oft gespielt wird, zählen wir anonym ohne Cookies. Ein Vorname reicht; Einträge löschen wir auf Zuruf.</p>
@@ -3126,7 +3130,7 @@ function endGame(won){
     $('endEntry').hidden=false; $('hsSave').disabled=false; $('hsSave').textContent='✏️ Name ändern';
     $('hsName').value=altName; $('hsName').placeholder='Dein Name';
     renderScores($('endList'), HS_LAST, 5);
-    $('hsPlatz').textContent=''; hsSync().then(j=>{ if(j && j.platz && HS_LAST) $('hsPlatz').textContent=`👨‍👩‍👧 Platz ${j.platz} in der Familie!`; });
+    $('hsPlatz').textContent=''; hsSync().then(j=>{ profilSync(true); if(j && j.platz && HS_LAST) $('hsPlatz').textContent=`👨‍👩‍👧 Platz ${j.platz} in der Familie!`; });
     if(won){ const neu=STERN_WERT[STUFE_WAHL]||0, st=loadStars(), alt=st[MAP_ID]||0;
       if(neu>alt){ st[MAP_ID]=neu; try{ localStorage.setItem('md_stars',JSON.stringify(st)); }catch(e){}
         $('endText').textContent+=` Neu: ${sternText(neu)} für ${MAPS[MAP_ID].name}!`; } }
@@ -3318,12 +3322,28 @@ function hsSubmit(){
   const e=HS_LAST; if(!e) return; const name=$('hsName').value.trim().slice(0,14)||'Spieler';
   const a=loadScores(), x=a.find(q=>q.d===e.d && q.pts===e.pts); if(x){ if(x.up && x.name!==name && window.fetch) fetch(HS_API+'/scores/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({d:e.d,pts:e.pts,name})}).catch(()=>{}); x.name=name; } e.name=name;
   try{ localStorage.setItem('md_scores',JSON.stringify(a)); localStorage.setItem('md_name',name); }catch(err){}
+  setTimeout(()=>profilSync(),1500);
   renderScores($('endList'), e, 5); sfx('buy'); $('hsSave').textContent='✓ Gespeichert'; setTimeout(()=>{ $('hsSave').textContent='✏️ Name ändern'; },1500);
 }
 $('hsSave').addEventListener('click',hsSubmit);
 $('hsName').addEventListener('keydown',ev=>{ if(ev.key==='Enter'){ ev.preventDefault(); hsSubmit(); $('hsName').blur(); } });
 $('btnScores').addEventListener('click',()=>{ $('title').hidden=true; $('scores').hidden=false; showScoreTab(HS_TAB); });
-setTimeout(()=>hsSync(),4000);   /* alte Einträge dieses Geräts nachträglich hochladen */
+setTimeout(()=>hsSync().then(()=>profilSync()),4000);   /* alte Einträge hochladen, dann Fortschritt vom Namen holen */
+/* Fortschritt über mehrere Geräte: Der Name ist das Profil. Punktesumme und Siege kommen aus der Familien-Bestenliste,
+   das Gerät behält jeweils das Bessere aus eigenem Speicher und Datenbank. */
+async function profilSync(quiet){
+  let name=''; try{ name=(localStorage.getItem('md_name')||'').trim(); }catch(e){}
+  if(!name || name==='Spieler' || !window.fetch) return false;
+  const j=await hsGet('/profil?name='+encodeURIComponent(name)); if(!j) return false;
+  let neu=false; const vorher=progSnap();
+  if((+j.pts||0)>totalPts()){ try{ localStorage.setItem('md_pts',String(Math.round(+j.pts))); }catch(e){} neu=true; }
+  const st=loadStars(); for(const w of (j.siege||[])){ const v=STERN_WERT[w.stufe]||0; if(MAPS[w.map] && v>(st[w.map]||0)){ st[w.map]=v; neu=true; } }
+  if(neu){ try{ localStorage.setItem('md_stars',JSON.stringify(st)); }catch(e){}
+    const nach=progSnap(), mehr=nach.helfer.length>vorher.helfer.length || nach.karten.length>vorher.karten.length || nach.stufen.length>vorher.stufen.length || nach.plaetze>vorher.plaetze;
+    if(!quiet && mehr) toast(`☁️ Fortschritt von ${name} geladen!`);
+    if(!$('start').hidden) renderStart(); if(!$('setup').hidden) renderSetup(); }
+  return neu;
+}
 $('scoresClose').addEventListener('click',()=>{ $('scores').hidden=true; $('title').hidden=false; });
 function start(lo){
   if(lo) LOADOUT=lo;
@@ -3365,6 +3385,8 @@ $('installHint').addEventListener('click',openSettings);
 $('pQuit').addEventListener('click',()=>{ if(G && G.running && !G.over) track('spiel-abgebrochen',{karte:MAP_ID, stufe:STUFE_WAHL, minuten:Math.round(Math.max(0,G.t-G.t0)/60), welle:Math.min(WAVES.length, Math.floor(G.t/CFG.wellenAbstand)+1)}); $('pause').hidden=true; G.paused=false; setMode(null); newRound(); $('title').hidden=false; });
 function segSet(id,val,fn){ const box=$(id); for(const b of box.querySelectorAll('button')){ b.classList.toggle('on',b.dataset.v===String(val)); b.onclick=()=>{ fn(b.dataset.v); renderSettings(); }; } }
 function renderSettings(){
+  { const nm=$('setName'); try{ nm.value=localStorage.getItem('md_name')||''; }catch(e){}
+    nm.onchange=()=>{ const v=nm.value.trim().slice(0,14); try{ if(v) localStorage.setItem('md_name',v); }catch(e){} profilSync().then(n=>{ if(n===false && v) toast('👤 Name gespeichert: '+v); }); }; }
   const ensureAC=()=>{ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(AC&&AC.state==='suspended') AC.resume(); if(AC) musicInit(); };
   const m=$('setMusic'), f=$('setSfx'), show=()=>{ $('setMusicV').textContent=m.value+' %'; $('setSfxV').textContent=f.value+' %'; };
   m.value=Math.round(MUSIC.vol*100); f.value=Math.round(SFX_VOL*100); show();
