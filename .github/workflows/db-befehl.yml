@@ -24,4 +24,4 @@ jobs:
       - name: Ausführen
         run: |
           npx --yes wrangler@3 d1 execute micro-defense --remote --json --command "$SQL" > out.json
-          node -e 'const j=require("./out.json"); const r=j[0].results; console.log("::notice title=Ergebnis::"+JSON.stringify(r&&r.length?r:{changes:j[0].meta.changes}).slice(0,3000))'
+          node -e 'const j=require("./out.json"); const r=j[0].results; if(r&&r.length){ r.slice(0,45).forEach((x,i)=>console.log("::notice title=Zeile "+i+"::"+JSON.stringify(x).slice(0,4000))); } else console.log("::notice title=Ergebnis::"+JSON.stringify({changes:j[0].meta.changes}))'
