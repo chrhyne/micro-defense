@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792140939">
+<meta name="md-build" content="1792164705">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -1733,6 +1733,7 @@ function strike(x,y){
   G.flash=0.25; G.shake=Math.max(G.shake,5); sfx('zap');
 }
 // ----- Vulkan Volker -----
+let lavaCache=null;
 function erupt(pow){ G.lavaT=pow?10:VULKAN[G.vul.lvl].dur; G.lavaPow=!!pow; liveDmgPop(VOLC.x,VOLC.y-95*VOLC.s,'vulkan',G.lavaT+1,'#ff6a2a'); G.shake=Math.max(G.shake,10); sfx('rumble'); }
 function lavaRange(){ const V=VULKAN[Math.max(0,G.vul.lvl)]; return G.lavaPow?[LAVA.powFrom,LAVA.powTo]:[LAVA.from-V.extra,LAVA.to+V.extra]; }
 function updateLava(dt){
@@ -2431,10 +2432,16 @@ function render(time){
   if(G.lavaT>0){
     const [a,b]=lavaRange(); ctx.globalAlpha=Math.min(1,G.lavaT/1.2);
     ctx.strokeStyle='#ff8a2a'; ctx.lineWidth=16; ctx.beginPath(); ctx.moveTo(VOLC.x-14*VOLC.s,VOLC.y+10*VOLC.s); ctx.quadraticCurveTo((VOLC.x+PX[VOLC_D])/2,VOLC.y-10,PX[VOLC_D],PY[VOLC_D]); ctx.stroke();
-    for(const [wm,col] of [[1.08,INK],[1.0,'#e8461c'],[0.66,'#ffa230']]){
-      ctx.strokeStyle=col;
-      for(let d=Math.max(0,a|0);d<Math.min(L,b);d+=6){ const e=Math.min(L,d+8); ctx.lineWidth=90*PS[d]*wm*(1+0.05*Math.sin(T*6+d*0.05)); ctx.beginPath(); ctx.moveTo(PX[d],PY[d]); ctx.lineTo(PX[e],PY[e]); ctx.stroke(); }
-    }
+    /* Lava-Band: einmal pro Ausbruch in ein Hilfsbild gemalt und dann nur noch kopiert (früher hunderte dicke Striche pro Bild = sehr langsam) */
+    const kk=Math.min(1.5,Math.abs(ctx.getTransform().a)||1);
+    if(!lavaCache || lavaCache.a!==a || lavaCache.b!==b || Math.abs(lavaCache.k-kk)>0.05){ const d0=Math.max(0,a|0), d1=Math.min(L,b|0);
+      let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; for(let d=d0;d<=d1;d+=4){ x0=Math.min(x0,PX[d]); x1=Math.max(x1,PX[d]); y0=Math.min(y0,PY[d]); y1=Math.max(y1,PY[d]); }
+      x0-=60; y0-=60; x1+=60; y1+=60; const oc=document.createElement('canvas'); oc.width=Math.ceil((x1-x0)*kk); oc.height=Math.ceil((y1-y0)*kk);
+      const g=oc.getContext('2d'); g.setTransform(kk,0,0,kk,-x0*kk,-y0*kk); g.lineCap='round'; g.lineJoin='round';
+      const parts=[]; for(let d=d0; d<d1; d+=40){ const e=Math.min(d1,d+44), p=new Path2D(); p.moveTo(PX[d],PY[d]); for(let q=d+4;q<e;q+=4) p.lineTo(PX[q],PY[q]); p.lineTo(PX[e],PY[e]); parts.push({p,w:90*PS[Math.min(L,(d+e)>>1)]}); }
+      for(const [wm,col] of [[1.08,INK],[1.0,'#e8461c'],[0.66,'#ffa230']]){ g.strokeStyle=col; for(const pt of parts){ g.lineWidth=pt.w*wm; g.stroke(pt.p); } }
+      lavaCache={a,b,k:kk,oc,x0,y0,w:x1-x0,h:y1-y0}; }
+    ctx.drawImage(lavaCache.oc,lavaCache.x0,lavaCache.y0,lavaCache.w,lavaCache.h);
     for(let n=0;n<14;n++){ const d=(a+((n*397+T*60)%(b-a)))|0; const p=(T*1.5+n*0.37)%1; circ(ctx,PX[d],PY[d]-p*10*PS[d],(1-p)*5*PS[d]+1,'#ffd04a'); }
     ctx.globalAlpha=1;
   }
