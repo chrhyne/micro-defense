@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792254319">
+<meta name="md-build" content="1792257116">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -546,7 +546,7 @@ body.inmenu #buffs{display:none}
       <div><b>🥦 Brokkoli</b>Tippe aufs Lagerfeuer: Dort kämpft er nur mit dem Schwert am Tor. Tippe auf den Turm: Dort schießt er nur Pfeile – weit und auch auf Flieger. Power-Leiste voll? POWER antippen: am Lagerfeuer gibt’s den Wirbel, auf dem Turm einen Pfeilregen!</div>
       <div><b>🛠️ Bauen</b>Mit den Münzen aus dem Briefkasten baust du unten in der Leiste Helfer und machst sie stärker.</div>
       <div><b>🎁 Schatztruhen</b>Besiegst du einen Zwischenboss oder die goldene Horde, fällt eine Truhe – schnell antippen! Tippe ein Monster an, dann zielen alle darauf.</div>
-      <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
+      <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer frei. Ein Sieg auf einer Karte öffnet die nächste Karte, ein Sieg auf einer Stufe öffnet die nächste Stufe – auf allen Karten.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
     <p class="helpPrivacy"><b>Datenschutz:</b> Spielstand, freigeschaltete Karten und Einstellungen bleiben auf diesem Gerät. Für die gemeinsame Bestenliste schickt das Spiel nach jeder Partie den eingegebenen Namen, die Punkte, Karte, Stufe, Welle, Datum, Spielversion und die Partie-Details (Helfer, Schaden, Taler, Glückskarten) an unsere eigene Datenbank bei Cloudflare. Gegen Spam speichern wir dazu nur einen verschlüsselten Kurzwert der IP-Adresse, nicht die Adresse selbst. Dein Fortschritt (Punkte, Siege) hängt an deinem Namen – mit demselben Namen geht es auf jedem Gerät weiter. Tipp: Ein Vorname oder Spitzname reicht. Einträge löschen wir gern auf Zuruf. Wie oft und wie lange gespielt wird, zählen wir anonym mit <a href="https://umami.is" target="_blank" rel="noopener">Umami</a> (ohne Cookies, ohne Namen, ohne gespeicherte IP-Adresse). Schriften und Bilder kommen von dieser Seite selbst.</p>
@@ -765,8 +765,10 @@ const MON_NEEDS={spuk:['zauber'], blech:['katapult','gewitter'], buddel:['katapu
 function monsterAllowed(id){ const n=MON_NEEDS[id]; return !n || n.some(isUnlocked); }
 const MAP_ORDER=['wiese','wueste','eis','herbst','bluete'];
 function mapUnlocked(k){ if(DEV) return true; const i=MAP_ORDER.indexOf(k); return i<=0 || (loadStars()[MAP_ORDER[i-1]]||0)>=1; }
-function stufeUnlocked(map,k){ if(DEV) return true; const st=loadStars()[map]||0; return k==='leicht' || (k==='normal'&&st>=1) || (k==='schwer'&&st>=2) || (k==='profi'&&st>=3); }
-function progSnap(){ return { plaetze:plaetze(), helfer:[...Object.keys(WAHL),'tnt'].filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:MAP_ORDER.flatMap(m=>['normal','schwer','profi'].filter(k=>stufeUnlocked(m,k)).map(k=>m+':'+k)) }; }
+/* Stufen werden nur einmal insgesamt freigespielt: Sieg auf Leicht (egal welche Karte) → Normal überall frei, Sieg auf Normal → Schwer, Sieg auf Schwer → Profi */
+function bestStern(){ const st=loadStars(); return Math.max(0,...MAP_ORDER.map(m=>st[m]||0)); }
+function stufeUnlocked(map,k){ if(DEV) return true; const b=bestStern(); return k==='leicht' || (k==='normal'&&b>=1) || (k==='schwer'&&b>=2) || (k==='profi'&&b>=3); }
+function progSnap(){ return { plaetze:plaetze(), helfer:[...Object.keys(WAHL),'tnt'].filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:['normal','schwer','profi'].filter(k=>stufeUnlocked(null,k)) }; }
 function progressHtml(){
   const n=nextUnlock(); if(!n) return DEV?'🔓 Test-Modus: alles frei':'🏆 Alle Helfer freigespielt!';
   const prev=[0,...unlockList().map(x=>x.pts)].filter(v=>v<n.pts).pop()||0, p=totalPts();
@@ -3220,7 +3222,7 @@ function showUnlocks(a,b){
   if(b.plaetze>a.plaetze) neu.push(`🎒 ${b.plaetze}. Helfer-Platz`);
   for(const id of b.helfer) if(!a.helfer.includes(id)){ const it=ITEMS.find(x=>x.id===id); neu.push(`${it.ic} ${it.name}`); }
   for(const k of b.karten) if(!a.karten.includes(k)) neu.push(`🗺️ Karte ${MAPS[k].name}`);
-  for(const x of b.stufen) if(!a.stufen.includes(x)){ const [m,k]=x.split(':'); neu.push(`${STUFEN[k].name} auf ${MAPS[m].name}`); }
+  for(const k of b.stufen) if(!a.stufen.includes(k)) neu.push(`${STUFEN[k].name} auf allen Karten`);
   if(neu.length){ el.className='unlock'; el.innerHTML=`<b>🎉 Neu freigeschaltet!</b><span>${neu.join(' · ')}</span>`; sfx('buy'); track('freigeschaltet',{was:neu.join(', ')}); }
   else el.className='';
   $('endProg').innerHTML=progressHtml();
@@ -3621,13 +3623,13 @@ function renderSetup(){
   for(const [k,m] of Object.entries(MAPS)){ const b=document.createElement('button'); b.type='button'; const frei=mapUnlocked(k);
     b.className='mapcard'+(k===MAP_ID?' on':'')+(frei?'':' locked');
     const n=Math.max(0,Math.min(3,stars[k]|0)), vor=MAPS[MAP_ORDER[MAP_ORDER.indexOf(k)-1]];
-    b.innerHTML=`${MAP_THUMBS[k]?`<img src="${MAP_THUMBS[k]}" alt="">`:''}<b>${frei?'':'🔒 '}${m.name}</b>${frei?`<span class="stars" aria-label="${n} von 3 Sternen">${sternHtml(n)}</span><small>${m.info}</small>`:`<small>Gewinne erst ${vor?vor.name:''} auf Leicht</small>`}`;
-    b.addEventListener('click',()=>{ if(!frei){ toast(`Gewinne erst ${vor?vor.name:''} auf Leicht – dann ist ${m.name} frei!`); return; }
+    b.innerHTML=`${MAP_THUMBS[k]?`<img src="${MAP_THUMBS[k]}" alt="">`:''}<b>${frei?'':'🔒 '}${m.name}</b>${frei?`<span class="stars" aria-label="${n} von 3 Sternen">${sternHtml(n)}</span><small>${m.info}</small>`:`<small>Gewinne erst einmal ${vor?vor.name:''}</small>`}`;
+    b.addEventListener('click',()=>{ if(!frei){ toast(`Gewinne erst einmal ${vor?vor.name:''} (egal welche Stufe) – dann ist ${m.name} frei!`); return; }
       if(k!==MAP_ID){ applyMap(k); try{ localStorage.setItem('md_map',k); }catch(e){} newGame(); G.bgDirty=true; } renderSetup(); }); $('karten').appendChild(b); }
   $('stufen').innerHTML='';
   for(const [k,v] of Object.entries(STUFEN)){ const b=document.createElement('button'); b.type='button'; const frei=stufeUnlocked(MAP_ID,k);
     b.className='stufcard'+(k===STUFE_WAHL?' on':'')+(frei?'':' locked');
-    const bed=k==='normal'?'Gewinne erst Leicht auf dieser Karte':(k==='profi'?'Gewinne erst Schwer auf dieser Karte':'Gewinne erst Normal auf dieser Karte');
+    const bed=k==='normal'?'Gewinne erst einmal auf Leicht (egal welche Karte)':(k==='profi'?'Gewinne erst einmal auf Schwer (egal welche Karte)':'Gewinne erst einmal auf Normal (egal welche Karte)');
     b.innerHTML=`<b>${frei?'':'🔒 '}${v.name}</b>${k==='profi'?'<span class="stars mini" aria-label="Profi">🏆</span>':`<span class="stars mini" aria-label="gibt ${STERN_WERT[k]} Sterne">${sternHtml(STERN_WERT[k])}</span>`}<small>${frei?(STUFEN_INFO[k]||''):bed}</small>`;
     b.addEventListener('click',()=>{ if(!frei){ toast(bed+'!'); return; } STUFE_WAHL=k; try{ localStorage.setItem('md_stufe',k); }catch(e){} renderSetup(); }); $('stufen').appendChild(b); }
 }

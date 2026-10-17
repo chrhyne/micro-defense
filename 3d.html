@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792254319">
+<meta name="md-build" content="1792257116">
 <title>Micro Defense 3D</title>
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -353,7 +353,7 @@ button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
       <div><b>🎁 Truhen</b>Besiegst du einen Zwischenboss oder die goldene Horde, fällt eine Truhe – schnell antippen!</div>
       <div><b>🌊 Wellen</b>Die Wellen kommen von allein. Mit dem grünen Knopf rufst du die nächste früher – das gibt Bonus-Münzen!</div>
       <div><b>👆 Ansicht</b>Ein Finger schiebt, zwei Finger zoomen und drehen. 🔄 dreht die Welt.</div>
-      <div><b>🔓 Freispielen</b>Deine Punkte sammeln sich. Damit schaltest du neue Helfer, Karten und Stufen frei.</div>
+      <div><b>🔓 Freispielen</b>Deine Punkte schalten neue Helfer frei. Ein Sieg auf einer Karte öffnet die nächste Karte, ein Sieg auf einer Stufe öffnet die nächste Stufe – auf allen Karten.</div>
     </div>
     <button class="big" id="helpClose">Alles klar!</button>
   </div>
@@ -559,10 +559,12 @@ function unlockList(){ return [...FREI,...SLOTS.map(x=>({slot:x.n,pts:x.pts}))].
 function nextUnlock(){ if(DEV) return null; const p=totalPts(); return unlockList().find(x=>p<x.pts)||null; }
 function monsterAllowed(id){ const n=MON_NEEDS[id]; return !n || n.some(isUnlocked); }
 function loadStars(){ const o=LS_.json('md3_stars',{}); return o&&typeof o==='object'?o:{}; }
-const MAP_ORDER=['wiese','wueste','eis','herbst','bluete'];
+const MAP_ORDER=['wiese','wueste','eis','herbst','bluete'];   // nächste Karte: einmal auf der Karte davor gewinnen (egal welche Stufe)
 function mapUnlocked(k){ if(DEV) return true; const i=MAP_ORDER.indexOf(k); return i<=0 || (loadStars()[MAP_ORDER[i-1]]||0)>=1; }
-function stufeUnlocked(map,k){ if(DEV) return true; const st=loadStars()[map]||0; return k==='leicht' || (k==='normal'&&st>=1) || (k==='schwer'&&st>=2) || (k==='profi'&&st>=3); }
-function progSnap(){ return { plaetze:plaetze(), helfer:Object.keys(HELFER_INFO).filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:MAP_ORDER.flatMap(m=>['normal','schwer','profi'].filter(k=>stufeUnlocked(m,k)).map(k=>m+':'+k)) }; }
+// Stufen werden nur einmal insgesamt freigespielt: Sieg auf Leicht (egal welche Karte) → Normal überall frei, Sieg auf Normal → Schwer, Sieg auf Schwer → Profi
+function bestStern(){ const st=loadStars(); return Math.max(0,...MAP_ORDER.map(m=>st[m]||0)); }
+function stufeUnlocked(map,k){ if(DEV) return true; const b=bestStern(); return k==='leicht' || (k==='normal'&&b>=1) || (k==='schwer'&&b>=2) || (k==='profi'&&b>=3); }
+function progSnap(){ return { plaetze:plaetze(), helfer:Object.keys(HELFER_INFO).filter(isUnlocked), karten:MAP_ORDER.filter(mapUnlocked), stufen:['normal','schwer','profi'].filter(k=>stufeUnlocked(null,k)) }; }
 function progressHtml(){
   const n=nextUnlock(); if(!n) return DEV?'🔓 Test-Modus: alles frei':'🏆 Alle Helfer freigespielt!';
   const prev=[0,...unlockList().map(x=>x.pts)].filter(v=>v<n.pts).pop()||0, p=totalPts();
@@ -1766,11 +1768,11 @@ function openSetup(){ renderSetup(); only('setupOv'); }
 function renderSetup(){
   const st=loadStars();
   if(!mapUnlocked(MAP_ID)) MAP_ID='wiese'; if(!stufeUnlocked(MAP_ID,STUFE)) STUFE='leicht';
-  $('karten').innerHTML=MAP_ORDER.map(k=>{ const M=KARTEN[k], lock=!mapUnlocked(k); return `<button class="mapcard ${k===MAP_ID?'on':''} ${lock?'locked':''}" data-k="${k}"><span class="em">${M.em}</span><b>${M.name}</b><small>${lock?'🔒 Erst einen Stern auf der Karte davor holen':M.info}</small><span class="st">${sternHtml(st[k]||0)}</span>${lock?'<span class="lk">🔒</span>':''}</button>`; }).join('');
-  for(const b of $('karten').querySelectorAll('button')) b.onclick=()=>{ const k=b.dataset.k; if(!mapUnlocked(k)){ toast('🔒 Hol erst einen Stern auf der Karte davor!'); sfx('nein'); return; } MAP_ID=k; LS_.set('md3_map',k); buildWorld(k); newGame(); camHome(); renderSetup(); sfx('swish'); };
-  $('stufen').innerHTML=Object.entries(STUFEN).map(([k,s])=>{ const lock=!stufeUnlocked(MAP_ID,k); const need={normal:'1 Stern',schwer:'2 Sterne',profi:'3 Sterne'}[k];
-    return `<button class="stufcard ${k===STUFE?'on':''} ${lock?'locked':''}" data-k="${k}">${s.name}<small>${lock?'🔒 Braucht '+need+' auf dieser Karte':s.info}</small>${lock?'<span class="lk">🔒</span>':''}</button>`; }).join('');
-  for(const b of $('stufen').querySelectorAll('button')) b.onclick=()=>{ const k=b.dataset.k; if(!stufeUnlocked(MAP_ID,k)){ toast('🔒 Gewinne erst auf einer leichteren Stufe!'); sfx('nein'); return; } STUFE=k; LS_.set('md3_stufe',k); renderSetup(); };
+  $('karten').innerHTML=MAP_ORDER.map(k=>{ const M=KARTEN[k], lock=!mapUnlocked(k); return `<button class="mapcard ${k===MAP_ID?'on':''} ${lock?'locked':''}" data-k="${k}"><span class="em">${M.em}</span><b>${M.name}</b><small>${lock?'🔒 Gewinne einmal auf der Karte davor':M.info}</small><span class="st">${sternHtml(st[k]||0)}</span>${lock?'<span class="lk">🔒</span>':''}</button>`; }).join('');
+  for(const b of $('karten').querySelectorAll('button')) b.onclick=()=>{ const k=b.dataset.k; if(!mapUnlocked(k)){ toast('🔒 Gewinne erst einmal auf der Karte davor – egal auf welcher Stufe!'); sfx('nein'); return; } MAP_ID=k; LS_.set('md3_map',k); buildWorld(k); newGame(); camHome(); renderSetup(); sfx('swish'); };
+  $('stufen').innerHTML=Object.entries(STUFEN).map(([k,s])=>{ const lock=!stufeUnlocked(MAP_ID,k); const need={normal:'Gewinne einmal auf Leicht',schwer:'Gewinne einmal auf Normal',profi:'Gewinne einmal auf Schwer'}[k];
+    return `<button class="stufcard ${k===STUFE?'on':''} ${lock?'locked':''}" data-k="${k}">${s.name}<small>${lock?'🔒 '+need+' (egal welche Karte)':s.info}</small>${lock?'<span class="lk">🔒</span>':''}</button>`; }).join('');
+  for(const b of $('stufen').querySelectorAll('button')) b.onclick=()=>{ const k=b.dataset.k; if(!stufeUnlocked(MAP_ID,k)){ toast('🔒 Gewinne erst einmal auf der Stufe davor – egal auf welcher Karte!'); sfx('nein'); return; } STUFE=k; LS_.set('md3_stufe',k); renderSetup(); };
 }
 function openStart(){ makeIcons(); { const l=LS_.json('md3_loadout',null); if(Array.isArray(l)) LOADOUT=l; } if(!world) buildWorld(MAP_ID); newGame(); renderStart(); only('startOv'); }
 function renderStart(){
@@ -1893,7 +1895,7 @@ function showUnlocks(a,b){
   if(b.plaetze>a.plaetze) neu.push(`🎒 ${b.plaetze}. Helfer-Platz`);
   for(const id of b.helfer) if(!a.helfer.includes(id)) neu.push(`${HELFER_INFO[id].icon} ${HELFER_INFO[id].name}`);
   for(const k of b.karten) if(!a.karten.includes(k)) neu.push(`🗺️ Karte ${KARTEN[k].em} ${KARTEN[k].name}`);
-  for(const x of b.stufen) if(!a.stufen.includes(x)){ const [m,k]=x.split(':'); neu.push(`${STUFEN[k].name} auf ${KARTEN[m].name}`); }
+  for(const k of b.stufen) if(!a.stufen.includes(k)) neu.push(`Stufe ${STUFEN[k].name} auf allen Karten`);
   if(neu.length){ el.className='unlock'; el.innerHTML=`<b>🎉 Neu freigeschaltet!</b><span>${neu.join(' · ')}</span>`; sfx('upgrade'); } else el.className='';
   $('endProg').innerHTML=progressHtml();
 }
