@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
-<meta name="md-build" content="1792241306">
+<meta name="md-build" content="1792254319">
 <script defer src="https://cloud.umami.is/script.js" data-website-id="fbcfba1f-b602-41c8-9180-20c1cb81585d" data-domains="micro-defense.christian-hein.de"></script>
 <style>@font-face{font-family:"Lilita One";font-weight:400;font-display:swap;src:url(fonts/lilita-one.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:600;font-display:swap;src:url(fonts/nunito-600.woff2) format("woff2")}@font-face{font-family:"Nunito";font-weight:800;font-display:swap;src:url(fonts/nunito-800.woff2) format("woff2")}</style>
 <link rel="preload" href="fonts/lilita-one.woff2" as="font" type="font/woff2" crossorigin>
@@ -3337,7 +3337,7 @@ setTimeout(()=>hsSync().then(()=>profilSync()),4000);   /* alte Einträge hochla
 async function profilSync(quiet){
   let name=''; try{ name=(localStorage.getItem('md_name')||'').trim(); }catch(e){}
   if(!name || name==='Spieler' || !window.fetch) return false;
-  const j=await hsGet('/profil?name='+encodeURIComponent(name)); if(!j) return false;
+  const j=await hsGet('/profil?regel='+HS_REGEL+'&name='+encodeURIComponent(name)); if(!j) return false;
   let neu=false; const vorher=progSnap();
   if((+j.pts||0)>totalPts()){ try{ localStorage.setItem('md_pts',String(Math.round(+j.pts))); }catch(e){} neu=true; }
   const st=loadStars(); for(const w of (j.siege||[])){ const v=STERN_WERT[w.stufe]||0; if(MAPS[w.map] && v>(st[w.map]||0)){ st[w.map]=v; neu=true; } }

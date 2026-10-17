@@ -57,10 +57,13 @@ export default {
     // GET /profil?name=Adrian → Fortschritt eines Spielers über alle Geräte: Punktesumme und gewonnene Karten/Stufen
     if (url.pathname === '/profil' && req.method === 'GET') {
       const name = String(url.searchParams.get('name') || '').trim().slice(0, 14);
-      if (!name) return json({ pts: 0, siege: [] }, req);
-      const p = await env.DB.prepare('SELECT COALESCE(SUM(pts),0) AS pts FROM scores WHERE LOWER(name) = LOWER(?)').bind(name).first();
-      const w = await env.DB.prepare('SELECT map, stufe FROM scores WHERE LOWER(name) = LOWER(?) AND won = 1 GROUP BY map, stufe').bind(name).all();
-      return json({ pts: p ? p.pts : 0, siege: w.results || [] }, req);
+      // ?regel=301 → nur die Partien dieser Punkte-Regel (z. B. das 3D-Spiel); ohne regel wie bisher alle
+      const regel = url.searchParams.has('regel') ? parseInt(url.searchParams.get('regel')) : null;
+      if (!name) return json({ pts: 0, siege: [], regel }, req);
+      const rw = Number.isInteger(regel) ? ' AND regel = ?' : '', ra = Number.isInteger(regel) ? [regel] : [];
+      const p = await env.DB.prepare('SELECT COALESCE(SUM(pts),0) AS pts FROM scores WHERE LOWER(name) = LOWER(?)' + rw).bind(name, ...ra).first();
+      const w = await env.DB.prepare('SELECT map, stufe FROM scores WHERE LOWER(name) = LOWER(?) AND won = 1' + rw + ' GROUP BY map, stufe').bind(name, ...ra).all();
+      return json({ pts: p ? p.pts : 0, siege: w.results || [], regel }, req);
     }
 
     if (url.pathname === '/scores/rename' && req.method === 'POST') {
