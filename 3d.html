@@ -559,7 +559,7 @@ function unlockList(){ return [...FREI,...SLOTS.map(x=>({slot:x.n,pts:x.pts}))].
 function nextUnlock(){ if(DEV) return null; const p=totalPts(); return unlockList().find(x=>p<x.pts)||null; }
 function monsterAllowed(id){ const n=MON_NEEDS[id]; return !n || n.some(isUnlocked); }
 function loadStars(){ const o=LS_.json('md3_stars',{}); return o&&typeof o==='object'?o:{}; }
-const MAP_ORDER=['wiese','wueste','eis','herbst','bluete'];   // nächste Karte: einmal auf der Karte davor gewinnen (egal welche Stufe)
+const MAP_ORDER=['wiese','wueste','eis','herbst','bluete','dschungel'];   // nächste Karte: einmal auf der Karte davor gewinnen (egal welche Stufe)
 function mapUnlocked(k){ if(DEV) return true; const i=MAP_ORDER.indexOf(k); return i<=0 || (loadStars()[MAP_ORDER[i-1]]||0)>=1; }
 // Stufen werden nur einmal insgesamt freigespielt: Sieg auf Leicht (egal welche Karte) → Normal überall frei, Sieg auf Normal → Schwer, Sieg auf Schwer → Profi
 function bestStern(){ const st=loadStars(); return Math.max(0,...MAP_ORDER.map(m=>st[m]||0)); }
@@ -592,6 +592,13 @@ const KARTEN = {
     weg:[[-4,1],[11,1],[11,3],[1,3],[1,7],[3,7],[3,5],[5,5],[5,7],[7,7],[7,5],[9,5],[9,7]], burg:{i:10,j:7,tor:'-x'}, vulkan:[15,3]},
   bluete:{name:'Blütental', em:'🌸', info:'zwei große Kehren – kurz!', theme:'bluete',
     weg:[[-4,1],[2,1],[2,7],[4,7],[4,1],[8,1],[8,7],[10,7],[10,2]], burg:{i:11,j:1,tor:'-x'}, vulkan:[6,11]},
+  // Dschungel: der Weg ist ein großes J (für Jürgen!). Die Monster kommen aus einem alten Tempel oben,
+  // waten unten durch den Sumpf (tempo = so schnell wie sonst, 0.5 = halb so schnell; Flieger stört das nicht)
+  // und Kroko Knut aus dem Teich schnappt sich ab und zu eins (pause = Sekunden, reichweite: 1 Kachel = 2).
+  dschungel:{name:'Dschungel', em:'🌴', info:'das große J – Sumpf und Krokodil!', theme:'dschungel',
+    weg:[[11,-3],[11,7],[1,7],[1,4]], burg:{i:0,j:2,tor:'+z'}, vulkan:[-3,0], hoehle:'tempel',
+    sumpf:{von:[2,7], bis:[10,7], tempo:0.3}, teich:{von:[4,1], bis:[8,4]},
+    kroko:{i:8, j:4, reichweite:8.5, pause:5, schaden:300}},
 };
 if(!KARTEN[MAP_ID]) MAP_ID='wiese'; if(!STUFEN[STUFE]) STUFE='leicht';
 const GRAS_W=['#5dab3c','#64b443','#559f37','#6dbd4b','#5aa83a'];
@@ -607,6 +614,9 @@ const THEMES = {
           tree:'herbst', laub:['#d2691e','#e07b28','#c0451a','#e8a33a','#b8461a'], water:['#4a7fb0','#3f74a5','#5a8cbb'], deko:['kuerbis','pilz','laub','kuerbis'], blumen:['#ff9a3c','#e0453f','#ffd23f']},
   bluete:{sky:0xbfe4ff, top:['#7cc95e','#86d168','#6fbf52','#92d874','#80cc62'], side:null, dirt:DIRT, path:['#e2c792','#d8bb7c','#ecd6a6','#d3b575'], dots:['#c9a46e','#ffc4dc'],
           tree:'bluete', laub:['#f5a9c9','#f8bfd6','#ee93bb','#ffd3e4','#f19cc4'], water:['#5aa8e8','#68b4ee','#4f9ce0'], deko:['blume','tulpe','blume','busch','tulpe'], blumen:['#ffb3d1','#ffffff','#ff8fbf','#f7e07a','#c7b3ff']},
+  dschungel:{sky:0x8fd3bb, top:['#4f9e3e','#58a845','#46913a','#5fb04a','#4c9a3c'], side:null, dirt:['#6b4a2a','#5e3f22','#74512e','#664527'], path:['#9a6a3a','#8a5c30','#a87644','#7f5428'], dots:['#5e3a1c','#b8854f'],
+          tree:'dschungel', laub:['#2f8a2a','#267a24','#3a9a32','#1f6a1e','#45a838'], water:['#3f8f7a','#357f6c','#4a9a84','#2f7564'], sumpf:['#5a5a2a','#4f4f24','#66662f','#6b5a2c','#4a5226'],
+          deko:['farn','farn','blume','busch','pilz','farn'], blumen:['#ff4f6d','#ffb02e','#ff7ad1','#ffffff'], dicht:true},
 };
 
 /* =====================================================================
@@ -696,6 +706,7 @@ const inMap=(i,j)=>i>=0&&j>=0&&i<GW&&j<GD;
 const TILE=new Uint8Array(GW*GD);
 let pathSet=new Set(), MAP=null, TH=null, world=null, BURG_POS=null, HOEHLE=null, VULKAN_POS=null;
 const SX=[], SZ=[], SDX=[], SDZ=[]; let L=0, NS=0, PTS=[];
+let SUMPF=null, sumpfSet=new Set(), teichSet=new Set(), KROKO=null, parrots=[];
 const STEP=0.05;
 const isPath=(i,j)=>pathSet.has(i+','+j);
 function buildPath(){
@@ -710,7 +721,10 @@ function buildPath(){
     const t=Math.min(1,(d-segStart)/segLen[seg]); const [x0,z0]=PTS[seg],[x1,z1]=PTS[seg+1];
     SX.push(x0+(x1-x0)*t); SZ.push(z0+(z1-z0)*t); SDX.push((x1-x0)/segLen[seg]); SDZ.push((z1-z0)/segLen[seg]); }
   NS=SX.length;
+  SUMPF=null; if(MAP.sumpf){ SUMPF=new Uint8Array(NS); for(let k=0;k<NS;k++){ const [i,j]=tileOf(SX[k],SZ[k]); SUMPF[k]=sumpfSet.has(i+','+j)?1:0; } }
 }
+// Rechteck aus Kacheln {von:[i,j], bis:[i,j]} als Menge "i,j"
+function rectSet(r){ const s=new Set(); if(!r) return s; for(let i=Math.min(r.von[0],r.bis[0]);i<=Math.max(r.von[0],r.bis[0]);i++) for(let j=Math.min(r.von[1],r.bis[1]);j<=Math.max(r.von[1],r.bis[1]);j++) s.add(i+','+j); return s; }
 function distToPath(x,z){ let b=1e9; for(let k=0;k<PTS.length-1;k++){ const [ax,az]=PTS[k],[bx,bz]=PTS[k+1]; const vx=bx-ax,vz=bz-az; const t=Math.max(0,Math.min(1,((x-ax)*vx+(z-az)*vz)/(vx*vx+vz*vz))); const d=Math.hypot(ax+vx*t-x,az+vz*t-z); if(d<b) b=d; } return b; }
 function pathParamAt(x,z){ let best=1e9, bd=0; for(let k=0;k<NS;k+=4){ const dx=SX[k]-x, dz=SZ[k]-z, q=dx*dx+dz*dz; if(q<best){ best=q; bd=k*STEP; } } return bd; }
 
@@ -726,6 +740,7 @@ function makeTextures(th){
     laub:pixTex(17,(g,R)=>{ noise(g,R,th.laub); if(th.tree==='kaktus') for(let k=0;k<10;k++){ g.fillStyle='#e8e0c0'; g.fillRect((R()*16)|0,(R()*16)|0,1,1); } }),
     water:pixTex(18,(g,R)=>noise(g,R,th.water)),
     snow:pixTex(19,(g,R)=>noise(g,R,['#ffffff','#f2f7fc','#e6eff8'])),
+    sumpf:th.sumpf?pixTex(20,(g,R)=>{ noise(g,R,th.sumpf); for(let k=0;k<6;k++){ g.fillStyle=R()<.5?'#8a9a5a':'#3f6a2a'; g.fillRect((R()*15)|0,(R()*15)|0,R()<.5?2:1,1);} }):null,
   };
 }
 function decoParts(kind,x,z,R,th,y0){
@@ -743,12 +758,33 @@ function decoParts(kind,x,z,R,th,y0){
     case 'eis': { const s=0.3+R()*0.3; P.push([x,y+s/2,z,s,s,s,'#bfe6f7',0],[x+0.05,y+s*0.75,z+0.05,s*0.5,s*0.4,s*0.5,'#e8f7ff',0]); break; }
     case 'kuerbis': { P.push([x,y+0.15,z,0.36,0.3,0.36,'#ff8a2a'],[x,y+0.15,z,0.4,0.24,0.24,'#f27a1a'],[x,y+0.34,z,0.06,0.1,0.06,'#3f6a2a']); break; }
     case 'laub': { for(let k=0;k<5;k++) P.push([x+(R()-.5)*0.7,y+0.03,z+(R()-.5)*0.7,0.18,0.04,0.14,c(th.laub)]); break; }
+    case 'farn': { const g=c(['#2f8a2a','#3a9a32','#267a24']); P.push([x,y+0.08,z,0.16,0.16,0.16,g]);
+      for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1],[0.7,0.7],[-0.7,-0.7]]) P.push([x+dx*0.26,y+0.2,z+dz*0.26,0.12+Math.abs(dx)*0.26,0.06,0.12+Math.abs(dz)*0.26,g],[x+dx*0.48,y+0.14,z+dz*0.48,0.1,0.05,0.1,g]);
+      if(R()<.35) P.push([x,y+0.3,z,0.12,0.12,0.12,c(th.blumen),0]); break; }
+    case 'seerose': { P.push([x,y,z,0.42,0.03,0.42,'#3f9a3a']); if(R()<.5) P.push([x+0.05,y+0.06,z,0.12,0.08,0.12,c(['#ff9ec4','#ffffff']),0],[x+0.05,y+0.1,z,0.05,0.04,0.05,'#ffd23f',0]); break; }
   }
   return P;
 }
 function treeBlocks(type,x,h,z,R,put){
   const B=0.55;
   if(type==='kaktus'){ const th=2+((R()*3)|0); for(let k=0;k<th;k++) put('laub',x,h+B/2+k*B,z,B); if(R()<.7){ put('laub',x+B,h+B*1.5,z,B); put('laub',x+B,h+B*2.5,z,B); } if(R()<.5){ put('laub',x-B,h+B*2.5,z,B); put('laub',x-B,h+B*3.5,z,B); } return; }
+  if(type==='dschungel'){
+    if(R()<0.4){ // Palme: krummer Stamm, Wedel, Kokosnüsse
+      const th=4+((R()*2)|0), lean=(R()<.5?-1:1)*0.12; let px=x;
+      for(let k=0;k<th;k++){ put('wood',px,h+B/2+k*B,z,B*0.8); px+=lean*(k>1?1:0.3); }
+      const y=h+th*B+B*0.3; put('laub',px,y,z,B);
+      for(const [a,b] of [[1,0],[-1,0],[0,1],[0,-1]]) for(let s=1;s<=3;s++) put('laub',px+a*s*B,y-(s-1)*B*0.5,z+b*s*B,B*0.9);
+      for(const [a,b] of [[0.6,0.6],[-0.6,0.6],[0.6,-0.6],[-0.6,-0.6]]) put('laub',px+a*B*1.6,y-B*0.2,z+b*B*1.6,B*0.8);
+      for(const [a,b] of [[0.5,0],[-0.3,0.4],[0,-0.5]]) put('wood',px+a*B,y-B*0.9,z+b*B,B*0.45);
+      return; }
+    const th=4+((R()*3)|0); for(let k=0;k<th;k++) put('wood',x,h+B/2+k*B,z,B);
+    const top=h+th*B;
+    for(let a=-2;a<=2;a++) for(let b=-2;b<=2;b++){ if(Math.abs(a)+Math.abs(b)>3) continue; put('laub',x+a*B,top,z+b*B,B); }
+    for(let a=-1;a<=1;a++) for(let b=-1;b<=1;b++) put('laub',x+a*B,top+B,z+b*B,B);
+    put('laub',x,top+2*B,z,B);
+    // Lianen
+    for(const [a,b] of [[2,0],[-2,0],[0,2],[0,-2],[1,-2]]){ if(R()<.35) continue; const n=2+((R()*4)|0); for(let s=1;s<=n;s++) put('laub',x+a*B,top-s*B*0.45,z+b*B,B*0.3); }
+    return; }
   if(type==='tanne'){ const th=2; for(let k=0;k<th;k++) put('wood',x,h+B/2+k*B,z,B); let y=h+th*B+B/2;
     for(const r of [2,1,1,0]){ for(let a=-r;a<=r;a++) for(let b=-r;b<=r;b++){ if(Math.abs(a)+Math.abs(b)>r+ (r>1?0:1)) continue; put('laub',x+a*B,y,z+b*B,B); } y+=B; }
     put('snow',x,y,z,B*0.9); return; }
@@ -763,7 +799,7 @@ function buildWorld(id){
   world=new THREE.Group(); scene.add(world);
   scene.background.setHex(TH.sky); scene.fog.color.setHex(TH.sky);
   // Kacheln einteilen
-  TILE.fill(0); pathSet=new Set();
+  TILE.fill(0); pathSet=new Set(); sumpfSet=rectSet(MAP.sumpf); teichSet=rectSet(MAP.teich);
   const W=MAP.weg;
   for(let k=0;k<W.length-1;k++){ const [a,b]=W[k], [c,d]=W[k+1]; const n=Math.max(Math.abs(c-a),Math.abs(d-b));
     for(let s=0;s<=n;s++){ const i=a+Math.sign(c-a)*s, j=b+Math.sign(d-b)*s; pathSet.add(i+','+j); if(inMap(i,j)) TILE[j*GW+i]=1; } }
@@ -774,9 +810,9 @@ function buildWorld(id){
   // Texturen und Materialien für diese Karte
   const TX=makeTextures(TH);
   const lam=(map,o)=>new THREE.MeshLambertMaterial(Object.assign({map},o||{}));
-  const M={ grass:[lam(TX.side),lam(TX.side),lam(TX.top),lam(TX.dirt),lam(TX.side),lam(TX.side)], dirt:lam(TX.dirt), path:lam(TX.path), stone:lam(TX.stone), wood:lam(TX.wood), laub:lam(TX.laub), snow:lam(TX.snow), water:lam(TX.water,{transparent:true,opacity:0.88}) };
+  const M={ grass:[lam(TX.side),lam(TX.side),lam(TX.top),lam(TX.dirt),lam(TX.side),lam(TX.side)], dirt:lam(TX.dirt), path:lam(TX.path), stone:lam(TX.stone), wood:lam(TX.wood), laub:lam(TX.laub), snow:lam(TX.snow), water:lam(TX.water,{transparent:true,opacity:0.88}), sumpf:TX.sumpf?lam(TX.sumpf):null };
   const R=rng(4242+MAP_ORDER.indexOf(id)*97);
-  const cols={grass:[],dirt:[],path:[],stone:[],water:[],wood:[],laub:[],snow:[]};
+  const cols={grass:[],dirt:[],path:[],stone:[],water:[],wood:[],laub:[],snow:[],sumpf:[]};
   const put=(k,x,y,z,s=TS,col)=>cols[k].push([x,y,z,s,col]);
   const hillN=(i,j)=>Math.sin(i*0.9+MAP_ORDER.indexOf(id))+Math.cos(j*1.1)+Math.sin((i+j)*0.55)+Math.cos((i-j)*0.47);
   const deco=[];
@@ -786,8 +822,17 @@ function buildWorld(id){
     const x=wx(i), z=wz(j); const inside=inMap(i,j); const edge=Math.max(-i, i-(GW-1), -j, j-(GD-1));
     const corner=(i<-RAND+1||i>GW+RAND-2)&&(j<-RAND+1||j>GD+RAND-2); if(corner) continue;
     const nearVulk=Math.abs(i-vI)<=1&&Math.abs(j-vJ)<=1;
-    if(isPath(i,j)){ put('path',x,-TS/2-0.25,z); }
-    else if(inside){ const t=TILE[j*GW+i]; put('grass',x,-TS/2,z,TS,t===3?1:0.8); if(t===0 && R()<0.75) deco.push(...decoParts(TH.deko[(R()*TH.deko.length)|0],x,z,R,TH)); }
+    if(isPath(i,j)){
+      if(sumpfSet.has(i+','+j)){ put('sumpf',x,-TS/2-0.42,z);   // Sumpf: tiefer, mit Schilf am Rand und Seerosen
+        for(const s of [-1,1]) if(R()<0.7){ const sx=x+(R()-.5)*1.4, sz=z+s*(0.78+R()*0.12); for(let k=0;k<3;k++) deco.push([sx+(k-1)*0.1,-0.42+0.25+k*0.04,sz,0.05,0.5+k*0.08,0.05,'#5f8a2e']); deco.push([sx,-0.42+0.62,sz,0.07,0.16,0.07,'#6b4524']); }
+        if(R()<0.5) deco.push(...decoParts('seerose',x,z,R,TH,-0.41)); }
+      else put('path',x,-TS/2-0.25,z); }
+    else if(inside){ const t=TILE[j*GW+i];
+      if(teichSet.has(i+','+j)){ put('water',x,-TS/2-0.3,z); put('dirt',x,-TS*1.5,z); if(R()<0.55) deco.push(...decoParts('seerose',x,z,R,TH,-0.29)); }
+      else{ put('grass',x,-TS/2,z,TS,t===3?1:0.8);
+        let frei=t===0; for(let a=-2;a<=2&&frei;a++) for(let b=-2;b<=2;b++){ if(isPath(i+a,j+b) || (inMap(i+a,j+b)&&TILE[(j+b)*GW+i+a]===2) || teichSet.has((i+a)+','+(j+b))&&(Math.abs(a)+Math.abs(b)<2)){ frei=false; break; } }
+        if(TH.dicht && frei && R()<0.6) treeBlocks(TH.tree,x+(R()-.5)*0.5,0,z+(R()-.5)*0.5,R,(k,a,b,c,s)=>put(k,a,b,c,s));   // Dschungel: Bäume auch zwischen den Wegen
+        else if(t===0 && R()<0.75) deco.push(...decoParts(TH.deko[(R()*TH.deko.length)|0],x,z,R,TH)); } }
     else{
       const n=hillN(i,j); const nearPath=[[0,1],[0,-1],[1,0],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1],[0,2],[2,0],[0,-2],[-2,0]].some(([a,b])=>isPath(i+a,j+b));
       if(!nearVulk && n<-1.6 && edge>=2 && !nearPath){ put('water',x,-TS/2-0.3,z); put('dirt',x,-TS*1.5,z); }
@@ -804,7 +849,7 @@ function buildWorld(id){
   const mk=(k,mat,tint)=>{ const L_=cols[k]; if(!L_.length) return; const m=new THREE.InstancedMesh(BOXG,mat,L_.length);
     L_.forEach(([x,y,z,s,col],n)=>{ _p.set(x,y,z); _s.set(s,s,s); _m.compose(_p,_q.identity(),_s); m.setMatrixAt(n,_m); if(tint){ const v=col===undefined?1:col; m.setColorAt(n,_c.setRGB(v,v,v)); } });
     m.instanceMatrix.needsUpdate=true; m.computeBoundingSphere(); world.add(m); return m; };
-  mk('grass',M.grass,true); mk('dirt',M.dirt); mk('path',M.path); mk('stone',M.stone); mk('water',M.water); mk('wood',M.wood); mk('laub',M.laub); mk('snow',M.snow);
+  mk('grass',M.grass,true); mk('dirt',M.dirt); mk('path',M.path); if(M.sumpf) mk('sumpf',M.sumpf); mk('stone',M.stone); mk('water',M.water); mk('wood',M.wood); mk('laub',M.laub); mk('snow',M.snow);
   if(deco.length){ const dm=new THREE.Mesh(vox(deco,5),MAT.vox); world.add(dm); }
   // Linien um die Bauplätze
   const gp=[]; const e=0.08, hh=0.02;
@@ -819,9 +864,23 @@ function buildWorld(id){
   BURG_POS.group=cg;
   // Höhle der Monster am Wegbeginn
   { const sx=wx(startT[0]), sz=wz(startT[1]); const dx=Math.sign(start2[0]-startT[0]), dz=Math.sign(start2[1]-startT[1]);
-    const g=new THREE.Mesh(CAVE_GEO,MAT.vox); g.position.set(sx-dx*0.8,0,sz-dz*0.8); g.rotation.y=dx>0?0:dx<0?Math.PI:dz>0?-Math.PI/2:Math.PI/2; g.scale.setScalar(1.25); world.add(g); HOEHLE={x:sx,z:sz}; }
+    const g=new THREE.Mesh(MAP.hoehle==='tempel'?TEMPEL_GEO:CAVE_GEO,MAT.vox); g.position.set(sx-dx*0.8,0,sz-dz*0.8); g.rotation.y=dx>0?0:dx<0?Math.PI:dz>0?-Math.PI/2:Math.PI/2; g.scale.setScalar(1.25); world.add(g); HOEHLE={x:sx,z:sz}; }
   // Vulkan Volker (Deko am Rand)
   { const g=new THREE.Mesh(VOLCANO_GEO,MAT.vox); g.position.set(wx(vI),0,wz(vJ)); world.add(g); VULKAN_POS={x:wx(vI),z:wz(vJ),y:3.4}; }
+  // Kroko Knut im Teich
+  KROKO=null;
+  if(MAP.kroko){ const k=MAP.kroko, g=new THREE.Group(); g.add(new THREE.Mesh(KROKO_GEO,MAT.vox));
+    const jaw=new THREE.Group(); jaw.position.set(0,0.27,0.5); jaw.add(new THREE.Mesh(KROKO_JAW_GEO,MAT.vox)); g.add(jaw);
+    const hx=wx(k.i), hz=wz(k.j); g.position.set(hx,-0.32,hz); g.scale.setScalar(1.35);
+    const rot=Math.atan2(PTS[1][0]-hx, PTS[1][1]-hz); g.rotation.y=rot; world.add(g);
+    KROKO={g,jaw,hx,hz,rot,r:k.reichweite,pause:k.pause,schaden:k.schaden,cd:5,anim:0,ti:-1,tu:0,tx:hx,tz:hz,hit:true}; }
+  // Papageien kreisen über dem Dschungel
+  parrots=[];
+  if(TH.tree==='dschungel'){ const R2=rng(31); for(let k=0;k<4;k++){ const g=new THREE.Group(); const c=PARROT_COL[k%PARROT_COL.length];
+      g.add(new THREE.Mesh(vox([[0,0,0,0.22,0.22,0.5,c[0]],[0,0.08,0.3,0.2,0.2,0.2,c[0]],[0,0.04,0.44,0.08,0.1,0.1,'#f3ead8'],[0,-0.04,-0.4,0.12,0.06,0.4,c[1]],[-0.08,0.12,0.34,0.05,0.05,0.04,'#ffffff',0],[0.08,0.12,0.34,0.05,0.05,0.04,'#ffffff',0]],60+k),MAT.vox));
+      const wl=new THREE.Mesh(vox([[-0.25,0,0,0.5,0.04,0.3,c[1]],[-0.45,0,0,0.12,0.04,0.2,c[2]]],70+k),MAT.vox), wr=new THREE.Mesh(vox([[0.25,0,0,0.5,0.04,0.3,c[1]],[0.45,0,0,0.12,0.04,0.2,c[2]]],80+k),MAT.vox);
+      wl.position.set(-0.1,0.05,0); wr.position.set(0.1,0.05,0); g.add(wl,wr); g.scale.setScalar(1.6); world.add(g);
+      parrots.push({g,wl,wr,cx:(R2()-.5)*GW*TS*0.9,cz:(R2()-.5)*GD*TS*0.9,rad:6+R2()*8,h:6+R2()*3,sp:(0.25+R2()*0.2)*(k%2?1:-1),a:R2()*TAU}); } }
 }
 
 /* =====================================================================
@@ -839,6 +898,28 @@ const FLAG_GEO=vox([[0.22,0,0,0.42,0.28,0.04,ROOF,0],[0.32,-0.02,0,0.12,0.12,0.0
 const CAVE_GEO=(()=>{ const P=[]; const R=rng(9);
   for(let a=-2;a<=1;a++) for(let b=-2;b<=2;b++){ const h=2.2-Math.abs(b)*0.45-(a<0?0:0.4)+R()*0.4; if(a===1 && Math.abs(b)<=0) continue; P.push([a*0.8,h/2,b*0.8,0.8,h,0.8,R()<.3?'#6f747a':'#80868c']); }
   P.push([0.75,0.55,0,0.1,1.1,0.9,'#141018']); P.push([0.7,1.15,0,0.4,0.25,1.4,'#6f747a']); return vox(P,3); })();
+// Dschungel-Tempel (Eingang zeigt nach +x, wie bei der Höhle)
+const TEMPEL_GEO=(()=>{ const P=[]; const R=rng(13); const S1='#8c8a7a', S2='#9a9886', MOOS=['#3a8a2e','#4a9a38','#2f7a26'];
+  for(const [w,h,y,x] of [[2.8,1.0,0.5,0],[2.1,0.8,1.4,-0.25],[1.4,0.6,2.1,-0.4],[0.8,0.45,2.62,-0.5]]){ P.push([x,y,0,w,h,w*1.1,R()<.5?S1:S2]);
+    for(let k=0;k<5;k++) P.push([x+(R()-.5)*w*0.9,y+h/2+0.03,(R()-.5)*w,0.2+R()*0.3,0.06,0.2+R()*0.3,MOOS[(R()*3)|0]]); }
+  P.push([1.41,0.5,0,0.04,0.95,0.8,'#141018',0],[1.45,1.05,0,0.18,0.2,1.3,'#7a7868'],[1.47,0.48,-0.56,0.2,0.95,0.22,S2],[1.47,0.48,0.56,0.2,0.95,0.22,S2]);
+  P.push([1.44,0.7,-0.17,0.03,0.1,0.13,'#ffe14a',0],[1.44,0.7,0.17,0.03,0.1,0.13,'#ffe14a',0]);   // Augen im Dunkeln
+  P.push([0.83,1.45,-0.2,0.05,0.14,0.14,'#5a584c'],[0.83,1.45,0.2,0.05,0.14,0.14,'#5a584c'],[0.83,1.25,0,0.05,0.08,0.4,'#5a584c']);   // Steingesicht
+  for(const z of [-1.3,-0.9,0.95,1.35]){ const n=2+((R()*3)|0); for(let k=0;k<n;k++) P.push([1.42,0.95-k*0.22,z,0.05,0.22,0.1,MOOS[(R()*3)|0]]); }
+  for(const z of [-1.2,1.2]) P.push([1.7,0.4,z,0.5,0.8,0.5,S1],[1.7,0.9,z,0.6,0.2,0.6,S2],[1.7,1.08,z,0.18,0.16,0.18,'#ff8a2a',0]);   // Fackel-Säulen
+  return vox(P,6); })();
+// Kroko Knut: Kopf zeigt nach +z, der Oberkiefer klappt auf
+const KROKO_GEO=(()=>{ const G1='#4f8f3a', G2='#3f7a2e', G3='#2f5a22', P=[];
+  P.push([0,0.22,-0.3,0.7,0.32,1.4,G1],[0,0.07,-0.3,0.6,0.06,1.2,'#c8d890'],[0,0.18,-1.25,0.42,0.22,0.6,G2],[0,0.14,-1.75,0.26,0.16,0.5,G2],[0,0.11,-2.1,0.14,0.12,0.3,G2]);
+  for(let z=-1.6;z<=0.2;z+=0.3) P.push([-0.15,0.42,z,0.1,0.09,0.14,G3],[0.15,0.42,z,0.1,0.09,0.14,G3]);
+  for(const [x,z] of [[-0.42,-0.75],[0.42,-0.75],[-0.42,0.15],[0.42,0.15]]) P.push([x,0.1,z,0.2,0.2,0.24,G2],[x*1.1,0.02,z+0.08,0.24,0.05,0.18,G3]);
+  P.push([0,0.18,0.55,0.56,0.18,0.5,G1],[0,0.12,0.95,0.46,0.1,0.5,G1]);   // Unterkiefer
+  for(const x of [-0.2,0.2]) for(const z of [0.78,0.98,1.14]) P.push([x,0.2,z,0.06,0.06,0.06,'#ffffff',0]);
+  return vox(P,8); })();
+const KROKO_JAW_GEO=vox([[0,0.04,0.25,0.5,0.14,0.55,'#4f8f3a'],[0,0.02,0.68,0.42,0.1,0.34,'#4f8f3a'],[-0.08,0.09,0.8,0.05,0.04,0.05,'#2f5a22',0],[0.08,0.09,0.8,0.05,0.04,0.05,'#2f5a22',0],
+  [-0.15,0.17,0.05,0.14,0.14,0.14,'#4f8f3a'],[0.15,0.17,0.05,0.14,0.14,0.14,'#4f8f3a'],[-0.15,0.21,0.122,0.1,0.08,0.02,'#ffe14a',0],[0.15,0.21,0.122,0.1,0.08,0.02,'#ffe14a',0],[-0.15,0.21,0.13,0.03,0.08,0.02,'#111111',0],[0.15,0.21,0.13,0.03,0.08,0.02,'#111111',0],
+  ...[0.3,0.5,0.7].flatMap(z=>[[-0.2,-0.05,z,0.05,0.06,0.05,'#ffffff',0],[0.2,-0.05,z,0.05,0.06,0.05,'#ffffff',0]])],9);
+const PARROT_COL=[['#e0302a','#2f6fd8','#ffd23f'],['#2f6fd8','#ffd23f','#e0302a'],['#3fb04a','#ffd23f','#e0302a'],['#ffd23f','#2fb4c0','#e0302a']];
 const VOLCANO_GEO=(()=>{ const P=[]; const R=rng(21);
   const lv=[[2.6,0.7],[2.1,0.7],[1.6,0.7],[1.15,0.7],[0.8,0.5]]; let y=0;
   for(const [w,h] of lv){ P.push([0,y+h/2,0,w,h,w,R()<.5?'#6b5040':'#7a5c48']); y+=h; }
@@ -1068,6 +1149,7 @@ function sfx(k){ if(!AC||SFX_VOL<=0||document.hidden) return; const now=AC.curre
     case 'boom': hiss(0.35,300,0.4,0.7); tone(90,0.3,'sine',0.25,40); break;
     case 'bigboom': hiss(1.0,180,0.7,0.5); tone(70,0.9,'sine',0.4,25); break;
     case 'wurf': hiss(0.15,900,0.1,1); break;
+    case 'schnapp': tone(160,0.14,'square',0.1,70); tone(90,0.1,'sawtooth',0.08,null,0.05); hiss(0.12,1400,0.12,1); break;
     case 'zap': tone(1200,0.12,'sawtooth',0.05,300); break;
     case 'schleim': tone(200,0.12,'sine',0.12,90); break;
     case 'blubb': tone(160,0.18,'sine',0.14,60); hiss(0.2,500,0.1,1); break;
@@ -1138,6 +1220,7 @@ function newGame(keepToday){
   hero.x=hero.tx=PTS.length?PTS[Math.min(2,PTS.length-1)][0]*0.5+BURG_POS.x*0.5:0; hero.z=hero.tz=PTS.length?PTS[Math.min(2,PTS.length-1)][1]*0.5+BURG_POS.z*0.5:0;
   { const d=pathParamAt(hero.x,hero.z); const k=Math.round(d/STEP); hero.x=hero.tx=SX[k]; hero.z=hero.tz=SZ[k]; }
   hero.power=0.3; hero.spin=0; hero.cd=0;
+  if(KROKO){ KROKO.cd=5; KROKO.anim=0; KROKO.hit=true; KROKO.g.position.set(KROKO.hx,-0.32,KROKO.hz); KROKO.g.rotation.y=KROKO.rot; KROKO.jaw.rotation.x=0; }
   if(!keepToday||!TODAY.length){ pickToday(); genWaves(); }
   closePanel(); setMode(null);
 }
@@ -1164,7 +1247,7 @@ function markAt(i,sec){ G.point={i,uid:eUid[i],t:sec||3}; }
 function weakLine(id){ const w=MONSTER[id].schwach; const s=[]; for(const [k,v] of Object.entries(w)) if(v>=2) s.push(EL_ICON[k]); return s.length?'Schwach gegen '+s.join(''):(MONSTER[id].boss?'Keine Schwäche!':''); }
 function posOf(i){
   const k=sample(eD[i]); eX[i]=SX[k]-SDZ[k]*eLat[i]; eZ[i]=SZ[k]+SDX[k]*eLat[i];
-  eY[i]=eFly[i]? 2.2+Math.sin(ePh[i]*0.5)*0.15 : eUnder[i]? -0.32 : eHop[i]*0.55;
+  eY[i]=eFly[i]? 2.2+Math.sin(ePh[i]*0.5)*0.15 : eUnder[i]? -0.32 : eHop[i]*0.55-(SUMPF&&SUMPF[k]?0.22:0);
   const tr=Math.atan2(SDX[k],SDZ[k]); let df=tr-eRot[i]; while(df>Math.PI) df-=TAU; while(df<-Math.PI) df+=TAU; eRot[i]+=df*0.25;
 }
 function removeEnemy(i){ eAlive[i]=0; freeL.push(i); G.alive--; if(G.mark && G.mark.i===i) G.mark=null; }
@@ -1276,6 +1359,7 @@ function moveEnemies(dt){
     if(eGust[i]>0){ eGust[i]=Math.max(0,eGust[i]-dt); if(eGust[i]<=0) eGust[i]=-1; sp*=1.6; }
     else if(eGust[i]===0 && windD.length && !M.wind){ for(const wd of windD){ if(eD[i]>wd && eD[i]<wd+4){ eGust[i]=1.2+Math.random()*0.8; break; } } }
     if(M.huepft){ const s=Math.sin((G.t*1.4+ePh[i]*0.2)*TAU); sp*=s>0?1.8:0.25; eHop[i]=Math.max(0,s); }
+    if(SUMPF && !eFly[i] && SUMPF[sample(eD[i])]){ sp*=MAP.sumpf.tempo; if(Math.random()<dt*0.6) burst(eX[i],0.05,eZ[i],1,'#8a9a5a',1.2,0.1,2); }   // Sumpf: ganz langsam
     if(M.boss && eD[i]<0.2) sp=Math.max(sp,0.6);
     let nd=eD[i]+sp*dt;
     if(M.kanone){ const stop=L-10-eJit[i]; if(nd>=stop){ nd=Math.max(eD[i],stop); eTim[i]+=dt; if(eTim[i]>=3){ eTim[i]=0; fireCannon(i); } } }
@@ -1290,6 +1374,28 @@ function moveEnemies(dt){
     posOf(i);
   }
   windD=nw; shieldD=ns; healD=nh;
+}
+// Kroko Knut: schnappt sich alle paar Sekunden das vorderste Monster in seiner Nähe (nicht Flieger, nicht Gromp)
+function updateKroko(dt){ const K=KROKO; if(!K) return;
+  K.cd-=dt;
+  if(K.anim>0){ K.anim=Math.max(0,K.anim-dt); const p=1-K.anim/0.8, out=Math.sin(p*Math.PI);
+    K.g.position.set(K.hx+(K.tx-K.hx)*out*0.6, -0.32+out*0.4, K.hz+(K.tz-K.hz)*out*0.6);
+    K.jaw.rotation.x = p<0.42 ? -1.0*p/0.42 : p<0.52 ? -1.0*(1-(p-0.42)/0.1) : 0;
+    if(!K.hit && p>=0.5){ K.hit=true; const i=K.ti;
+      if(eAlive[i] && eUid[i]===K.tu){ const M=MONSTER[TYPES[eT[i]]]; hurt(i, M.mitte?K.schaden:eHp[i]*2+10, 'kroko','kroko'); }
+      burst(K.tx,0.3,K.tz,10,'#7fc8e8',3,0.12,4); sfx('schnapp'); CAM.shake=Math.max(CAM.shake,3); }
+    if(K.anim<=0){ K.g.position.set(K.hx,-0.32,K.hz); K.jaw.rotation.x=0; }
+    return; }
+  K.g.position.y=-0.32+Math.sin(G.t*1.6)*0.03; K.jaw.rotation.x=-Math.max(0,Math.sin(G.t*0.5)-0.8)*0.6;
+  let df=K.rot-K.g.rotation.y; while(df>Math.PI) df-=TAU; while(df<-Math.PI) df+=TAU; K.g.rotation.y+=df*Math.min(1,dt*2);
+  if(K.cd>0) return;
+  const r2=K.r*K.r; let best=-1, bd=-1;
+  for(let i=0;i<eHi;i++){ if(!eAlive[i] || eFly[i] || eUnder[i]) continue; const M=MONSTER[TYPES[eT[i]]]; if(M.boss) continue;
+    const dx=eX[i]-K.hx, dz=eZ[i]-K.hz; if(dx*dx+dz*dz>r2) continue; if(eD[i]>bd){ bd=eD[i]; best=i; } }
+  if(best<0) return;
+  K.ti=best; K.tu=eUid[best]; K.tx=eX[best]+SDX[sample(eD[best])]*0.8; K.tz=eZ[best]+SDZ[sample(eD[best])]*0.8; K.anim=0.8; K.hit=false; K.cd=K.pause;
+  K.g.rotation.y=Math.atan2(K.tx-K.hx,K.tz-K.hz);
+  if(!G.krokoSeen){ G.krokoSeen=1; toast('🐊 Kroko Knut wohnt im Teich – er schnappt sich Monster, die ihm zu nahe kommen!',4500); }
 }
 function fireCannon(i){ shots.push({kind:'kugel',x:eX[i],y:0.9,z:eZ[i],x0:eX[i],y0:0.9,z0:eZ[i],x1:BURG_POS.x+(Math.random()-.5),z1:BURG_POS.z+(Math.random()-.5),t:0,dur:1.1,arc:3,dmg:2}); burst(eX[i],1,eZ[i],4,'#9a9a9a',1.5,0.12,2); sfx('wurf'); }
 function markValid(){ const m=G.mark; if(!m) return -1; if(eAlive[m.i] && eUid[m.i]===m.uid) return m.i; G.mark=null; return -1; }
@@ -1498,7 +1604,7 @@ function openChest(c){
 function update(dt){
   G.t+=dt;
   if(G.wave>=1 && G.t>=G.nextAt) startWave(false);
-  spawnDue(); moveEnemies(dt); updateTowers(dt); updateShots(dt); updateHero(dt); updateKraefte(dt); updateParticles(dt);
+  spawnDue(); moveEnemies(dt); updateTowers(dt); updateShots(dt); updateHero(dt); updateKraefte(dt); updateKroko(dt); updateParticles(dt);
   if(G.point){ G.point.t-=dt; if(G.point.t<=0||!eAlive[G.point.i]||eUid[G.point.i]!==G.point.uid) G.point=null; }
   if(G.hp<=0 && !G.over){ G.hp=0; endGame(false); }
   else if(G.wave>=MAX_WELLE && G.qi>=G.queue.length && G.alive===0 && !G.over) endGame(true);
@@ -1880,7 +1986,7 @@ function hsDetails(){
   h.sort((a,b)=>b[2]-a[2]);
   return {s:Math.round((Date.now()-G.t0)/1000), k:G.kills, c:Math.floor(G.earned), hp:Math.max(0,Math.round(100*G.hp/G.maxHp)), b:G.burgLvl+1, h, g:G.cardLog.slice(0,12), t:towers.length, dd:1};
 }
-const SRC_NAME={brok:['🥦','Brokkoli'],bogen:['🏹','Pfeil-Paule'],messer:['🔪','Piekser'],zauber:['🧙','Zappelbart'],katapult:['🪨','Schleuder-Susi'],oel:['🫕','Brutzel-Kessel'],schleim:['🐌','Schleim-Sepp'],raeuber:['💰','Langfinger-Lutz (Münzen)'],gewitter:['⛈️','Donner-Doris'],vulkan:['🌋','Vulkan Volker'],tnt:['🧨','Mega-Bumm']};
+const SRC_NAME={brok:['🥦','Brokkoli'],bogen:['🏹','Pfeil-Paule'],messer:['🔪','Piekser'],zauber:['🧙','Zappelbart'],katapult:['🪨','Schleuder-Susi'],oel:['🫕','Brutzel-Kessel'],schleim:['🐌','Schleim-Sepp'],raeuber:['💰','Langfinger-Lutz (Münzen)'],gewitter:['⛈️','Donner-Doris'],vulkan:['🌋','Vulkan Volker'],tnt:['🧨','Mega-Bumm'],kroko:['🐊','Kroko Knut']};
 function bilanzRows(el,rows){
   if(!rows.length) return; const h3=document.createElement('h3'); h3.textContent='Wer hat am meisten geschafft?'; el.appendChild(h3);
   const max=Math.max(1,...rows.map(r=>r[2]));
@@ -2133,6 +2239,8 @@ function loop(now){
   if(!G||(!G.running&&!G.over)) CAM.yawTo+=rdt*0.05;
   let dy=CAM.yawTo-CAM.yaw; CAM.yaw+=dy*Math.min(1,rdt*6); CAM.shake=Math.max(0,CAM.shake-rdt*25); placeCam();
   for(const c of clouds){ c.position.x+=c.userData.v*rdt; if(c.position.x>55) c.position.x=-55; }
+  for(const p of parrots){ p.a+=p.sp*rdt; const s=Math.sign(p.sp); p.g.position.set(p.cx+Math.cos(p.a)*p.rad, p.h+Math.sin(p.a*2)*0.8, p.cz+Math.sin(p.a)*p.rad*0.6);
+    p.g.rotation.y=Math.atan2(-Math.sin(p.a)*s, Math.cos(p.a)*0.6*s); const f=Math.sin(T*14+p.cx)*0.7; p.wl.rotation.z=f; p.wr.rotation.z=-f; }
   for(const f of castleFlags) f.rotation.y=Math.sin(T*3+f.position.x)*0.35;
   if(BURG_POS&&BURG_POS.group){ const g=BURG_POS.group, h=g.userData.hit||0; g.position.x=BURG_POS.x+(h>0?(Math.random()-.5)*0.15:0); g.userData.hit=Math.max(0,h-rdt); }
   if(G){ let sc=null; for(const s of G.storm) if(!s.bolt){ sc=s; break; } stormCloud.visible=!!sc; if(sc) stormCloud.position.set(sc.x,7+Math.sin(T*3)*0.1,sc.z); }
